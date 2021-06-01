@@ -12,8 +12,10 @@ setup(
     description='Package with default calls for the SigningHub API',
     long_description=readme(),
     long_description_content_type='text/markdown',
+    url='https://github.com/erwinmintiens/signinghub-api',
     author='Erwin Mintiens',
     author_email='erwin.mintiens@gmail.com',
+    keywords='SigningHub API',
     packages=find_packages(exclude=['docs', 'tests*']),
     install_requires=['requests']
 )
