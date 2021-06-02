@@ -218,6 +218,15 @@ class Connection:
         }
         return requests.get(url=url, headers=headers)
 
+    def reset_email_notifications(self):
+        url = f"{self.url}/v{self.api_version}/enterprise/notifications/email/reset"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.put(url=url, headers=headers)
+
     def register_enterprise_user(self, user_email: str, user_name: str, **kwargs):
         url = "{}/v{}/enterprise/users".format(self.url, self.api_version)
         headers = {
@@ -272,20 +281,195 @@ class Connection:
             headers['Accept'] = search_string
         return requests.get(url=url, headers=headers)
 
-    def get_package(self, package_id):
-        """ Returns the info of a specific package.
+    def update_enterprise_user(self, user_email: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/users"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            "user_email": user_email
+        }
+        if 'user_name' in kwargs:
+            data['user_name'] = kwargs['user_name']
+        if 'job_title' in kwargs:
+            data['job_title'] = kwargs['job_title']
+        if 'company_name' in kwargs:
+            data['company_name'] = kwargs['company_name']
+        if 'mobile_number' in kwargs:
+            data['mobile_number'] = kwargs['mobile_number']
+        if 'user_password' in kwargs:
+            data['user_password'] = kwargs['user_password']
+        if 'security_question' in kwargs:
+            data['security_question'] = kwargs['security_question']
+        if 'security_answer' in kwargs:
+            data['security_answer'] = kwargs['security_answer']
+        if 'enterprise_role' in kwargs:
+            data['enterprise_role'] = kwargs['enterprise_role']
+        if 'enabled' in kwargs:
+            data['enabled'] = kwargs['enabled']
+        if 'country' in kwargs:
+            data['country'] = kwargs['country']
+        if 'time_zone' in kwargs:
+            data['time_zone'] = kwargs['time_zone']
+        if 'language' in kwargs:
+            data['language'] = kwargs['language']
+        if 'user_ra_id' in kwargs:
+            data['user_ra_id'] = kwargs['user_ra_id']
+        if 'user_csp_id' in kwargs:
+            data['user_csp_id'] = kwargs['user_csp_id']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
 
-        :param package_id: the package ID of the package
-        :return: returns a response object with a json body with parameters: package_id, package_name, package_owner, owner_name, package_status, folder, unread, next_signer, next_signer_email, next_signer_email > user_email, next_signer_email > user_name, uploaded_on, modified_on
-        """
-        url = "{}/v{}/enterprise/packages/{}".format(self.url, self.api_version, package_id)
+    def delete_enterprise_user(self, user_email: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/users"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({'user_email': user_email})
+        return requests.delete(url=url, headers=headers, data=data)
+
+    def invite_enterprise_user(self, user_email: str, user_name: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/invitations"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'user_email': user_email,
+            'user_name': user_name
+        }
+        if 'enterprise_role' in kwargs:
+            data['enterprise_role'] = kwargs['enterprise_role']
+        data = json.dumps(data)
+        requests.post(url=url, headers=headers, data=data)
+
+    def get_enterprise_invitations(self, page_number: int, records_per_page: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/invitations/{page_number}/{records_per_page}"
         headers = {
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
         return requests.get(url=url, headers=headers)
 
-    def update_placeholder(self, package_id, order, **kwargs):
+    def delete_enterprise_user_invitation(self, user_email: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/invitations"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({'user_email': user_email})
+        return requests.delete(url=url, headers=headers, data=data)
+
+    def get_enterprise_branding(self):
+        url = f"{self.url}/v{self.api_version}/enterprise/branding"
+        headers = {
+            'Accept': 'application/json',
+            'x-base64': True,
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_packages(self, document_status: str, page_number: int, records_per_page: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/packages/{document_status}/{page_number}/{records_per_page}"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        if 'x-folder' in kwargs:
+            headers['x-folder'] = kwargs['x-folder']
+        if 'x-search-text' in kwargs:
+            headers['x-search-text'] = kwargs['x-search-text']
+        return requests.get(url=url, headers=headers)
+
+    def get_package(self, package_id: int) -> requests.Response:
+        """ Returns the info of a specific package.
+
+        :param package_id: the package ID of the package
+        :return: returns a response object with a json body with parameters:
+            package_id,
+            package_name,
+            package_owner,
+            owner_name,
+            package_status,
+            folder,
+            unread,
+            next_signer,
+            next_signer_email:
+                user_email,
+                user_name,
+            uploaded_on,
+            modified_on
+        """
+        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def delete_package(self, package_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.delete(url=url, headers=headers)
+
+    def get_workflow_users(self, package_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/users"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def update_workflow_user(self, package_id: int, order: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/user"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = dict()
+        if 'user_email' in kwargs:
+            data['user_email'] = kwargs['user_email']
+        if 'user_name' in kwargs:
+            data['user_name'] = kwargs['user_name']
+        if 'role' in kwargs:
+            data['role'] = kwargs['role']
+        if 'email_notification' in kwargs:
+            data['email_notification'] = kwargs['email_notification']
+        if 'signing_order' in kwargs:
+            data['signing_order'] = kwargs['signing_order']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_workflow_group(self, package_id: int, order: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/group"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = dict()
+        if 'group_name' in kwargs:
+            data['group_name'] = kwargs['group_name']
+        if 'role' in kwargs:
+            data['role'] = kwargs['role']
+        if 'email_notification' in kwargs:
+            data['email_notification'] = kwargs['email_notification']
+        if 'signing_order' in kwargs:
+            data['signing_order'] = kwargs['signing_order']
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_placeholder(self, package_id: int, order: int, **kwargs) -> requests.Response:
         """ Updating a placeholder on a workflow. Changeable properties include: placeholder name, role, email notifications, signing order.
 
         :param package_id: package ID of the package in which you want to update the placeholder
@@ -297,7 +481,7 @@ class Connection:
             signing_order (optional)(int):  Order in which the workflow will be signed by the recipients. This signing order is important when workflow type is set to "CUSTOM".
         :return: returns a response object with empty body on success.
         """
-        url = "{}/v{}/enterprise/packages/{}/workflow/{}/placeholder".format(self.url, self.api_version, package_id, order)
+        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/placeholder"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -314,6 +498,102 @@ class Connection:
             data["signing_order"] = kwargs["signing_order"]
         data = json.dumps(data)
         return requests.put(url=url, data=data, headers=headers)
+
+    def complete_workflow_in_the_middle(self, package_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/complete"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.post(url=url, headers=headers)
+
+    def add_certificate(self, user_email: str, capacity_name: str, certificate_alies: str, level_of_assurance: str,
+                        key_protection_option: str, is_default: bool) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/signingcertificates"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'user_email': user_email,
+            'capacity_name': capacity_name,
+            'certificate_alias': certificate_alies,
+            'level_of_assurance': level_of_assurance,
+            'key_protection_option': key_protection_option,
+            "isDefault": is_default
+        }
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    def delete_certificate(self, certificate_id: int, user_email: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/signingcertificate/{certificate_id}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'user_email': user_email
+        })
+        requests.delete(url=url, headers=headers, data=data)
+
+    def get_enterprise_group(self, group_id: int):
+        url = f"{self.url}/v{self.api_version}/enterprise/groups/{group_id}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def add_enterprise_group(self, group_name: str, members: list, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/groups"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            "Name": group_name,
+            "Members": list()
+        }
+        for member in members:
+            data['Members'].append(member)
+        if 'description' in kwargs:
+            data["Description"] = kwargs['description']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    def update_enterprise_group(self, group_id: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/groups/{group_id}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = dict()
+        if 'name' in kwargs:
+            data['Name'] = kwargs['name']
+        if 'description' in kwargs:
+            data['Description'] = kwargs['description']
+        if 'members' in kwargs:
+            if type(kwargs['members']) is list:
+                data['Members'] = list()
+                for member in kwargs['members']:
+                    data['Members'].append(member)
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def delete_enterprise_group(self, group_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/groups/{group_id}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.delete(url=url, headers=headers)
 
     # Document Package
 

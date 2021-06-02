@@ -1,6 +1,6 @@
 import json
 import requests
-from signinghubapi.signinghubapi import Connection
+from .signinghubapi import Connection
 
 
 class Package:
