@@ -1,0 +1,10 @@
+LICENSE
+README.md
+setup.py
+signinghub_api.egg-info/PKG-INFO
+signinghub_api.egg-info/SOURCES.txt
+signinghub_api.egg-info/dependency_links.txt
+signinghub_api.egg-info/requires.txt
+signinghub_api.egg-info/top_level.txt
+signinghubapi/__init__.py
+signinghubapi/signinghub_api.py
