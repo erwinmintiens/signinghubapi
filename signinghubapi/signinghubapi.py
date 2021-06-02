@@ -3,7 +3,7 @@ import json
 
 
 class Connection:
-    def __init__(self, url: str, username=None, password=None, client_id=None, client_secret=None, api_port=None,
+    def __init__(self, url: str, client_id: str, client_secret: str, username=None, password=None, api_port=None,
                  scope=None, api_version=3, access_token=None, refresh_token=None):
         """ Initialize a connection between python and the SigningHub API.
 
@@ -16,6 +16,8 @@ class Connection:
         - An valid access token;
         - A combination of username and password;
         - A refresh token.
+
+        To test your defined URL, you can try an "about" call (which gets SigningHub instance information, no login required).
 
         :param client_id: str; The client id of the integration in your SigningHub
         :param client_secret: str; The client secret of the integration of your SigningHub
@@ -39,9 +41,9 @@ class Connection:
                 self._url = url
         else:
             if url.endswith("/"):
-                self._url = url[:-1] + ":" + str(api_port)
+                self._url = f"{url[:-1]}:{api_port}"
             else:
-                self._url = url + ":" + str(api_port)
+                self._url = f"{url}:{api_port}"
         self._access_token = access_token
         self._refresh_token = refresh_token
 
@@ -683,7 +685,7 @@ class Connection:
 
     # This call is api_version 4 only.
     def add_signature_field(self, package_id, document_id, order, page_no, **kwargs):
-        url = "{}/v{}/packages/{}/documents/{}/fields/signature".format(self.url, self.api_version, package_id, document_id)
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/signature"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

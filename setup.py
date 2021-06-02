@@ -7,15 +7,23 @@ def readme():
 
 
 setup(
-    name='signinghub-api',
-    version='0.1.0',
+    name='signinghubapi',
+    version='0.0.1',
     description='Package with default calls for the SigningHub API',
     long_description=readme(),
     long_description_content_type='text/markdown',
     url='https://github.com/erwinmintiens/signinghub-api',
     author='Erwin Mintiens',
     author_email='erwin.mintiens@gmail.com',
-    keywords='SigningHub API',
+    keywords=['SigningHub', 'API'],
     packages=find_packages(exclude=['docs', 'tests*']),
-    install_requires=['requests']
+    install_requires=['requests'],
+    classifiers=[
+        "Development Status :: 1 - Planning",
+        "Intended Audience :: Developers",
+        "Programming Language :: Python :: 3",
+        "Operating System :: Unix",
+        "Operating System :: MacOS :: MacOS X",
+        "Operating System :: Microsoft :: Windows",
+    ]
 )

@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: signinghubapi
+Version: 0.0.1
+Summary: Package with default calls for the SigningHub API
+Home-page: https://github.com/erwinmintiens/signinghub-api
+Author: Erwin Mintiens
+Author-email: erwin.mintiens@gmail.com
+License: UNKNOWN
+Description: UNKNOWN
+Keywords: SigningHub,API
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: Unix
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Description-Content-Type: text/markdown

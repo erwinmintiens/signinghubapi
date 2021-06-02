@@ -3,9 +3,21 @@ import json
 
 
 class Connection:
-    def __init__(self, url: str, username=None, password=None, client_id=None, client_secret=None, api_port=None,
+    def __init__(self, url: str, client_id: str, client_secret: str, username=None, password=None, api_port=None,
                  scope=None, api_version=3, access_token=None, refresh_token=None):
         """ Initialize a connection between python and the SigningHub API.
+
+        What needs to be defined:
+        - URL
+        - Client ID
+        - Client secret
+
+        This can be combined with either:
+        - An valid access token;
+        - A combination of username and password;
+        - A refresh token.
+
+        To test your defined URL, you can try an "about" call (which gets SigningHub instance information, no login required).
 
         :param client_id: str; The client id of the integration in your SigningHub
         :param client_secret: str; The client secret of the integration of your SigningHub
@@ -29,9 +41,9 @@ class Connection:
                 self._url = url
         else:
             if url.endswith("/"):
-                self._url = url[:-1] + ":" + str(api_port)
+                self._url = f"{url[:-1]}:{api_port}"
             else:
-                self._url = url + ":" + str(api_port)
+                self._url = f"{url}:{api_port}"
         self._access_token = access_token
         self._refresh_token = refresh_token
 
@@ -115,13 +127,15 @@ class Connection:
 
     # Documented SigningHub API Calls
     def authenticate(self):
-        """ Authentication with the credentials provided in the __init__ function.
+        """ Authentication with username and password.
 
         When a status code 200 is received, an access_token parameter (str) will be created on the Connection object with the value of the access_token parameter in the returned json.
         If another status code than 200 is received, an access_token parameter will be created on the Connection object with value None.
 
         :return: response object
         """
+        if not self.url or not self.client_id or not self.client_secret:
+            raise ValueError("URL, client ID or client secret cannot be None")
         url = "{}/authenticate".format(self.url)
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -135,19 +149,19 @@ class Connection:
             "password": self.password,
             "scope": self.scope
         }
-        r = requests.post(url, data, headers)
-        response_json = json.loads(r.text)
+        authentication_call = requests.post(url, data, headers)
+        authentication_text = json.loads(authentication_call.text)
         try:
-            self.access_token = response_json['access_token']
-            self.refresh_token = response_json['refresh_token']
+            self.access_token = authentication_text['access_token']
+            self.refresh_token = authentication_text['refresh_token']
         except:
             self.access_token = None
         finally:
-            return r
+            return authentication_call
 
     def authenticate_with_refresh_token(self) -> requests.Response:
-        if not self.client_id or not self.client_secret or not self.refresh_token:
-            raise ValueError("Client ID, client secret and refresh token cannot be None")
+        if not self.url or not self.client_id or not self.client_secret or not self.refresh_token:
+            raise ValueError("URL, client ID, client secret and refresh token cannot be None")
         url = f"{self.url}/authenticate"
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -671,7 +685,7 @@ class Connection:
 
     # This call is api_version 4 only.
     def add_signature_field(self, package_id, document_id, order, page_no, **kwargs):
-        url = "{}/v{}/packages/{}/documents/{}/fields/signature".format(self.url, self.api_version, package_id, document_id)
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/signature"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
