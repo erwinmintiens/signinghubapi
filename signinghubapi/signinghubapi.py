@@ -375,18 +375,6 @@ class Connection:
         }
         return requests.get(url=url, headers=headers)
 
-    def get_packages(self, document_status: str, page_number: int, records_per_page: int, **kwargs) -> requests.Response:
-        url = f"{self.url}/v{self.api_version}/enterprise/packages/{document_status}/{page_number}/{records_per_page}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
-        if 'x-folder' in kwargs:
-            headers['x-folder'] = kwargs['x-folder']
-        if 'x-search-text' in kwargs:
-            headers['x-search-text'] = kwargs['x-search-text']
-        return requests.get(url=url, headers=headers)
-
     def get_package(self, package_id: int) -> requests.Response:
         """ Returns the info of a specific package.
 
@@ -412,15 +400,6 @@ class Connection:
             'Authorization': 'Bearer ' + self.access_token
         }
         return requests.get(url=url, headers=headers)
-
-    def delete_package(self, package_id: int) -> requests.Response:
-        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
-        return requests.delete(url=url, headers=headers)
 
     def get_workflow_users(self, package_id: int) -> requests.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/users"
@@ -619,7 +598,19 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def upload_document(self, package_id: int, path_to_files_folder: str, file_name):
+    def rename_package(self, package_id: int, new_name: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'package_name': new_name
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def upload_document(self, package_id: int, path_to_files_folder: str, file_name, **kwargs):
         """ Uploading a document to a specific package.
 
         :param package_id: int; Package ID of the package where the document needs to be added.
@@ -633,9 +624,10 @@ class Connection:
             'Content-Type': 'application/octet-stream',
             'Accept': 'application/json',
             'x-file-name': file_name,
-            'x-convert-document': 'true',
             'x-source': 'API',
         }
+        if 'x-convert-document' in kwargs:
+            headers['x-convert-document'] = kwargs['x-convert-document']
         data = open(path_to_files_folder + file_name, "rb").read()
         return requests.post(url=url, headers=headers, data=data)
 
@@ -649,7 +641,7 @@ class Connection:
             apply_to_all: (bool)(optional); True, if template is to be applied on all the documents in the package. False if not.
         :return: response object
         """
-        url = self.url + "/v3/packages/" + str(package_id) + "/documents/" + str(document_id) + "/template"
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/template"
         headers = {
             "Authorization": "Bearer " + self.access_token,
             'Content-Type': 'application/json',
@@ -677,22 +669,51 @@ class Connection:
         }
         return requests.post(url=url, headers=headers)
 
-    def get_document_details(self, package_id: int, document_id: int):
+    def change_document_package_owner(self, package_id: int, new_owner: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/owner"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'owner': new_owner
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def get_document_details(self, package_id: int, document_id: int) -> requests.Response:
         """ Get the details of a specific document
 
         :param package_id: int; ID of the package
         :param document_id: int; ID of the document
         :return: response object
         """
-        url = self.url + "/v3/packages/" + str(package_id) + "/documents/" + str(document_id) + "/details"
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/details"
         headers = {
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token,
         }
         return requests.get(url=url, headers=headers)
 
-    def download_document(self, package_id: int, document_id: str, **kwargs):
-        url = "{}/v{}/packages/{}/documents/{}".format(self.url, self.api_version, package_id, document_id)
+    def get_document_image(self, package_id: int, document_id: int,
+                           page_number: int, resolution: str, base_64=False, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/images/{page_number}/{resolution}"
+        if base_64:
+            url += "/base64"
+        headers = {
+            'Accept': 'image/png',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        if 'x-password' in kwargs:
+            headers['x-password'] = kwargs['x-password']
+        if 'x-otp' in kwargs:
+            headers['x-otp'] = kwargs['x-otp']
+        return requests.get(url=url, headers=headers)
+
+    def download_document(self, package_id: int, document_id: str, base_64=False, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
+        if base_64:
+            url += "/base64"
         headers = {
             'Accept': 'application/octet-stream',
             'Authorization': 'Bearer ' + self.access_token
@@ -702,6 +723,88 @@ class Connection:
         if "x_otp" in kwargs:
             headers['x-otp'] = kwargs['x_otp']
         return requests.get(url=url, headers=headers)
+
+    def rename_document(self, package_id: int, document_id: int, new_document_name: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'document_name': new_document_name
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def delete_document(self, package_id: int, document_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.delete(url=url, headers=headers)
+
+    def get_certify_policy_for_document(self, package_id: int, document_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/certify"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def update_certify_policy_for_document(self, package_id: int, document_id: int,
+                                           enabled: bool, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/certify"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'certify': {
+                'enabled': enabled,
+            }
+        }
+        if 'permission' in kwargs:
+            data['certify']['permission'] = kwargs['permission']
+        if 'lock_form_fields' in kwargs:
+            data['lock_form_fields'] = kwargs['lock_form_fields']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def get_package_verification(self, package_id: int, base_64=True) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/verification"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token,
+            'x-base64': base_64
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_document_verification(self, package_id: int, document_id: int, base_64=True) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/verification"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token,
+            'x-base64': base_64
+        }
+        return requests.get(url=url, headers=headers)
+
+    def change_document_order(self, package_id: int, document_id: int, new_document_order: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/reorder"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token,
+        }
+        data = json.dumps({
+            'order': new_document_order
+        })
+        return requests.put(url=url, headers=headers, data=data)
 
     def get_packages(self, document_status: str, page_no: int, records_per_page: int, **kwargs):
         """ Get all packages of a specific user with a document status filter.
@@ -726,13 +829,49 @@ class Connection:
         :param package_id: int; Package ID of the package you want to delete
         :return: response object
         """
-        url = self.url + "/v3/packages/" + str(package_id)
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}"
         headers = {
             "Authorization": "Bearer " + self.access_token,
             "Accept": "application/json",
             "Content": "application/json"
         }
         return requests.delete(url=url, headers=headers)
+
+    def download_package(self, package_id:int, base_64=False, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}"
+        if base_64:
+            url += "/base64"
+        headers = {
+            'Accept': 'application/octet-stream',
+            'Authorization': 'Bearer ' + self.access_token,
+        }
+        if 'x-password' in kwargs:
+            headers['x-password'] = kwargs['x-password']
+        if 'x-otp' in kwargs:
+            headers['x-otp'] = kwargs['x-otp']
+        return requests.get(url=url, headers=headers)
+
+    def open_document_package(self, package_id: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.url}/packages/{package_id}/open"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token,
+        }
+        if 'x-password' in kwargs:
+            headers['x-password'] = kwargs['x-password']
+        if 'x-otp' in kwargs:
+            headers['x-otp'] = kwargs['x-otp']
+        return requests.get(url=url, headers=headers)
+
+    def close_document_package(self, package_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.url}/packages/{package_id}/close"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token,
+        }
+        return requests.get(url=url, headers=headers)
 
     # Document workflow
 
