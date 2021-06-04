@@ -18,6 +18,7 @@ setup(
     keywords=['SigningHub', 'API'],
     packages=find_packages(exclude=['docs', 'tests*']),
     install_requires=['requests'],
+    license_files=('LICENSE',),
     classifiers=[
         "Development Status :: 1 - Planning",
         "Intended Audience :: Developers",
