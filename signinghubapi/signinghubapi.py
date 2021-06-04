@@ -1527,8 +1527,32 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
+    def add_checkbox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/checkbox"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'order': order,
+            'page_no': page_number,
+            'dimensions': dict()
+        }
+        if 'field_name' in kwargs:
+            data['field_name'] = kwargs['field_name']
+        if 'value' in kwargs:
+            data['value'] = kwargs['value']
+        if 'validation_rule' in kwargs:
+            data['validation_rule'] = kwargs['validation_rule']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
 
-    def autoplace_fields(self, package_id: int, document_id: int, search_text: str, order: int, field_type: str, **kwargs):
+    def autoplace_fields(self, package_id: int, document_id: int, search_text: str, order: int, field_type: str, **kwargs) -> requests.Response:
         """ Autoplacing fields to a string in the document.
 
         :param package_id: int; ID of the package.
@@ -1542,23 +1566,71 @@ class Connection:
             placement: (str)(optional): 	If the text is found, fields are to be placed in the document. Placement of the field can be mentioned in this attribute. Possible values of placement of a field are "LEFT", "RIGHT", "TOP", "BOTTOM". If no value is provided the default value will be "LEFT".
         :return: response object
         """
-        url = self.url + "/v3/packages/" + str(package_id) + "/documents/" + str(document_id) + "/fields/autoplace"
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/autoplace"
         headers = {
-            "Authorization": "Bearer " + self.access_token,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
         }
         data = {
-            "search_text": search_text,
-            "order": order,
-            "field_type": field_type
+            'search_text': search_text,
+            'order': order,
+            'field_type': field_type,
+            'dimensions': dict(),
+            'font': dict()
         }
+        if "placement" in kwargs:
+            data["placement"] = kwargs["placement"]
+        if 'level_of_assurance' in kwargs:
+            if field_type != 'SIGNATURE':
+                raise ValueError(f'Level of assurance cannot be given to field type {field_type}')
+            if self.api_version < 4:
+                raise ValueError(f"Level of assurance is not supported on API version < 4")
+            data['level_of_assurance'] = kwargs['level_of_assurance']
+        if 'multiline' in kwargs:
+            if field_type != 'TEXT':
+                raise ValueError(f"Multiline option cannot be given for field type {field_type}")
+            data['multiline'] = kwargs['multiline']
+        if 'value' in kwargs:
+            if field_type not in ['TEXT', 'RadioBox', 'CheckBox']:
+                raise ValueError(f'Value cannot be assigned to field type {field_type}')
+            data['value'] = kwargs['value']
+        if 'max_length' in kwargs:
+            if field_type in ['SIGNATURE', 'DIGITAL_SIGNATURE', 'ELECTRONIC_SIGNATURE', 'RadioBox', 'CheckBox']:
+                raise ValueError(f"max_length cannot be set for field type {field_type}")
+            data['field_type'] = kwargs['field_type']
+        if 'validation_rule' in kwargs:
+            if field_type not in ['CheckBox', 'RadioBox']:
+                raise ValueError(f"validation_rule cannot be set for field type {field_type}")
+            data['validation_rule'] = kwargs['validation_rule']
+        if 'radio_group_name' in kwargs:
+            if field_type != "RadioBox":
+                raise ValueError(f"radio_group_name cannot be set for field type {field_type}")
+            data['radio_group_name'] = kwargs['radio_group_name']
+        if 'placeholder' in kwargs:
+            if field_type != "IN_PERSON_SIGNATURE":
+                raise ValueError(f"Parameter placeholder cannot be set for field type {field_type}")
+            data['field_type'] = kwargs['field_type']
+        if 'format' in kwargs:
+            if field_type != 'DATE':
+                raise ValueError(f"Parameter format cannot be set for field type {field_type}")
+            data['placeholder'] = kwargs['placeholder']
+        if 'font_name' in kwargs:
+            if field_type != 'TEXT':
+                raise ValueError(f"Parameter font_name cannot be set for field type {field_type}")
+            data['font']['name'] = kwargs['font_name']
+        if 'font_size' in kwargs:
+            if field_type != 'TEXT':
+                raise ValueError(f"Parameter font_size cannot be set for field type {field_type}")
+            data['font']['size'] = kwargs['font_size']
+        if 'font_embedded_size' in kwargs:
+            if field_type != 'TEXT':
+                raise ValueError(f"Parameter font_embedded_size cannot be set for field type {field_type}")
+            data['font']['embedded_size'] = kwargs['font_embedded_size']
         if "width" in kwargs:
             data["dimensions"]["width"] = kwargs["width"]
         if "height" in kwargs:
             data["dimensions"]["height"] = kwargs["height"]
-        if "placement" in kwargs:
-            data["placement"] = kwargs["placement"]
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
