@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: signinghubapi
-Version: 0.0.1
+Version: 0.1.0
 Summary: Package with default calls for the SigningHub API
 Home-page: https://github.com/erwinmintiens/signinghub-api
 Author: Erwin Mintiens

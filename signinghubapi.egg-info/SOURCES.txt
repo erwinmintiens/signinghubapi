@@ -1,6 +1,7 @@
 README.md
 setup.py
 signinghubapi/__init__.py
+signinghubapi/classes.py
 signinghubapi/signinghubapi.py
 signinghubapi.egg-info/PKG-INFO
 signinghubapi.egg-info/SOURCES.txt

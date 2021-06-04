@@ -875,22 +875,22 @@ class Connection:
 
     # Document workflow
 
-    def get_workflow_details(self, package_id: int):
+    def get_workflow_details(self, package_id: int) -> requests.Response:
         """ Get the details of a specific workflow.
 
         :param package_id: int; Package ID of the package you want to get details on.
         :return: response object
         """
-        url = "{}/v{}/packages/{}/workflow".format(self.url, self.api_version, package_id)
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/{workflow}"
         headers = {
-            "Authorization": "Bearer " + self.access_token,
-            "Accept": "application/json",
-            "Content": "application/json"
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token,
         }
         return requests.get(url=url, headers=headers)
 
-    def update_workflow_details(self, package_id: int, **kwargs):
-        url = "{}/v{}/packages/{}/workflow".format(self.url, self.api_version, package_id)
+    def update_workflow_details(self, package_id: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -905,10 +905,16 @@ class Connection:
             data["continue_on_decline"] = kwargs["continue_on_decline"]
         if "message" in kwargs:
             data["message"] = kwargs["message"]
-        if data == {}:
-            return
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
+
+    def get_workflow_history(self, package_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/log"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
 
     def get_process_evidence_report(self, package_id: int):
         url = "{}/v{}/packages/{}/report".format(self.url, self.api_version, package_id)
