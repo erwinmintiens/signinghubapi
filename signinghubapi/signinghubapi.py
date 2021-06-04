@@ -401,92 +401,6 @@ class Connection:
         }
         return requests.get(url=url, headers=headers)
 
-    def get_workflow_users(self, package_id: int) -> requests.Response:
-        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/users"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
-        return requests.get(url=url, headers=headers)
-
-    def update_workflow_user(self, package_id: int, order: int, **kwargs) -> requests.Response:
-        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/user"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
-        data = dict()
-        if 'user_email' in kwargs:
-            data['user_email'] = kwargs['user_email']
-        if 'user_name' in kwargs:
-            data['user_name'] = kwargs['user_name']
-        if 'role' in kwargs:
-            data['role'] = kwargs['role']
-        if 'email_notification' in kwargs:
-            data['email_notification'] = kwargs['email_notification']
-        if 'signing_order' in kwargs:
-            data['signing_order'] = kwargs['signing_order']
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
-
-    def update_workflow_group(self, package_id: int, order: int, **kwargs) -> requests.Response:
-        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/group"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
-        data = dict()
-        if 'group_name' in kwargs:
-            data['group_name'] = kwargs['group_name']
-        if 'role' in kwargs:
-            data['role'] = kwargs['role']
-        if 'email_notification' in kwargs:
-            data['email_notification'] = kwargs['email_notification']
-        if 'signing_order' in kwargs:
-            data['signing_order'] = kwargs['signing_order']
-        return requests.put(url=url, headers=headers, data=data)
-
-    def update_placeholder(self, package_id: int, order: int, **kwargs) -> requests.Response:
-        """ Updating a placeholder on a workflow. Changeable properties include: placeholder name, role, email notifications, signing order.
-
-        :param package_id: package ID of the package in which you want to update the placeholder
-        :param order: the order of the placeholder
-        :param kwargs:
-            placeholder (optional)(str): changing the name of the placeholder;
-            role (optional)(str): changing the role of the placeholder. Options: "SIGNER", "REVIEWER", "EDITOR","CARBON_COPY" and "INPERSON_HOST";
-            email_notifications (optional)(boolean): Setting its value to "true" sends an email notification to the user when its turn arrives in workflow. Setting its value to "false" does not send the email notification to the user on its turn. If no value is provided, old value will be retained;
-            signing_order (optional)(int):  Order in which the workflow will be signed by the recipients. This signing order is important when workflow type is set to "CUSTOM".
-        :return: returns a response object with empty body on success.
-        """
-        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/placeholder"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
-        data = dict()
-        if "placeholder" in kwargs:
-            data["placeholder"] = kwargs["placeholder"]
-        if "role" in kwargs:
-            data["role"] = kwargs["role"]
-        if "email_notifications" in kwargs:
-            data["email_notifications"] = kwargs["email_notifications"]
-        if "signing_order" in kwargs:
-            data["signing_order"] = kwargs["signing_order"]
-        data = json.dumps(data)
-        return requests.put(url=url, data=data, headers=headers)
-
-    def complete_workflow_in_the_middle(self, package_id: int) -> requests.Response:
-        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/complete"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
-        return requests.post(url=url, headers=headers)
-
     def add_certificate(self, user_email: str, capacity_name: str, certificate_alies: str, level_of_assurance: str,
                         key_protection_option: str, is_default: bool) -> requests.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/signingcertificates"
@@ -916,9 +830,36 @@ class Connection:
         }
         return requests.get(url=url, headers=headers)
 
-    def get_process_evidence_report(self, package_id: int):
-        url = "{}/v{}/packages/{}/report".format(self.url, self.api_version, package_id)
+    def get_workflow_history_details(self, package_id: int, log_id: int, base_64=True) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/log/{log_id}/details"
         headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token,
+            'x-base64': True
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_certificate_saved_in_workflow_history(self, package_id: int, log_id: int, encryption_key: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/log/{log_id}/details/{encryption_key}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_process_evidence_report(self, package_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/report"
+        headers = {
+            'Accept': 'application/octet-stream',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def update_post_processing(self, package_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/post_process"
+        headers = {
+            'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
@@ -938,11 +879,10 @@ class Connection:
         """
         url = "{}/v{}/packages/{}/workflow/users".format(self.url, self.api_version, package_id)
         headers = {
-            "Authorization": "Bearer " + self.access_token,
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
         }
-
         data = {
             'user_email': user_email,
             'user_name': user_name,
@@ -957,7 +897,7 @@ class Connection:
         payload = json.dumps(payload)
         return requests.post(url=url, data=payload, headers=headers)
 
-    def update_workflow_user(self, package_id: int, order: int, user_email: str, **kwargs):
+    def update_workflow_user(self, package_id: int, order: int, **kwargs) -> requests.Response:
         """ Updating a workflow user.
 
         :param package_id: int; ID of the package in which the user should be updated
@@ -972,43 +912,43 @@ class Connection:
         """
         url = self.url + "/v3/packages/" + str(package_id) + "/workflow/" + str(order) + "/user"
         headers = {
-            "Authorization": "Bearer " + self.access_token,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
         }
-        data = {
-            "user_email": user_email
-        }
-        if "user_name" in kwargs:
-            data["user_name"] = kwargs["user_name"]
-        if "role" in kwargs:
-            data["role"] = kwargs["role"]
-        if "email_notifications" in kwargs:
-            data["email_notifications"] = kwargs["email_notifications"]
-        if "signing_order" in kwargs:
-            data["signing_order"] = kwargs["signing_order"]
+        data = dict()
+        if 'user_email' in kwargs:
+            data['user_email'] = kwargs['user_email']
+        if 'user_name' in kwargs:
+            data['user_name'] = kwargs['user_name']
+        if 'role' in kwargs:
+            data['role'] = kwargs['role']
+        if 'email_notification' in kwargs:
+            data['email_notification'] = kwargs['email_notification']
+        if 'signing_order' in kwargs:
+            data['signing_order'] = kwargs['signing_order']
         data = json.dumps(data)
-        return requests.put(url=url, data=data, headers=headers)
+        return requests.put(url=url, headers=headers, data=data)
 
-    def add_groups_to_workflow(self, package_id: int, groupname: str, **kwargs):
+    def add_groups_to_workflow(self, package_id: int, group_name: str, **kwargs) -> requests.Response:
         """ Adding pre-definded groups to a package workflow.
 
         :param package_id: int; ID of the package the group should be added to
-        :param groupname: str; Name of the group that should be added to the workflow
+        :param group_name: str; Name of the group that should be added to the workflow
         :param kwargs:
             role: (str)(optional) role of the group as a recipient in the workflow. Possible value are "SIGNER", "REVIEWER", "EDITOR","CARBON_COPY" and "INPERSON_HOST". However, while XML type document preparation, only supported role types are "SIGNER", "REVIEWER" and "CARBON_COPY"
             email_notifications: (bool)(optional); Setting its value to "true" sends an email notification to the user when its turn arrives in workflow. Setting its value to "false" does not send the email notification to the user on its turn. If no value is provided, default value of "true" will be set.
             siging_order (int)(optional); Order in which the workflow will be signed by the recipients. This signing order is important when workflow type is set to "CUSTOM".
         :return: response object
         """
-        url = self.url + "/v3/packages/" + str(package_id) + "/workflow/groups"
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/groups"
         headers = {
-            "Authorization": "Bearer " + self.access_token,
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
         }
         data = {
-            'group_name': groupname
+            'group_name': group_name
         }
         if "role" in kwargs:
             data["role"] = kwargs["role"]
@@ -1021,56 +961,377 @@ class Connection:
         payload = json.dumps(payload)
         return requests.post(url=url, headers=headers, data=payload)
 
-    def get_workflow_users(self, package_id: int):
-        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/users"
+    def update_workflow_group(self, package_id: int, order: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/group"
         headers = {
-            "Authorization": "Bearer " + self.access_token,
-            "Accept": "application/json"
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
         }
-        return requests.get(url=url, headers=headers)
-
-    def update_workflow_users_order(self, package_id: int, old_order: int, new_order: int):
-        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{old_order}/reorder"
-        headers = {
-            "Authorization": "Bearer " + self.access_token,
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-        }
-        data = {
-            "order": new_order
-        }
-        data = json.dumps(data)
+        data = dict()
+        if 'group_name' in kwargs:
+            data['group_name'] = kwargs['group_name']
+        if 'role' in kwargs:
+            data['role'] = kwargs['role']
+        if 'email_notification' in kwargs:
+            data['email_notification'] = kwargs['email_notification']
+        if 'signing_order' in kwargs:
+            data['signing_order'] = kwargs['signing_order']
         return requests.put(url=url, headers=headers, data=data)
 
-    def complete_workflow_in_the_middle(self, package_id: int):
-        """
-
-        :param package_id: int; Package ID of the workflow that needs to be completed.
-        :return: response object
-        """
-        url = self.url + "/v3/packages/" + str(package_id) + "/complete"
+    def add_placeholder_to_workflow(self, package_id: int, placeholder_name: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/placeholder"
         headers = {
-            "Authorization": "Bearer " + self.access_token,
-            "Accept": "application/json",
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
         }
-        return requests.post(url=url, data=None, headers=headers)
+        data = [
+            {
+                'placeholder': placeholder_name
+            }
+        ]
+        if 'role' in kwargs:
+            data[0]['role'] = kwargs['role']
+        if 'email_notification' in kwargs:
+            data[0]['email_notification'] = kwargs['email_notification']
+        if 'signing_order' in kwargs:
+            data[0]['signing_order'] = kwargs['signing_order']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
 
-    ### Document Preparation
+    def update_placeholder(self, package_id: int, order: int, **kwargs) -> requests.Response:
+        """ Updating a placeholder on a workflow. Changeable properties include: placeholder name, role, email notifications, signing order.
 
-    def get_document_fields(self, package_id: int, document_id: int, page_no: int):
-        url = "{}/v{}/packages/{}/documents/{}/fields/{}".format(self.url, self.api_version,
-                                                                               package_id, document_id, page_no)
+        :param package_id: package ID of the package in which you want to update the placeholder
+        :param order: the order of the placeholder
+        :param kwargs:
+            placeholder (optional)(str): changing the name of the placeholder;
+            role (optional)(str): changing the role of the placeholder. Options: "SIGNER", "REVIEWER", "EDITOR","CARBON_COPY" and "INPERSON_HOST";
+            email_notifications (optional)(boolean): Setting its value to "true" sends an email notification to the user when its turn arrives in workflow. Setting its value to "false" does not send the email notification to the user on its turn. If no value is provided, old value will be retained;
+            signing_order (optional)(int):  Order in which the workflow will be signed by the recipients. This signing order is important when workflow type is set to "CUSTOM".
+        :return: returns a response object with empty body on success.
+        """
+        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/placeholder"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = dict()
+        if "placeholder" in kwargs:
+            data["placeholder"] = kwargs["placeholder"]
+        if "role" in kwargs:
+            data["role"] = kwargs["role"]
+        if "email_notifications" in kwargs:
+            data["email_notifications"] = kwargs["email_notifications"]
+        if "signing_order" in kwargs:
+            data["signing_order"] = kwargs["signing_order"]
+        data = json.dumps(data)
+        return requests.put(url=url, data=data, headers=headers)
+
+    def get_workflow_users(self, package_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/users"
         headers = {
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
         return requests.get(url=url, headers=headers)
 
-    # This call is api_version 3 only.
-    def add_electronic_signature_field(self, package_id, document_id, order, page_no, **kwargs):
-        url = "{}/v{}/packages/{}/documents/{}/fields/electronic_signature".format(self.url, self.api_version,
-                                                                               package_id, document_id)
+    def update_workflow_users_order(self, package_id: int, old_order: int, new_order: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{old_order}/reorder"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            "order": new_order
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def get_workflow_user_permissions(self, package_id: int, order: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/permissions"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def update_workflow_user_permissions(self, package_id: int, order: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/permissions"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'permissions': {
+                'legal_notice': dict()
+            }
+        }
+        if 'apply_to_all' in kwargs:
+            if type(kwargs['apply_to_all']) is not bool:
+                raise raise_valueerror('apply_to_all', type(kwargs['apply_to_all']), type(bool))
+            data['apply_to_all'] = kwargs['apply_to_all']
+        if 'print' in kwargs:
+            if type(kwargs['print']) is not bool:
+                raise raise_valueerror('print', type(kwargs['print']), type(bool))
+            data['permissions']['print'] = kwargs['print']
+        if 'download' in kwargs:
+            if type(kwargs['download']) is not bool:
+                raise raise_valueerror('download', type(kwargs['download']), type(bool))
+            data['permissions']['download'] = kwargs['download']
+        if 'add_text' in kwargs:
+            if type(kwargs['add_text']) is not bool:
+                raise raise_valueerror('add_text', type(kwargs['add_text']), type(bool))
+            data['permissions']['add_text'] = kwargs['add_text']
+        if 'add_attachment' in kwargs:
+            if type(kwargs['add_attachment']) is not bool:
+                raise raise_valueerror('add_attachment', type(kwargs['add_attachment']), type(bool))
+            data['permissions']['add_attachment'] = kwargs['add_attachment']
+        if 'change_recipients' in kwargs:
+            if type(kwargs['change_recipients']) is not bool:
+                raise raise_valueerror('change_recipients', type(kwargs['change_recipients']), type(bool))
+            data['permissions']['change_recipients'] = kwargs['change_recipients']
+        if 'legal_notice_enabled' in kwargs:
+            if type(kwargs['legal_notice_enabled']) is not bool:
+                raise raise_valueerror('legal_notice_enabled', type(kwargs['legal_notice_enabled']), type(bool))
+            data['permissions']['legal_notice']['enabled'] = kwargs['legal_notice_enabled']
+        if 'legal_notice_name' in kwargs:
+            if type(kwargs['legal_notice_name']) is not str:
+                raise raise_valueerror('legal_notice_name', type(kwargs['legal_notice_name']), type(str))
+            data['permissions']['legal_notice']['legal_notice_name'] = kwargs['legal_notice_name']
+
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def get_workflow_user_authentication_document_opening(self, package_id: int, order: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def update_workflow_user_authentication_document_opening(self, package_id: int, order: int, **kwargs):
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'authentication': {
+                'password': dict(),
+                'sms_otp': dict()
+            },
+            'access_duration': {
+                'duration_by_date': {
+                    'duration': dict()
+                },
+                'duration_by_days': {
+                    'duration': dict()
+                }
+            }
+        }
+        if 'apply_to_all' in kwargs:
+            if type(kwargs['apply_to_all']) is not bool:
+                raise raise_valueerror('apply_to_all', type(kwargs['apply_to_all']), type(bool))
+            data['apply_to_all'] = kwargs['apply_to_all']
+        if 'authentication_enabled' in kwargs:
+            if type(kwargs['authentication_enabled']) is not bool:
+                raise raise_valueerror('authentication_enabled', type(kwargs['authentication_enabled']), type(bool))
+            data['authentication']['enabled'] = kwargs['authentication_enabled']
+        if 'authentication_password_enabled' in kwargs:
+            if type(kwargs['authentication_password_enabled']) is not bool:
+                raise raise_valueerror('authentication_password_enabled', type(kwargs['authentication_password_enabled']), type(bool))
+            data['authentication']['password']['enabled'] = kwargs['authentication_password_enabled']
+        if 'user_password' in kwargs:
+            if type(kwargs['user_password']) is not str:
+                raise raise_valueerror('user_password', type(kwargs['user_password']), type(str))
+            data['authentication']['password']['user_password'] = kwargs['user_password']
+        if 'sms_otp_enabled' in kwargs:
+            if type(kwargs['sms_otp_enabled']) is not bool:
+                raise raise_valueerror('sms_otp_enabled', type(kwargs['sms_otp_enabled']), type(bool))
+            data['authentication']['sms_otp']['enabled'] = kwargs['sms_otp_enabled']
+        if 'mobile_number' in kwargs:
+            if type(kwargs['mobile_number']) is not str:
+                raise raise_valueerror('mobile_number', type(kwargs['mobile_number']), type(str))
+            data['authentication']['sms_otp']['mobile_number'] = kwargs['mobile_number']
+        if 'access_duration_enabled' in kwargs:
+            if type(kwargs['access_duration_enabled']) is not bool:
+                raise raise_valueerror('access_duration_enabled', type(kwargs['access_duration_enabled']), type(bool))
+            data['access_duration_enabled']['enabled'] = kwargs['access_duration_enabled']
+        if 'access_duration_duration_by_date' in kwargs:
+            if type(kwargs['access_duration_duration_by_date']) is not bool:
+                raise raise_valueerror('access_duration_duration_by_date', type(kwargs['access_duration_duration_by_date']), type(bool))
+            data['access_duration_enabled']['duration_by_date']['enabled'] = kwargs['access_duration_duration_by_date']
+        if 'access_duration_by_date_start_date_time' in kwargs:
+            if type(kwargs['access_duration_by_date_start_date_time']) is not str:
+                raise raise_valueerror('access_duration_by_date_start_date_time', type(kwargs['access_duration_by_date_start_date_time']), type(str))
+            data['access_duration_enabled']['duration_by_date']['duration']['start_date_time'] = kwargs['access_duration_by_date_start_date_time']
+        if 'access_duration_by_date_end_date_time' in kwargs:
+            if type(kwargs['access_duration_by_date_end_date_time']) is not str:
+                raise raise_valueerror('access_duration_by_date_end_date_time', type(kwargs['access_duration_by_date_end_date_time']), type(str))
+            data['access_duration_enabled']['duration_by_date']['duration']['end_date_time'] = kwargs['access_duration_by_date_end_date_time']
+        if 'access_duration_duration_by_days_enabled' in kwargs:
+            if type(kwargs['access_duration_duration_by_days_enabled']) is not bool:
+                raise raise_valueerror('access_duration_duration_by_days_enabled', type(kwargs['access_duration_duration_by_days_enabled']), type(bool))
+            data['access_duration_enabled']['duration_by_days']['enabled'] = kwargs['access_duration_duration_by_days_enabled']
+        if 'access_duration_duration_by_days_total_days' in kwargs:
+            if type(kwargs['access_duration_duration_by_days_total_days']) is not str:
+                raise raise_valueerror('access_duration_duration_by_days_total_days', type(kwargs['access_duration_duration_by_days_total_days']), type(str))
+            data['access_duration_enabled']['duration_by_days']['duration']['total_days'] = kwargs['access_duration_duration_by_days_total_days']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def delete_workflow_user(self, package_id: int, order: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.delete(url=url, headers=headers)
+
+    def open_document_via_otp(self, package_id: int, order: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication/otp"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.post(url=url, headers=headers)
+
+    def open_document_via_password(self, package_id: int, order: int, password: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication/password"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'password': password
+        })
+        return requests.post(url=url, headers=headers, data=data)
+
+    def get_workflow_reminders(self, package_id: int, order: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/reminders"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def update_workflow_reminders(self, package_id: int, order: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/reminders"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'repeat': dict()
+        }
+        if 'apply_to_all' in kwargs:
+            if type(kwargs['apply_to_all']) is not bool:
+                raise raise_valueerror('apply_to_all', type(kwargs['apply_to_all']), type(bool))
+            data['apply_to_all'] = kwargs['apply_to_all']
+        if 'enabled' in kwargs:
+            if type(kwargs['enabled']) is not bool:
+                raise raise_valueerror('enabled', type(kwargs['enabled']), type(bool))
+            data['enabled'] = kwargs['enabled']
+        if 'remind_after' in kwargs:
+            if type(kwargs['remind_after']) is not int:
+                raise raise_valueerror('remind_after', type(kwargs['remind_after']), type(int))
+            data['remind_after'] = kwargs['remind_after']
+        if 'repeat_enabled' in kwargs:
+            if type(kwargs['repeat_enabled']) is not bool:
+                raise raise_valueerror('repeat_enabled', type(kwargs['repeat_enabled']), type(bool))
+            data['repeat']['enabled'] = kwargs['repeat_enabled']
+        if 'keep_reminding_after' in kwargs:
+            if type(kwargs['keep_reminding_after']) is not int:
+                raise raise_valueerror('keep_reminding_after', type(kwargs['keep_reminding_after']), type(int))
+            data['repeat']['keep_reminding_after'] = kwargs['keep_reminding_after']
+        if 'total_reminders' in kwargs:
+            if type(kwargs['total_reminders']) is not int:
+                raise raise_valueerror('total_reminders', type(kwargs['total_reminders']), type(int))
+            data['repeat']['total_reminders'] = kwargs['total_reminders']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def complete_workflow_in_the_middle(self, package_id: int) -> requests.Response:
+        """ Set workflow status to COMPLETED when the workflow is not already COMPLETED.
+
+        :param package_id: int; Package ID of the workflow that needs to be completed.
+        :return: response object
+        """
+        url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/complete"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.post(url=url, headers=headers)
+
+    ### Document Preparation
+
+    def get_document_fields(self, package_id: int, document_id: int, page_number: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/{page_number}"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def assign_document_field(self, package_id: int, document_id: int, field_name: str, order: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/assign"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps([{
+            'field_name': field_name,
+            'order': order
+        }])
+        return requests.put(url=url, headers=headers, data=data)
+
+    # This call is meant for API version 3 only. However, this will work on API version 4 as well.
+    def add_digital_signature_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/digital_signature"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'order': order,
+            'page_no': page_number,
+            'dimensions': dict()
+        }
+        if 'field_name' in kwargs:
+            data['field_name'] = kwargs['field_name']
+        if 'display' in kwargs:
+            data['display'] = kwargs['display']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        if 'width' in kwargs:
+            data['dimensions']['width'] = kwargs['width']
+        if 'height' in kwargs:
+            data['dimensions']['height'] = kwargs['height']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    # This call is meant for API version 3 only. However, this will work on API version 4 as well.
+    def add_electronic_signature_field(self, package_id: int, document_id: int, order: int, page_no: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/electronic_signature"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -1079,12 +1340,10 @@ class Connection:
         data = {
             'order': order,
             'page_no': page_no,
-            'dimensions': {},
+            'dimensions': dict(),
             "authentication": {
-                "enabled": False,
-                "sms_otp": {
-                    "enabled": False
-                }
+                'enabled': False,
+                "sms_otp": dict()
             },
         }
         if 'field_name' in kwargs:
@@ -1108,8 +1367,10 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    # This call is api_version 4 only.
+    # This call is meant for API version 4 (or higher).
     def add_signature_field(self, package_id, document_id, order, page_no, **kwargs):
+        if self.api_version < 4:
+            raise ValueError("API version should be 4 or more recent")
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/signature"
         headers = {
             'Content-Type': 'application/json',
@@ -1136,6 +1397,136 @@ class Connection:
             data['level_of_assurance'] = kwargs['level_of_assurance']
         data = json.dumps(data)
         return requests.post(url=url, data=data, headers=headers)
+
+    def add_in_person_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/in_person_signature"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'order': order,
+            'page_no': page_number,
+            'dimensions': dict()
+        }
+        if 'field_name' in kwargs:
+            data['field_name'] = kwargs['field_name']
+        if 'placeholder' in kwargs:
+            data['placeholder'] = kwargs['placeholder']
+        if 'display' in kwargs:
+            data['display'] = kwargs['display']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        if 'width' in kwargs:
+            data['dimensions']['width'] = kwargs['width']
+        if 'height' in kwargs:
+            data['dimensions']['height'] = kwargs['height']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    def add_initials_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/initials"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'order': order,
+            'page_no': page_number,
+            'dimensions': dict()
+        }
+        if 'field_name' in kwargs:
+            data['field_name'] = kwargs['field_name']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        if 'width' in kwargs:
+            data['dimensions']['width'] = kwargs['width']
+        if 'height' in kwargs:
+            data['dimensions']['height'] = kwargs['height']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    def add_textbox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/text"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'order': order,
+            'page_no': page_number,
+            'font': dict(),
+            'dimensions': dict()
+        }
+        if 'field_name' in kwargs:
+            data['field_name'] = kwargs['field_name']
+        if 'type' in kwargs:
+            data['type'] = kwargs['type']
+        if 'format' in kwargs:
+            data['format'] = kwargs['format']
+        if 'placeholder' in kwargs:
+            data['placeholder'] = kwargs['placeholder']
+        if 'value' in kwargs:
+            data['value'] = kwargs['value']
+        if 'max_length' in kwargs:
+            data['max_length'] = kwargs['max_length']
+        if 'multiline' in kwargs:
+            data['multiline'] = kwargs['multiline']
+        if 'field_type' in kwargs:
+            data['field_type'] = kwargs['field_type']
+        if 'validation_rule' in kwargs:
+            data['validation_rule'] = kwargs['validation_rule']
+        if 'font_name' in kwargs:
+            data['font']['name'] = kwargs['font_name']
+        if 'font_size' in kwargs:
+            data['font']['size'] = kwargs['font_size']
+        if 'font_embedded_size' in kwargs:
+            data['font']['embedded_size'] = kwargs['font_embedded_size']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        if 'width' in kwargs:
+            data['dimensions']['width'] = kwargs['width']
+        if 'height' in kwargs:
+            data['dimensions']['height'] = kwargs['height']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    def add_radiobox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/radio"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'order': order,
+            'page_no': page_number,
+            'dimensions': dict()
+        }
+        if 'field_name' in kwargs:
+            data['field_name'] = kwargs['field_name']
+        if 'value' in kwargs:
+            data['value'] = kwargs['value']
+        if 'validation_rule' in kwargs:
+            data['validation_rule'] = kwargs['validation_rule']
+        if 'radio_group_name' in kwargs:
+            data['radio_group_name'] = kwargs['radio_group_name']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
 
     def autoplace_fields(self, package_id: int, document_id: int, search_text: str, order: int, field_type: str, **kwargs):
         """ Autoplacing fields to a string in the document.
@@ -1249,3 +1640,7 @@ class Connection:
             'Authorization': 'Bearer ' + self.access_token
         }
         return requests.get(url=url, headers=headers)
+
+
+def raise_valueerror(keyword: str, received_type: type, expected_type: type):
+    return ValueError(f"Keyword '{keyword}' should be {expected_type} but instead type {received_type} was received")
