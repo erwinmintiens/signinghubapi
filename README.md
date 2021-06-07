@@ -39,13 +39,13 @@ The validity of the provided URL can be tested with a ```about_signinghub()``` c
 ```python
 >>> from signinghubapi.signinghubapi import Connection
 
->>> conn = Connection(url='https://sh-acc-api.keysign.eu/', client_id='testclientid', client_secret='testclientsecret', username='test@email.com', password='1234')
+>>> conn = Connection(url='https://api.signinghub.com/', client_id='testclientid', client_secret='testclientsecret', username='test@email.com', password='1234')
 
 >>> about = conn.about_signinghub()
 >>> about.status_code
 200
 >>> about.text
-'{"installation_name":"SigningHub Acceptance","version":"7.7.9.13","build":...'
+'{"installation_name":"SigningHub","version":"7.7.8.26","build":"778...'
 >>> authentication = conn.authenticate()
 >>> authentication.status_code
 200
