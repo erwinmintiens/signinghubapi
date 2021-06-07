@@ -21,3 +21,6 @@ Optional parameters are:
 - An API port (if the API URL is not defined as a URL).
 
 This object can execute the calls which are found in the API guide. These calls are translated to Python and the ```requests.Response``` object will be returned each time.
+
+# Dependencies
+This Python package depends on the ```requests``` module.
