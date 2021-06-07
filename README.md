@@ -13,6 +13,7 @@ Both API v3 (SigningHub 7.7.9 and earlier) and API v4 (SigningHub 7.7.9 and abov
 This Python package depends on the ```requests``` module:
 
 [Requests on PyPI](https://pypi.org/project/requests/)
+
 [Requests on GitHub](https://github.com/psf/requests)
 
 # Usage
