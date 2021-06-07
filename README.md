@@ -34,7 +34,7 @@ Optional parameters are:
 This object can execute the calls which are found in the API guide. These calls are translated to Python and the ```requests.Response``` object will be returned each time.
 
 ## Example
-```
+```python
 from signinghubapi.signinghubapi import Connection
 
 conn = Connection(url='https://sh-acc.keysign.eu/', client_id='testclientid', client_secret='testclientsecret', username='test@email.com', password='1234')
