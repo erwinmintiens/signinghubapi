@@ -1,4 +1,8 @@
 # Description
+[SigningHub](https://www.signinghub.com/) is a platform which is mainly used to sign documents with a digital or electronic signature.
+On SigningHub, documents can be uploaded and managed through the web view, as well as through the API.
+This package focusses on the usage of said API through Python.
+
 Signinghubapi package is the python integration of the SigningHub API. Most of the SigningHub API calls have been translated to python.
 
 SigningHub API guide can be found [here](https://manuals.keysign.eu).
