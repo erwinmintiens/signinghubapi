@@ -10,6 +10,7 @@ Required parameters are:
 - An URL;
 - An API connector client ID;
 - An API connector client secret.
+
 Optional parameters are:
 - A username (email address) to authenticate with;
 - A password to authenticate with;
