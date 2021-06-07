@@ -38,9 +38,7 @@ The validity of the provided URL can be tested with a ```about_signinghub()``` c
 ## Example
 ```python
 >>> from signinghubapi.signinghubapi import Connection
-
 >>> conn = Connection(url='https://api.signinghub.com/', client_id='testclientid', client_secret='testclientsecret', username='test@email.com', password='1234')
-
 >>> about = conn.about_signinghub()
 >>> about.status_code
 200
