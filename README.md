@@ -33,12 +33,16 @@ Optional parameters are:
 
 This object can execute the calls which are found in the API guide. These calls are translated to Python and the ```requests.Response``` object will be returned each time.
 
+The validity of the provided URL can be tested with a ```about_signinghub()``` call. This call only requires the provided URL to work.
+
 ## Example
 ```python
-from signinghubapi.signinghubapi import Connection
+>>> from signinghubapi.signinghubapi import Connection
 
-conn = Connection(url='https://sh-acc.keysign.eu/', client_id='testclientid', client_secret='testclientsecret', username='test@email.com', password='1234')
+>>> conn = Connection(url='https://sh-acc.keysign.eu/', client_id='testclientid', client_secret='testclientsecret', username='test@email.com', password='1234')
 
-conn.about_signinghub()
-conn.authenticate()
+>>> conn.about_signinghub()
+'{"installation_name":"SigningHub Acceptance","version":"7.7.9.13","build":...'
+>>> conn.authenticate()
+'{"access_token":"LPAGaUoJ71Wi53vngCMty8i...'
 ```
