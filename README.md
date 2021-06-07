@@ -1,6 +1,6 @@
 # Description
 [SigningHub](https://www.signinghub.com/) is a platform which is mainly used to sign documents with a digital or electronic signature.
-On SigningHub, documents can be uploaded and managed through the web view, as well as through the API.
+On SigningHub, documents, users and settings can be uploaded and managed through the web view, as well as through the API.
 This package focusses on the usage of said API through Python.
 
 Signinghubapi package is the python integration of the SigningHub API. Most of the SigningHub API calls have been translated to python.
@@ -10,7 +10,10 @@ SigningHub API guide can be found [here](https://manuals.keysign.eu).
 Both API v3 (SigningHub 7.7.9 and earlier) and API v4 (SigningHub 7.7.9 and above) have been integrated.
 
 # Dependencies
-This Python package depends on the [requests](https://pypi.org/project/requests/) module.
+This Python package depends on the ```requests``` module:
+
+[Requests on PyPI](https://pypi.org/project/requests/)
+[Requests on GitHub](https://github.com/psf/requests)
 
 # Usage
 Install this package with the command ```pip install signinghubapi```.
