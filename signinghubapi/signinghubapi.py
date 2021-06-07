@@ -1634,7 +1634,240 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def delete_document_field(self, package_id: int, document_id: int, field_name: str):
+    def update_digital_signature_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/digital_signature"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'field_name': field_name,
+            'dimensions': dict()
+        }
+        if 'renamed_as' in kwargs:
+            data['renamed_as'] = kwargs['renamed_as']
+        if 'page_number' in kwargs:
+            data['page_no'] = kwargs['page_number']
+        if 'display' in kwargs:
+            data['display'] = kwargs['display']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        if 'width' in kwargs:
+            data['dimensions']['width'] = kwargs['width']
+        if 'height' in kwargs:
+            data['dimensions']['height'] = kwargs['height']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_electronic_signature_fields(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/electronic_signature"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'field_name': field_name,
+            'dimensions': dict(),
+            "authentication": {
+                "sms_otp": dict()
+            },
+        }
+        if 'renamed_as' in kwargs:
+            data['renamed_as'] = kwargs['renamed_as']
+        if 'display' in kwargs:
+            data['display'] = kwargs['display']
+        if 'page_number' in kwargs:
+            data['page_no'] = kwargs['page_number']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        if 'width' in kwargs:
+            data['dimensions']['width'] = kwargs['width']
+        if 'height' in kwargs:
+            data['dimensions']['height'] = kwargs['height']
+        if 'authentication_enabled' in kwargs:
+            data['authentication']['enabled'] = kwargs['authentication_enabled']
+        if 'authentication_sms_otp_enabled' in kwargs:
+            data['authentication']['sms_opt']['enabled'] = kwargs['authentication_sms_otp_enabled']
+        if 'mobile_number' in kwargs:
+            data['authentication']['sms_opt']['mobile_number'] = kwargs['mobile_number']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_in_person_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/in_person_signature"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'field_name': field_name,
+            'dimensions': dict(),
+            'authentication': {
+                'sms_otp': dict()
+            }
+        }
+        if 'renamed_as' in kwargs:
+            data['renamed_as'] = kwargs['renamed_as']
+        if 'page_number' in kwargs:
+            data['page_no'] = kwargs['page_number']
+        if 'placeholder' in kwargs:
+            data['placeholder'] = kwargs['placeholder']
+        if 'display' in kwargs:
+            data['display'] = kwargs['display']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        if 'width' in kwargs:
+            data['dimensions']['width'] = kwargs['width']
+        if 'height' in kwargs:
+            data['dimensions']['height'] = kwargs['height']
+        if 'authentication_enabled' in kwargs:
+            data['authentication']['enabled'] = kwargs['authentication_enabled']
+        if 'authentication_sms_otp_enabled' in kwargs:
+            data['authentication']['sms_opt']['enabled'] = kwargs['authentication_sms_otp_enabled']
+        if 'mobile_number' in kwargs:
+            data['authentication']['sms_opt']['mobile_number'] = kwargs['mobile_number']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_initials_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/initials"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'field_name': field_name,
+            'dimensions': dict()
+        }
+        if 'renamed_as' in kwargs:
+            data['renamed_as'] = kwargs['renamed_as']
+        if 'page_number' in kwargs:
+            data['page_no'] = kwargs['page_number']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        if 'width' in kwargs:
+            data['dimensions']['width'] = kwargs['width']
+        if 'height' in kwargs:
+            data['dimensions']['height'] = kwargs['height']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_textbox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/text"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'field_name': field_name,
+            'font': dict(),
+            'dimensions': dict()
+        }
+        if 'renamed_as' in kwargs:
+            data['renamed_as'] = kwargs['renamed_as']
+        if 'page_number' in kwargs:
+            data['page_no'] = kwargs['page_number']
+        if 'type' in kwargs:
+            data['type'] = kwargs['type']
+        if 'format' in kwargs:
+            data['format'] = kwargs['format']
+        if 'placeholder' in kwargs:
+            data['placeholder'] = kwargs['placeholder']
+        if 'value' in kwargs:
+            data['value'] = kwargs['value']
+        if 'max_length' in kwargs:
+            data['max_length'] = kwargs['max_length']
+        if 'multiline' in kwargs:
+            data['multiline'] = kwargs['multiline']
+        if 'field_type' in kwargs:
+            data['field_type'] = kwargs['field_type']
+        if 'validation_rule' in kwargs:
+            data['validation_rule'] = kwargs['validation_rule']
+        if 'font_name' in kwargs:
+            data['font']['name'] = kwargs['font_name']
+        if 'font_size' in kwargs:
+            data['font']['size'] = kwargs['font_size']
+        if 'font_embedded_size' in kwargs:
+            data['font']['embedded_size'] = kwargs['font_embedded_size']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        if 'width' in kwargs:
+            data['dimensions']['width'] = kwargs['width']
+        if 'height' in kwargs:
+            data['dimensions']['height'] = kwargs['height']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_radiobox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/radio"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'field_name': field_name,
+            'dimensions': dict()
+        }
+        if 'renamed_as' in kwargs:
+            data['renamed_as'] = kwargs['renamed_as']
+        if 'page_number' in kwargs:
+            data['page_no'] = kwargs['page_number']
+        if 'value' in kwargs:
+            data['value'] = kwargs['value']
+        if 'validation_rule' in kwargs:
+            data['validation_rule'] = kwargs['validation_rule']
+        if 'radio_group_name' in kwargs:
+            data['radio_group_name'] = kwargs['radio_group_name']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_checkbox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/checkbox"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'field_name': field_name,
+            'dimensions': dict()
+        }
+        if 'renamed_as' in kwargs:
+            data['renamed_as'] = kwargs['renamed_as']
+        if 'page_number' in kwargs:
+            data['page_no'] = kwargs['page_number']
+        if 'value' in kwargs:
+            data['value'] = kwargs['value']
+        if 'validation_rule' in kwargs:
+            data['validation_rule'] = kwargs['validation_rule']
+        if 'x' in kwargs:
+            data['dimensions']['x'] = kwargs['x']
+        if 'y' in kwargs:
+            data['dimensions']['y'] = kwargs['y']
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def delete_document_field(self, package_id: int, document_id: int, field_name: str) -> requests.Response:
         """ Deleting a field from a document.
 
         :param package_id: int; ID of the package.
@@ -1642,11 +1875,11 @@ class Connection:
         :param field_name: str; Name of the field which will be deleted.
         :return: response object
         """
-        url = self.url + "/v3/packages/" + str(package_id) + "/documents/" + str(document_id) + "/fields"
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
         headers = {
-            "Authorization": "Bearer " + self.access_token,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
         }
         data = {
             "field_name": field_name
