@@ -1,7 +1,12 @@
 # Description
 Signinghubapi package is the python integration of the SigningHub API. Most of the SigningHub API calls have been translated to python.
+
 SigningHub API guide can be found [here](https://manuals.keysign.eu).
+
 Both API v3 (SigningHub 7.7.9 and earlier) and API v4 (SigningHub 7.7.9 and above) have been integrated.
+
+# Dependencies
+This Python package depends on the [requests](https://pypi.org/project/requests/) module.
 
 # Usage
 This package can be used to create a ```Connection``` object which connects to SigningHub.
@@ -21,6 +26,3 @@ Optional parameters are:
 - An API port (if the API URL is not defined as a URL).
 
 This object can execute the calls which are found in the API guide. These calls are translated to Python and the ```requests.Response``` object will be returned each time.
-
-# Dependencies
-This Python package depends on the [requests](https://pypi.org/project/requests/) module.
