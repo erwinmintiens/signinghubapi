@@ -1,5 +1,6 @@
 import requests
 import json
+import base64
 
 
 class Connection:
@@ -1887,22 +1888,82 @@ class Connection:
         data = json.dumps(data)
         return requests.delete(url=url, data=data, headers=headers)
 
-    def sign_document(self, package_id: int, document_id: int, signature_field_name: str, **kwargs):
-        url = "{}/v{}/packages/{}/documents/{}/sign".format(self.url, self.api_version, package_id, document_id)
+    def signer_authentication_via_otp(self, package_id: int, document_id: int, field_name: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/otp"
         headers = {
-            'Accept': 'application/json',
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'field_name': field_name
+        })
+        return requests.post(url=url, headers=headers, data=data)
+
+    def fill_initials(self, package_id: int, document_id: int, field_name: str, base64_image: bytes, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/otp"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
         data = {
-            "field_name": signature_field_name
+            'field_name': field_name,
+            'image': base64_image
+        }
+        if 'apply_to_all' in kwargs:
+            data['apply_to_all'] = kwargs['apply_to_all']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    def fill_form_fields(self, package_id: int, document_id: int, field_type: str, field_name: str, field_value, radio_group_name=None, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'text': list(),
+            'radio': list(),
+            'checkbox': list(),
+            'dropdown': list(),
+            'listbox': list()
+        }
+        if 'auto_save' in kwargs:
+            data['auto_save'] = kwargs['auto_save']
+        if field_type in ['text', 'radio', 'checkbox', 'dropdown', 'listbox']:
+            field_data = {
+                'field_name': field_name,
+                'value': field_value
+            }
+            if field_type == 'radio':
+                if not radio_group_name:
+                    raise ValueError(f"Parameter 'radio_group_name' cannot be None when field type is set to '{field_type}'")
+                field_data['radio_group_name'] = radio_group_name
+            data[field_type].append(field_data)
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    # For API v4 and higher only.
+    def sign_document_v4(self, package_id: int, document_id: int, field_name: str, hand_signature_image: bytes,
+                         signing_server: str, signing_capacity: str, **kwargs) -> requests.Response:
+        if self.api_version < 4:
+            raise ValueError(f"API version is set to {self.api_version}. This call can only be used for API version >= 4.")
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'field_name': field_name,
+            'hand_signature_image': hand_signature_image,
+            'signing_server': signing_server,
+            'signing_capacity': signing_capacity
         }
         if 'x_otp' in kwargs:
             headers["x-otp"] = kwargs["x_otp"]
-        if 'hand_signature_image' in kwargs:
-            data["hand_signature_image"] = kwargs["hand_signature_image"]
-        if 'user_password' in kwargs:
-            data["user_password"] = kwargs["user_password"]
         if "signing_reason" in kwargs:
             data["signing_reason"] = kwargs["signing_reason"]
         if "signing_location" in kwargs:
@@ -1911,30 +1972,132 @@ class Connection:
             data["contact_information"] = kwargs["contact_information"]
         if "user_name" in kwargs:
             data["user_name"] = kwargs["user_name"]
+        if 'user_password' in kwargs:
+            data["user_password"] = kwargs["user_password"]
         if "appearance_design" in kwargs:
             data["appearance_design"] = kwargs["appearance_design"]
-        if "signing_server" in kwargs:
-            data["signing_server"] = kwargs["signing_server"]
-        if "signing_capacity" in kwargs:
-            data["signing_capacity"] = kwargs["signing_capacity"]
         if "skip_verification" in kwargs:
             data["skip_verification"] = kwargs["skip_verification"]
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def finish_processing(self, package_id: int):
-        """ Call to finish processing a package. When signed via the API, a package needs a finish processing call to push the package to a "completed" status.
-
-        :param package_id: int; ID of the package that needs to be finished
-        :return: response object
-        """
-        url = "{}/v{}/packages/{}/finish".format(self.url, self.api_version, package_id)
+    def sign_document(self, package_id: int, document_id: int, field_name: int, hand_signature_image: bytes, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
         headers = {
-            'Accept': 'application/json',
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'field_name': field_name,
+            'hand_signature_image': hand_signature_image
+        }
+        if 'x_otp' in kwargs:
+            headers["x-otp"] = kwargs["x_otp"]
+        if "signing_reason" in kwargs:
+            data["signing_reason"] = kwargs["signing_reason"]
+        if "signing_location" in kwargs:
+            data["signing_location"] = kwargs["signing_location"]
+        if "contact_information" in kwargs:
+            data["contact_information"] = kwargs["contact_information"]
+        if "user_name" in kwargs:
+            data["user_name"] = kwargs["user_name"]
+        if 'user_password' in kwargs:
+            data["user_password"] = kwargs["user_password"]
+        if "appearance_design" in kwargs:
+            data["appearance_design"] = kwargs["appearance_design"]
+        if 'signing_capacity' in kwargs:
+            data["signing_capacity"] = kwargs["signing_capacity"]
+        if "witness_signing_capacity" in kwargs:
+            data["witness_signing_capacity"] = kwargs["witness_signing_capacity"]
+        if "skip_verification" in kwargs:
+            data["skip_verification"] = kwargs["skip_verification"]
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    def decline_document(self, package_id: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/decline"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = dict()
+        if 'reason' in kwargs:
+            data['reason'] = kwargs['reason']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    def approve_document(self, package_id: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/approve"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = dict()
+        if 'reason' in kwargs:
+            data['reason'] = kwargs['reason']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    def submit_document(self, package_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/submit"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
         return requests.post(url=url, headers=headers)
+
+    def recall_document(self, package_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.delete(url=url, headers=headers)
+
+    def finish_processing(self, package_id: int):
+        """ Within native SigningHub mobile apps and mobile web use cases,
+        this call is necessary to ensure that each user completes their respective actions with respect to SigningHub.
+
+        For example, after a signatory has signed a document in SigningHub App,
+        this method is invoked by the application to ensure the workflow continues to process and the next signatory is notified,
+        and the document status is available via the configured call-back URL.
+
+        :param package_id: (int) | ID of the package that needs to be finished
+        :return: response object
+        """
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/finish"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.post(url=url, headers=headers)
+
+    def get_registered_devices(self):
+        url = f"{self.url}/v{self.api_version}/authorization/devices"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+    
+    def authorization_signing_request_status(self, package_id: int, document_id: int, field_name: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/field/status"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'field_name': field_name
+        })
+        return requests.post(url=url, headers=headers, data=data)
 
     # Personal Settings
 
