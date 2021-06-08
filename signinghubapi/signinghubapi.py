@@ -2193,6 +2193,103 @@ class Connection:
         })
         return requests.put(url=url, headers=headers, data=data)
 
+    def get_account_invitations(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/invitations"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.post(url=url, headers=headers)
+
+    def accept_account_invitations(self, enterprise_name: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/invitations"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'enterprise_name': enterprise_name
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def reject_all_account_invitations(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/invitations"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.delete(url=url, headers=headers)
+
+    def account_usage_statistics(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/statistics/usage"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def document_statistics(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/statistics/documents"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_notifications(self, records_per_page: int, page_number: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/notifications/{records_per_page}/{page_number}"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def device_registration_for_push_notification(self, device_token: str, os_type: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/users/notifications/devices"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'device_token': device_token,
+            'os_type': os_type
+        })
+        return requests.post(url=url, headers=headers, data=data)
+
+    def get_user_activity_logs(self, records_per_page: int, page_number: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/log/{page_number}/{records_per_page}"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_user_activity_logs_details(self, log_id: int, base64=True) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/log/{log_id}/details"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token,
+            'x-base64': base64
+        }
+        return requests.get(url=url, headers=headers)
+
+    def add_identity_for_a_user(self, user_email: str, provider: str, name: str, key: str, value: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/identity"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'user_email': user_email,
+            'provider': provider,
+            'name': name,
+            'key': key,
+            'value': value
+        })
+        return requests.post(url=url, headers=headers, data=data)
+
     # Personal Settings
 
     def get_general_profile_information(self):
