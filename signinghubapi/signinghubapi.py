@@ -47,6 +47,7 @@ class Connection:
                 self._url = f"{url}:{api_port}"
         self._access_token = access_token
         self._refresh_token = refresh_token
+        self._x_change_password_token = None
 
     # Getters and setters
     @property
@@ -84,6 +85,10 @@ class Connection:
     @property
     def refresh_token(self):
         return self._refresh_token
+
+    @property
+    def x_change_password_token(self):
+        return self._x_change_password_token
 
     @api_version.setter
     def api_version(self, new_api_version: int):
@@ -151,12 +156,15 @@ class Connection:
             "scope": self.scope
         }
         authentication_call = requests.post(url, data, headers)
-        authentication_text = json.loads(authentication_call.text)
         try:
+            authentication_text = json.loads(authentication_call.text)
             self.access_token = authentication_text['access_token']
             self.refresh_token = authentication_text['refresh_token']
+            if 'x-change-password' in authentication_call.headers:
+                self._x_change_password_token = authentication_call.headers['x-change-password']
         except:
             self.access_token = None
+            self._x_change_password_token = None
         finally:
             return authentication_call
 
@@ -2098,6 +2106,92 @@ class Connection:
             'field_name': field_name
         })
         return requests.post(url=url, headers=headers, data=data)
+
+    # Account Management
+
+    def register_user_free_trial(self, user_email: str, user_name: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'user_email': user_email,
+            'user_name': user_name,
+            'invitation': dict()
+        }
+        keyworded_parameters = ['job_title', 'company_name', 'mobile_number', 'country', 'time_zone', 'language', 'service_agreements', 'marketing_emails']
+        for parameter in keyworded_parameters:
+            if parameter in kwargs:
+                data[parameter] = kwargs[parameter]
+        if 'invitation_to_enterprise_name' in kwargs:
+            data['invitation']['enterprise_name'] = data['invitation_to_enterprise_name']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    def get_account(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_account_password_policy(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/password_policy"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.post(url=url, headers=headers)
+
+    def get_user_role(self, base64=True) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/role"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token,
+            'x-base64': base64
+        }
+        return requests.get(url=url, headers=headers)
+
+    def resend_activation_email(self, user_email: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/activation/resend"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'user_email': user_email
+        })
+        return requests.post(url=url, headers=headers, data=data)
+
+    def send_forgot_password_request(self, user_email: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/password/reset"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'user_email': user_email
+        })
+        return requests.post(url=url, headers=headers, data=data)
+
+    def set_new_password(self, new_password: str, security_question: str, security_answer: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/account/password/new"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.x_change_password_token
+        }
+        data = json.dumps({
+            'password': new_password,
+            'security_question': security_question,
+            'security_answer': security_answer
+        })
+        return requests.put(url=url, headers=headers, data=data)
 
     # Personal Settings
 
