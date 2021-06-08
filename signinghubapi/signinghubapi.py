@@ -2293,12 +2293,41 @@ class Connection:
     # Personal Settings
 
     def get_general_profile_information(self):
-        url = "{}/v{}/settings/profile".format(self.url, self.api_version)
+        url = f"{self.url}/v{self.api_version}/settings/profile"
         headers = {
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
         return requests.get(url=url, headers=headers)
+
+    def update_general_profile_information(self, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/profile/general"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = dict()
+        keyworded_parameters = ['user_name', 'job_title', 'company_name', 'mobile_number', 'country', 'time_zone',
+                                'language', 'user_national_id']
+        for parameter in keyworded_parameters:
+            if parameter in kwargs:
+                data[parameter] = kwargs[parameter]
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def change_password(self, old_password: str, new_password: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/profile/password"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'user_old_password': old_password,
+            'user_new_password': new_password
+        })
+        return requests.put(url=url, headers=headers, data=data)
 
 
 def raise_valueerror(keyword: str, received_type: type, expected_type: type):
