@@ -8,7 +8,7 @@ def readme():
 
 setup(
     name='signinghubapi',
-    version='0.1.0',
+    version='0.1.1',
     description='Package with default calls for the SigningHub API',
     long_description=readme(),
     long_description_content_type='text/markdown',
@@ -20,7 +20,7 @@ setup(
     install_requires=['requests'],
     license_files=('LICENSE',),
     classifiers=[
-        "Development Status :: 1 - Planning",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
         "Operating System :: Unix",
