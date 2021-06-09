@@ -18,7 +18,8 @@ class Connection:
         - A combination of username and password;
         - A refresh token.
 
-        To test your defined URL, you can try an "about" call (which gets SigningHub instance information, no login required).
+        To test your defined URL, you can try an "about" call (which gets SigningHub instance information,
+            no login required).
 
         :param client_id: str; The client id of the integration in your SigningHub
         :param client_secret: str; The client secret of the integration of your SigningHub
@@ -27,7 +28,8 @@ class Connection:
         :param url: str; The API URL of the SigningHub instance
         :param api_port: str/int; The port of the API instance. Default value: None
         :param scope: str; The user email address we wish to scope with. Default value: None
-        :param api_version: int; The version of the API of SigningHub. SigningHub version <=7.7.9: api_version=3, SigningHub version >=7.7.9: api_version=4
+        :param api_version: int; The version of the API of SigningHub. SigningHub version <=7.7.9: api_version=3,
+            SigningHub version >=7.7.9: api_version=4
         """
         self._client_id = client_id
         self._client_secret = client_secret
@@ -132,17 +134,19 @@ class Connection:
         self._refresh_token = new_refresh_token
 
     # Documented SigningHub API Calls
-    def authenticate(self):
+    def authenticate(self) -> requests.Response:
         """ Authentication with username and password.
 
-        When a status code 200 is received, an access_token parameter (str) will be created on the Connection object with the value of the access_token parameter in the returned json.
-        If another status code than 200 is received, an access_token parameter will be created on the Connection object with value None.
+        When a status code 200 is received, an access_token parameter (str) will be created on the Connection object
+        with the value of the 'access_token' parameter in the returned json body.
+        If another status code than 200 is received, an access_token parameter will be created on the Connection object
+        with value None.
 
         :return: response object
         """
         if not self.url or not self.client_id or not self.client_secret:
             raise ValueError("URL, client ID or client secret cannot be None")
-        url = "{}/authenticate".format(self.url)
+        url = f"{self.url}/authenticate"
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Accept': 'application/json'
@@ -495,7 +499,9 @@ class Connection:
 
         :param package_name: Name of the package
         :param kwargs:
-            workflow_mode (optional)(str): The workflow mode of the package, possible values are "ONLY_ME", "ME_AND_OTHERS" and "ONLY_OTHERS". If no workflow_mode is given, the default is used as per the settings in your SigningHub enterprise
+            workflow_mode (optional)(str): The workflow mode of the package, possible values are "ONLY_ME",
+                "ME_AND_OTHERS" and "ONLY_OTHERS".
+                If no workflow_mode is given, the default is used as per the settings in your SigningHub enterprise.
         :return: response object
         """
         url = self.url + "/v3/packages"
@@ -552,7 +558,8 @@ class Connection:
         :param document_id: int; ID of the document within the package the template should be applied to.
         :param template_name: str; Name of the template to be applied.
         :param kwargs:
-            apply_to_all: (bool)(optional); True, if template is to be applied on all the documents in the package. False if not.
+            apply_to_all: (bool)(optional); True, if template is to be applied on all the documents in the package.
+                False if not.
         :return: response object
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/template"
@@ -611,7 +618,8 @@ class Connection:
 
     def get_document_image(self, package_id: int, document_id: int,
                            page_number: int, resolution: str, base_64=False, **kwargs) -> requests.Response:
-        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/images/{page_number}/{resolution}"
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}" \
+              f"/images/{page_number}/{resolution}"
         if base_64:
             url += "/base64"
         headers = {
@@ -723,7 +731,8 @@ class Connection:
     def get_packages(self, document_status: str, page_no: int, records_per_page: int, **kwargs):
         """ Get all packages of a specific user with a document status filter.
 
-        :param document_status: str; The status of the packages. Possible values include "ALL", "DRAFT", "PENDING", "SIGNED", "DECLINED", "INPROGRESS", "EDITED", "REVIEWED", "COMPLETED".
+        :param document_status: str; The status of the packages. Possible values include "ALL", "DRAFT", "PENDING",
+            "SIGNED", "DECLINED", "INPROGRESS", "EDITED", "REVIEWED", "COMPLETED".
         :param page_no: int; Page number of the returned info.
         :param records_per_page: int; Number of records per page.
         :return: response object
@@ -751,7 +760,7 @@ class Connection:
         }
         return requests.delete(url=url, headers=headers)
 
-    def download_package(self, package_id:int, base_64=False, **kwargs) -> requests.Response:
+    def download_package(self, package_id: int, base_64=False, **kwargs) -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}"
         if base_64:
             url += "/base64"
@@ -835,11 +844,12 @@ class Connection:
         headers = {
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token,
-            'x-base64': True
+            'x-base64': base_64
         }
         return requests.get(url=url, headers=headers)
 
-    def get_certificate_saved_in_workflow_history(self, package_id: int, log_id: int, encryption_key: str) -> requests.Response:
+    def get_certificate_saved_in_workflow_history(self, package_id: int, log_id: int, encryption_key: str) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/log/{log_id}/details/{encryption_key}"
         headers = {
             'Content-Type': 'application/json',
@@ -871,10 +881,14 @@ class Connection:
         :param package_id: int; ID of the package the user should be added to.
         :param user_email: str; email address of the user whom should be added
         :param user_name: str; username of the user whom should be added
-        :param role: str; role of the user in the workflow. Possible values include:  "SIGNER", "REVIEWER", "EDITOR","CARBON_COPY" or "INPERSON_HOST"
+        :param role: str; role of the user in the workflow. Possible values include:  "SIGNER", "REVIEWER", "EDITOR",
+            "CARBON_COPY" or "INPERSON_HOST"
         :param kwargs:
-            email_notifications: (bool)(optional); If set as true, SigningHub will send notifications to the user via email as per the document owner and user notification settings.  A value of false means no notifications will be sent to user throughout the workflow.
-            signing_order: (int)(optional); Order of the recipient in the workflow. This signing order is mandatory when workflow type is "CUSTOM".
+            email_notifications: (bool)(optional); If set as true, SigningHub will send notifications
+                to the user via email as per the document owner and user notification settings.
+                A value of false means no notifications will be sent to user throughout the workflow.
+            signing_order: (int)(optional); Order of the recipient in the workflow.
+                This signing order is mandatory when workflow type is "CUSTOM".
         :return: response object
         """
         url = "{}/v{}/packages/{}/workflow/users".format(self.url, self.api_version, package_id)
@@ -902,12 +916,18 @@ class Connection:
 
         :param package_id: int; ID of the package in which the user should be updated
         :param order: int; order of the user in the workflow
-        :param user_email: str; email address of the user that needs to be updated
         :param kwargs:
             user_name: (str)(optional); Name of the recipient to be updated
-            role: (str)(optional); Role of the recipient to be updated. Possible values are "SIGNER", "REVIEWER", "EDITOR","CARBON_COPY" or "INPERSON_HOST". If no value is provided, old value will be retained. However, while XML type document preparation, only supported role types are "SIGNER", "REVIEWER" and "CARBON_COPY"
-            email_notifications: (bool)(optional); Setting its value to "true" sends an email notification to the user when its turn arrives in workflow. Setting its value to "false" does not send the email notification to the user on its turn. If no value is provided, old value will be retained.
-            signing_order: (int)(optional); Order in which the workflow will be signed by the recipients. This signing order is important when workflow type is set to "CUSTOM".
+            role: (str)(optional); Role of the recipient to be updated. Possible values are "SIGNER", "REVIEWER",
+                "EDITOR","CARBON_COPY" or "INPERSON_HOST". If no value is provided, old value will be retained.
+                However, while XML type document preparation, only supported role types are "SIGNER",
+                "REVIEWER" and "CARBON_COPY"
+            email_notifications: (bool)(optional); Setting its value to "true" sends an email notification
+                to the user when its turn arrives in workflow.
+                Setting its value to "false" does not send the email notification to the user on its turn.
+                If no value is provided, old value will be retained.
+            signing_order: (int)(optional); Order in which the workflow will be signed by the recipients.
+                This signing order is important when workflow type is set to "CUSTOM".
         :return: response object
         """
         url = self.url + "/v3/packages/" + str(package_id) + "/workflow/" + str(order) + "/user"
@@ -936,9 +956,16 @@ class Connection:
         :param package_id: int; ID of the package the group should be added to
         :param group_name: str; Name of the group that should be added to the workflow
         :param kwargs:
-            role: (str)(optional) role of the group as a recipient in the workflow. Possible value are "SIGNER", "REVIEWER", "EDITOR","CARBON_COPY" and "INPERSON_HOST". However, while XML type document preparation, only supported role types are "SIGNER", "REVIEWER" and "CARBON_COPY"
-            email_notifications: (bool)(optional); Setting its value to "true" sends an email notification to the user when its turn arrives in workflow. Setting its value to "false" does not send the email notification to the user on its turn. If no value is provided, default value of "true" will be set.
-            siging_order (int)(optional); Order in which the workflow will be signed by the recipients. This signing order is important when workflow type is set to "CUSTOM".
+            role: (str)(optional) role of the group as a recipient in the workflow. Possible value are "SIGNER",
+                "REVIEWER", "EDITOR","CARBON_COPY" and "INPERSON_HOST".
+                However, while XML type document preparation, only supported role types are "SIGNER",
+                "REVIEWER" and "CARBON_COPY".
+            email_notifications: (bool)(optional); Setting its value to "true" sends an email notification
+                to the user when its turn arrives in workflow.
+                Setting its value to "false" does not send the email notification to the user on its turn.
+                If no value is provided, default value of "true" will be set.
+            signing_order (int)(optional); Order in which the workflow will be signed by the recipients.
+                This signing order is important when workflow type is set to "CUSTOM".
         :return: response object
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/groups"
@@ -1001,15 +1028,20 @@ class Connection:
         return requests.post(url=url, headers=headers, data=data)
 
     def update_placeholder(self, package_id: int, order: int, **kwargs) -> requests.Response:
-        """ Updating a placeholder on a workflow. Changeable properties include: placeholder name, role, email notifications, signing order.
+        """ Updating a placeholder on a workflow.
+        Changeable properties include: placeholder name, role, email notifications, signing order.
 
         :param package_id: package ID of the package in which you want to update the placeholder
         :param order: the order of the placeholder
         :param kwargs:
             placeholder (optional)(str): changing the name of the placeholder;
-            role (optional)(str): changing the role of the placeholder. Options: "SIGNER", "REVIEWER", "EDITOR","CARBON_COPY" and "INPERSON_HOST";
-            email_notifications (optional)(boolean): Setting its value to "true" sends an email notification to the user when its turn arrives in workflow. Setting its value to "false" does not send the email notification to the user on its turn. If no value is provided, old value will be retained;
-            signing_order (optional)(int):  Order in which the workflow will be signed by the recipients. This signing order is important when workflow type is set to "CUSTOM".
+            role (optional)(str): changing the role of the placeholder. Options: "SIGNER", "REVIEWER", "EDITOR",
+                "CARBON_COPY" and "INPERSON_HOST";
+            email_notifications (optional)(boolean): Setting its value to "true" sends an email notification to the user
+                when its turn arrives in workflow. Setting its value to "false" does not send the email notification to 
+                the user on its turn. If no value is provided, old value will be retained;
+            signing_order (optional)(int):  Order in which the workflow will be signed by the recipients. 
+                This signing order is important when workflow type is set to "CUSTOM".
         :return: returns a response object with empty body on success.
         """
         url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/placeholder"
@@ -1147,7 +1179,8 @@ class Connection:
             data['authentication']['enabled'] = kwargs['authentication_enabled']
         if 'authentication_password_enabled' in kwargs:
             if type(kwargs['authentication_password_enabled']) is not bool:
-                raise raise_valueerror('authentication_password_enabled', type(kwargs['authentication_password_enabled']), type(bool))
+                raise raise_valueerror('authentication_password_enabled', 
+                                       type(kwargs['authentication_password_enabled']), type(bool))
             data['authentication']['password']['enabled'] = kwargs['authentication_password_enabled']
         if 'user_password' in kwargs:
             if type(kwargs['user_password']) is not str:
@@ -1167,24 +1200,33 @@ class Connection:
             data['access_duration_enabled']['enabled'] = kwargs['access_duration_enabled']
         if 'access_duration_duration_by_date' in kwargs:
             if type(kwargs['access_duration_duration_by_date']) is not bool:
-                raise raise_valueerror('access_duration_duration_by_date', type(kwargs['access_duration_duration_by_date']), type(bool))
+                raise raise_valueerror('access_duration_duration_by_date',
+                                       type(kwargs['access_duration_duration_by_date']), type(bool))
             data['access_duration_enabled']['duration_by_date']['enabled'] = kwargs['access_duration_duration_by_date']
         if 'access_duration_by_date_start_date_time' in kwargs:
             if type(kwargs['access_duration_by_date_start_date_time']) is not str:
-                raise raise_valueerror('access_duration_by_date_start_date_time', type(kwargs['access_duration_by_date_start_date_time']), type(str))
-            data['access_duration_enabled']['duration_by_date']['duration']['start_date_time'] = kwargs['access_duration_by_date_start_date_time']
+                raise raise_valueerror('access_duration_by_date_start_date_time',
+                                       type(kwargs['access_duration_by_date_start_date_time']), type(str))
+            data['access_duration_enabled']['duration_by_date']['duration']['start_date_time'] = \
+                kwargs['access_duration_by_date_start_date_time']
         if 'access_duration_by_date_end_date_time' in kwargs:
             if type(kwargs['access_duration_by_date_end_date_time']) is not str:
-                raise raise_valueerror('access_duration_by_date_end_date_time', type(kwargs['access_duration_by_date_end_date_time']), type(str))
-            data['access_duration_enabled']['duration_by_date']['duration']['end_date_time'] = kwargs['access_duration_by_date_end_date_time']
+                raise raise_valueerror('access_duration_by_date_end_date_time',
+                                       type(kwargs['access_duration_by_date_end_date_time']), type(str))
+            data['access_duration_enabled']['duration_by_date']['duration']['end_date_time'] = \
+                kwargs['access_duration_by_date_end_date_time']
         if 'access_duration_duration_by_days_enabled' in kwargs:
             if type(kwargs['access_duration_duration_by_days_enabled']) is not bool:
-                raise raise_valueerror('access_duration_duration_by_days_enabled', type(kwargs['access_duration_duration_by_days_enabled']), type(bool))
-            data['access_duration_enabled']['duration_by_days']['enabled'] = kwargs['access_duration_duration_by_days_enabled']
+                raise raise_valueerror('access_duration_duration_by_days_enabled', 
+                                       type(kwargs['access_duration_duration_by_days_enabled']), type(bool))
+            data['access_duration_enabled']['duration_by_days']['enabled'] = \
+                kwargs['access_duration_duration_by_days_enabled']
         if 'access_duration_duration_by_days_total_days' in kwargs:
             if type(kwargs['access_duration_duration_by_days_total_days']) is not str:
-                raise raise_valueerror('access_duration_duration_by_days_total_days', type(kwargs['access_duration_duration_by_days_total_days']), type(str))
-            data['access_duration_enabled']['duration_by_days']['duration']['total_days'] = kwargs['access_duration_duration_by_days_total_days']
+                raise raise_valueerror('access_duration_duration_by_days_total_days', 
+                                       type(kwargs['access_duration_duration_by_days_total_days']), type(str))
+            data['access_duration_enabled']['duration_by_days']['duration']['total_days'] = \
+                kwargs['access_duration_duration_by_days_total_days']
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
@@ -1278,7 +1320,7 @@ class Connection:
         }
         return requests.post(url=url, headers=headers)
 
-    ### Document Preparation
+    # Document Preparation
 
     def get_document_fields(self, package_id: int, document_id: int, page_number: int) -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/{page_number}"
@@ -1288,7 +1330,8 @@ class Connection:
         }
         return requests.get(url=url, headers=headers)
 
-    def assign_document_field(self, package_id: int, document_id: int, field_name: str, order: int) -> requests.Response:
+    def assign_document_field(self, package_id: int, document_id: int, field_name: str, order: int) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/assign"
         headers = {
             'Content-Type': 'application/json',
@@ -1302,7 +1345,8 @@ class Connection:
         return requests.put(url=url, headers=headers, data=data)
 
     # This call is meant for API version 3 only. However, this will work on API version 4 as well.
-    def add_digital_signature_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+    def add_digital_signature_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/digital_signature"
         headers = {
             'Content-Type': 'application/json',
@@ -1330,8 +1374,10 @@ class Connection:
         return requests.post(url=url, headers=headers, data=data)
 
     # This call is meant for API version 3 only. However, this will work on API version 4 as well.
-    def add_electronic_signature_field(self, package_id: int, document_id: int, order: int, page_no: int, **kwargs) -> requests.Response:
-        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/electronic_signature"
+    def add_electronic_signature_field(self, package_id: int, document_id: int, order: int, page_no: int, **kwargs) \
+            -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}" \
+              f"/fields/electronic_signature"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -1398,7 +1444,8 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, data=data, headers=headers)
 
-    def add_in_person_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+    def add_in_person_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/in_person_signature"
         headers = {
             'Content-Type': 'application/json',
@@ -1427,7 +1474,8 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def add_initials_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+    def add_initials_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/initials"
         headers = {
             'Content-Type': 'application/json',
@@ -1452,7 +1500,8 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def add_textbox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+    def add_textbox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/text"
         headers = {
             'Content-Type': 'application/json',
@@ -1500,7 +1549,8 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def add_radiobox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+    def add_radiobox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/radio"
         headers = {
             'Content-Type': 'application/json',
@@ -1527,7 +1577,8 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def add_checkbox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) -> requests.Response:
+    def add_checkbox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/checkbox"
         headers = {
             'Content-Type': 'application/json',
@@ -1552,18 +1603,24 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def autoplace_fields(self, package_id: int, document_id: int, search_text: str, order: int, field_type: str, **kwargs) -> requests.Response:
+    def autoplace_fields(self, package_id: int, document_id: int, search_text: str, order: int, field_type: str,
+                         **kwargs) -> requests.Response:
         """ Autoplacing fields to a string in the document.
 
         :param package_id: int; ID of the package.
         :param document_id: int; ID of the document on which the fields should be added.
         :param search_text: str; text to which the fields should be added on the document.
         :param order: int; order of the user to which the fields should be assigned.
-        :param field_type: Type of field to be created in the document. Possible values are "ELECTRONIC_SIGNATURE", "DIGITAL_SIGNATURE", "IN_PERSON_SIGNATURE", "INITIALS","TEXT", "NAME", "EMAIL", "COMPANY", "JOBTITLE", "RadioBox", "CheckBox", "DATE".
+        :param field_type: Type of field to be created in the document. Possible values are "ELECTRONIC_SIGNATURE",
+            "DIGITAL_SIGNATURE", "IN_PERSON_SIGNATURE", "INITIALS","TEXT", "NAME", "EMAIL", "COMPANY", "JOBTITLE",
+            "RadioBox", "CheckBox", "DATE".
         :param kwargs:
             width: (int)(optional); width of the field in pixels
             height: (int)(optional); height of the field in pixels
-            placement: (str)(optional): 	If the text is found, fields are to be placed in the document. Placement of the field can be mentioned in this attribute. Possible values of placement of a field are "LEFT", "RIGHT", "TOP", "BOTTOM". If no value is provided the default value will be "LEFT".
+            placement: (str)(optional): If the text is found, fields are to be placed in the document.
+                Placement of the field can be mentioned in this attribute.
+                Possible values of placement of a field are "LEFT", "RIGHT", "TOP", "BOTTOM".
+                If no value is provided the default value will be "LEFT".
         :return: response object
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/autoplace"
@@ -1634,7 +1691,8 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def update_digital_signature_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
+    def update_digital_signature_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/digital_signature"
         headers = {
             'Content-Type': 'application/json',
@@ -1662,8 +1720,10 @@ class Connection:
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_electronic_signature_fields(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
-        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/electronic_signature"
+    def update_electronic_signature_fields(self, package_id: int, document_id: int, field_name: str, **kwargs) \
+            -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}" \
+              f"/fields/electronic_signature"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -1899,7 +1959,8 @@ class Connection:
         })
         return requests.post(url=url, headers=headers, data=data)
 
-    def fill_initials(self, package_id: int, document_id: int, field_name: str, base64_image: bytes, **kwargs) -> requests.Response:
+    def fill_initials(self, package_id: int, document_id: int, field_name: str, base64_image: bytes, **kwargs)\
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/otp"
         headers = {
             'Content-Type': 'application/json',
@@ -1915,7 +1976,8 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def fill_form_fields(self, package_id: int, document_id: int, field_type: str, field_name: str, field_value, radio_group_name=None, **kwargs) -> requests.Response:
+    def fill_form_fields(self, package_id: int, document_id: int, field_type: str, field_name: str, field_value,
+                         radio_group_name=None, **kwargs) -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
         headers = {
             'Content-Type': 'application/json',
@@ -1938,7 +2000,8 @@ class Connection:
             }
             if field_type == 'radio':
                 if not radio_group_name:
-                    raise ValueError(f"Parameter 'radio_group_name' cannot be None when field type is set to '{field_type}'")
+                    raise ValueError(f"Parameter 'radio_group_name' cannot be None when field type is set to "
+                                     f"'{field_type}'")
                 field_data['radio_group_name'] = radio_group_name
             data[field_type].append(field_data)
         data = json.dumps(data)
@@ -1948,7 +2011,8 @@ class Connection:
     def sign_document_v4(self, package_id: int, document_id: int, field_name: str, hand_signature_image: bytes,
                          signing_server: str, signing_capacity: str, **kwargs) -> requests.Response:
         if self.api_version < 4:
-            raise ValueError(f"API version is set to {self.api_version}. This call can only be used for API version >= 4.")
+            raise ValueError(f"API version is set to {self.api_version}."
+                             f" This call can only be used for API version >= 4.")
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
         headers = {
             'Content-Type': 'application/json',
@@ -1980,7 +2044,8 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def sign_document(self, package_id: int, document_id: int, field_name: int, hand_signature_image: bytes, **kwargs) -> requests.Response:
+    def sign_document(self, package_id: int, document_id: int, field_name: int, hand_signature_image: bytes, **kwargs)\
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
         headers = {
             'Content-Type': 'application/json',
@@ -2063,8 +2128,8 @@ class Connection:
         this call is necessary to ensure that each user completes their respective actions with respect to SigningHub.
 
         For example, after a signatory has signed a document in SigningHub App,
-        this method is invoked by the application to ensure the workflow continues to process and the next signatory is notified,
-        and the document status is available via the configured call-back URL.
+        this method is invoked by the application to ensure the workflow continues to process
+        and the next signatory is notified, and the document status is available via the configured call-back URL.
 
         :param package_id: (int) | ID of the package that needs to be finished
         :return: response object
@@ -2086,7 +2151,8 @@ class Connection:
         }
         return requests.get(url=url, headers=headers)
     
-    def authorization_signing_request_status(self, package_id: int, document_id: int, field_name: str) -> requests.Response:
+    def authorization_signing_request_status(self, package_id: int, document_id: int, field_name: str)\
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/field/status"
         headers = {
             'Content-Type': 'application/json',
@@ -2112,7 +2178,8 @@ class Connection:
             'user_name': user_name,
             'invitation': dict()
         }
-        keyworded_parameters = ['job_title', 'company_name', 'mobile_number', 'country', 'time_zone', 'language', 'service_agreements', 'marketing_emails']
+        keyworded_parameters = ['job_title', 'company_name', 'mobile_number', 'country', 'time_zone', 'language',
+                                'service_agreements', 'marketing_emails']
         for parameter in keyworded_parameters:
             if parameter in kwargs:
                 data[parameter] = kwargs[parameter]
@@ -2265,7 +2332,8 @@ class Connection:
         }
         return requests.get(url=url, headers=headers)
 
-    def add_identity_for_a_user(self, user_email: str, provider: str, name: str, key: str, value: str) -> requests.Response:
+    def add_identity_for_a_user(self, user_email: str, provider: str, name: str, key: str, value: str) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/account/identity"
         headers = {
             'Content-Type': 'application/json',
@@ -2343,7 +2411,8 @@ class Connection:
         })
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_security_settings(self, password: str, security_question: str, security_answer: str) -> requests.Response:
+    def update_security_settings(self, password: str, security_question: str, security_answer: str) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/settings/profile/security"
         headers = {
             'Content-Type': 'application/json',
@@ -2432,7 +2501,8 @@ class Connection:
         })
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_signature_settings_metadata(self, signing_reason: str, signing_location: str, contact_information: str) -> requests.Response:
+    def update_signature_settings_metadata(self, signing_reason: str, signing_location: str, contact_information: str) \
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/metadata"
         headers = {
             'Content-Type': 'application/json',
@@ -2446,7 +2516,8 @@ class Connection:
         })
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_hand_signature_browser(self, default_method: str, upload_image: bytes, text_value: str) -> requests.Response:
+    def update_hand_signature_browser(self, default_method: str, upload_image: bytes, text_value: str)\
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/browser"
         headers = {
             'Content-Type': 'application/json',
@@ -2460,7 +2531,8 @@ class Connection:
         })
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_hand_signature_mobile(self, default_method: str, upload_image: bytes, text_value: str) -> requests.Response:
+    def update_hand_signature_mobile(self, default_method: str, upload_image: bytes, text_value: str)\
+            -> requests.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/mobile"
         headers = {
             'Content-Type': 'application/json',
