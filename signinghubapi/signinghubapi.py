@@ -227,15 +227,6 @@ class Connection:
         }
         return requests.get(url=url, headers=headers)
 
-    def reset_email_notifications(self):
-        url = f"{self.url}/v{self.api_version}/enterprise/notifications/email/reset"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
-        return requests.put(url=url, headers=headers)
-
     def register_enterprise_user(self, user_email: str, user_name: str, **kwargs):
         url = "{}/v{}/enterprise/users".format(self.url, self.api_version)
         headers = {
@@ -2328,6 +2319,334 @@ class Connection:
             'user_new_password': new_password
         })
         return requests.put(url=url, headers=headers, data=data)
+
+    def get_profile_picture(self, base64=True) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/profile/general/photo"
+        if base64:
+            url += "/base64"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def update_profile_picture(self, profile_picture: bytes) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/profile/general/photo/base64"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'photo': profile_picture
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_security_settings(self, password: str, security_question: str, security_answer: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/profile/security"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'password': password,
+            'question': security_question,
+            'answer': security_answer
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_locale_settings(self, country: str, timezone: str, language: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/profile/locale"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'country': country,
+            'timezone': timezone,
+            'language': language
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def get_signature_settings(self, base64=True) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token,
+            'x-base64': base64
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_signature_appearance(self, signature_type: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/design/{signature_type}/preview"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_hand_signature_text_for_web(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/hand_signature/web/text"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_hand_signature_text_for_mobile(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/hand_signature/mobile/text"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_hand_signature_upload_for_web(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/hand_signature/web/upload"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_hand_signature_upload_for_mobile(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/hand_signature/mobile/upload"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def update_signature_appearance_design(self, default_design: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/design"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'default_design': default_design
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_signature_settings_metadata(self, signing_reason: str, signing_location: str, contact_information: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/metadata"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'signing_reason': signing_reason,
+            'signing_location': signing_location,
+            'contact_information': contact_information
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_hand_signature_browser(self, default_method: str, upload_image: bytes, text_value: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/browser"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'default_method': default_method,
+            'upload_image': upload_image,
+            'text_value': text_value
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def update_hand_signature_mobile(self, default_method: str, upload_image: bytes, text_value: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/mobile"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'default_method': default_method,
+            'upload_image': upload_image,
+            'text_value': text_value
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def get_initials_for_upload_option(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/initials/upload"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def get_initials_for_text_option(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/initials/text"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def update_initial_appearance(self, default_method: str, upload_image: bytes, text_value: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/initials"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'default_method': default_method,
+            'upload_image': upload_image,
+            'text_value': text_value
+        })
+        return requests.put(url=url, headers=headers, data=data)
+
+    def get_signature_delegation_settings(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/delegate"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def update_signature_delegation_settings(self, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/delegate"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'delegate': dict()
+        }
+        if 'enabled' in kwargs:
+            data['enabled'] = kwargs['enabled']
+        keyworded_parameters = ['user_name', 'user_email', 'from', 'to']
+        for parameter in keyworded_parameters:
+            if parameter in kwargs:
+                data['delegate'][parameter] = kwargs[parameter]
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def add_contact(self, user_email: str, user_name: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/contacts"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = json.dumps({
+            'user_email': user_email,
+            'user_name': user_name
+        })
+        return requests.post(url=url, headers=headers, data=data)
+
+    def get_contacts(self, records_per_page: int, page_number: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/contacts/{records_per_page}/{page_number}"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        keyworded_parameters = ['x-search-text', 'x-enterprise']
+        for parameter in keyworded_parameters:
+            if parameter in kwargs:
+                headers[parameter] = kwargs[parameter]
+        return requests.get(url=url, headers=headers)
+
+    def get_groups(self, records_per_page: int, page_number: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/groups/{records_per_page}/{page_number}"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        keyworded_parameters = ['x-search-text', 'x-enterprise']
+        for parameter in keyworded_parameters:
+            if parameter in kwargs:
+                headers[parameter] = kwargs[parameter]
+        return requests.get(url=url, headers=headers)
+
+    def get_library_documents(self, records_per_page: int, page_number: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/library/{records_per_page}/{page_number}"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        keyworded_parameters = ['x-search-text', 'x-enterprise']
+        for parameter in keyworded_parameters:
+            if parameter in kwargs:
+                headers[parameter] = kwargs[parameter]
+        return requests.get(url=url, headers=headers)
+
+    def get_templates(self, records_per_page: int, page_number: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/templates/{records_per_page}/{page_number}"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        keyworded_parameters = ['x-search-text', 'x-enterprise']
+        for parameter in keyworded_parameters:
+            if parameter in kwargs:
+                headers[parameter] = kwargs[parameter]
+        return requests.get(url=url, headers=headers)
+
+    def reset_email_notifications(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/notifications/email/reset"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.put(url=url, headers=headers)
+
+    def get_personal_group(self, group_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/groups/{group_id}"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.get(url=url, headers=headers)
+
+    def add_personal_group(self, group_name: str, members: list, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/groups"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = {
+            'Name': group_name,
+            'Members': members
+        }
+        if 'description' in kwargs:
+            data['Description'] = kwargs['description']
+        data = json.dumps(data)
+        return requests.post(url=url, headers=headers, data=data)
+
+    def update_personal_group(self, group_id: int, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/groups/{group_id}"
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        data = dict()
+        keyworded_parameters = ['name', 'description', 'members']
+        for parameter in keyworded_parameters:
+            if parameter in kwargs:
+                data[parameter] = kwargs[parameter]
+        data = json.dumps(data)
+        return requests.put(url=url, headers=headers, data=data)
+
+    def delete_personal_group(self, group_id: int) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/settings/groups/{group_id}"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        return requests.delete(url=url, headers=headers)
 
 
 def raise_valueerror(keyword: str, received_type: type, expected_type: type):
