@@ -1,35 +1,48 @@
 import requests
 import json
-import base64
 
 
 class Connection:
-    def __init__(self, url: str, client_id: str, client_secret: str, username=None, password=None, api_port=None,
-                 scope=None, api_version=3, access_token=None, refresh_token=None):
-        """ Initialize a connection between python and the SigningHub API.
+    def __init__(self, url: str, client_id: str = None, client_secret: str = None, username: str = None,
+                 password: str = None, api_port: int = None, scope: str = None, api_version: int = 3,
+                 access_token: str = None, refresh_token: str = None):
+        """ Initialize a connection between Python and a SigningHub REST API endpoint.
 
         What needs to be defined:
         - URL
-        - Client ID
-        - Client secret
 
         This can be combined with either:
         - An valid access token;
-        - A combination of username and password;
-        - A refresh token.
+        - A combination of username, password, client_id and client_secret;
+        - A refresh token with client_id and client_secret.
 
-        To test your defined URL, you can try an "about" call (which gets SigningHub instance information,
-            no login required).
+        Testing the configured URL can be either with an "about" call (which gets SigningHub instance information,
+        no login required), or just fetching the URL, which should return a
+        success.
 
-        :param client_id: str; The client id of the integration in your SigningHub
-        :param client_secret: str; The client secret of the integration of your SigningHub
-        :param username: str; The username of the user you want to authenticate with
-        :param password: str; The password of the given user
-        :param url: str; The API URL of the SigningHub instance
-        :param api_port: str/int; The port of the API instance. Default value: None
-        :param scope: str; The user email address we wish to scope with. Default value: None
-        :param api_version: int; The version of the API of SigningHub. SigningHub version <=7.7.9: api_version=3,
-            SigningHub version >=7.7.9: api_version=4
+        :param url: str
+            The API URL of the SigningHub instance
+        :param client_id: str
+            The client id of the integration in your SigningHub
+        :param client_secret: str
+            The client secret of the integration of your SigningHub
+        :param username: str
+            The username of the user you want to authenticate with
+        :param password: str
+            The password of the given user
+        :param api_port: int
+            The port of the API instance. Default value: None
+        :param scope: str
+            The user email address we wish to scope with. Default value: None
+        :param api_version: int
+            The version of the API of SigningHub. SigningHub version <=7.7.9: api_version = 3,
+            SigningHub version >=7.7.9: api_version = 4
+        :param access_token: str
+            A previously obtained access token which can be used in further calls.
+            No authentication necessary if valid.
+        :param refresh_token: str
+            A previously obtained refresh token (from a default authentication call) which can be used to authenticate
+            with refresh token in combination of url, client_id and client_secret.
         """
         self._client_id = client_id
         self._client_secret = client_secret
@@ -135,17 +148,18 @@ class Connection:
 
     # Documented SigningHub API Calls
     def authenticate(self) -> requests.Response:
-        """ Authentication with username and password.
+        """ Default authentication with username and password.
 
-        When a status code 200 is received, an access_token parameter (str) will be created on the Connection object
-        with the value of the 'access_token' parameter in the returned json body.
-        If another status code than 200 is received, an access_token parameter will be created on the Connection object
-        with value None.
+        When a status code 200 is received and thus the call succeeds, the _access_token attribute will receive
+        the value of the 'access_token' parameter in the returned json body.
+        If another status code than 200 is received and thus the call fails, the _access_token attribute will receive
+        value None.
 
-        :return: response object
+        :return: requests.Response
         """
-        if not self.url or not self.client_id or not self.client_secret:
-            raise ValueError("URL, client ID or client secret cannot be None")
+        if not self.url or not self.client_id or not self.client_secret or not self.username or not self.password:
+            raise ValueError("URL, client ID, client secret, username and password cannot be None for default "
+                             "authentication")
         url = f"{self.url}/authenticate"
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -173,6 +187,13 @@ class Connection:
             return authentication_call
 
     def authenticate_with_refresh_token(self) -> requests.Response:
+        """ Authenticating with configured refresh token.
+
+        If the authentication succeeds, the _access_token attribute will be set to the received value.
+        If the authentication fails or this function fails in some way, the _access_token attribute will be set to None.
+
+        :return: requests.Response
+        """
         if not self.url or not self.client_id or not self.client_secret or not self.refresh_token:
             raise ValueError("URL, client ID, client secret and refresh token cannot be None")
         url = f"{self.url}/authenticate"
@@ -188,8 +209,8 @@ class Connection:
             'scope': self.scope
         }
         r = requests.post(url, data, headers)
-        response_json = json.loads(r.text)
         try:
+            response_json = json.loads(r.text)
             self.access_token = response_json['access_token']
             self.refresh_token = response_json['refresh_token']
         except:
@@ -197,42 +218,41 @@ class Connection:
         finally:
             return r
 
-    def get_service_agreements(self):
-        url = "{}/v{}/terms".format(self.url, self.api_version)
+    def get_service_agreements(self) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/terms"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
         return requests.get(url=url, headers=headers)
 
-    def otp_login_authentication(self, mobile_number: str):
-        url = "{}/v{}/authentication/otp".format(self.url, self.api_version)
+    def otp_login_authentication(self, mobile_number: str) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/authentication/otp"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
-        data = {
+        data = json.dumps({
             'mobile_number': mobile_number
-        }
-        data = json.dumps(data)
+        })
         return requests.post(url=url, headers=headers, data=data)
 
     # Enterprise Management
 
-    def about_signinghub(self):
+    def about_signinghub(self) -> requests.Response:
         """ Get information about the SigningHub enterprise this call is executed to.
 
         :return: JSON response with SigningHub information
         """
-        url = "{}/v{}/about".format(self.url, self._api_version)
+        url = f"{self.url}/v{self.api_version}/about"
         headers = {
             'Accept': 'application/json'
         }
         return requests.get(url=url, headers=headers)
 
-    def register_enterprise_user(self, user_email: str, user_name: str, **kwargs):
-        url = "{}/v{}/enterprise/users".format(self.url, self.api_version)
+    def register_enterprise_user(self, user_email: str, user_name: str, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/users"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -242,47 +262,23 @@ class Connection:
             'user_email': user_email,
             'user_name': user_name
         }
-        if 'job_title' in kwargs:
-            data['job_title'] = kwargs['job_title']
-        if 'company_name' in kwargs:
-            data['company_name'] = kwargs['company_name']
-        if 'mobile_number' in kwargs:
-            data['mobile_number'] = kwargs['mobile_number']
-        if 'user_password' in kwargs:
-            data['user_password'] = kwargs['user_password']
-        if 'security_question' in kwargs:
-            data['security_question'] = kwargs['security_question']
-        if 'security_answer' in kwargs:
-            data['security_answer'] = kwargs['security_answer']
-        if 'enterprise_role' in kwargs:
-            data['enterprise_role'] = kwargs['enterprise_role']
-        if 'email_notification' in kwargs:
-            data['email_notification'] = kwargs['email_notification']
-        if 'country' in kwargs:
-            data['country'] = kwargs['country']
-        if 'time_zone' in kwargs:
-            data['time_zone'] = kwargs['time_zone']
-        if 'language' in kwargs:
-            data['language'] = kwargs['language']
-        if 'user_ra_id' in kwargs:
-            data['user_ra_id'] = kwargs['user_ra_id']
-        if 'user_csp_id' in kwargs:
-            data['user_csp_id'] = kwargs['user_csp_id']
-        if 'certificate_alias' in kwargs:
-            data['certificate_alias'] = kwargs['certificate_alias']
-        if 'common_name' in kwargs:
-            data['common_name'] = kwargs['common_name']
+        keyworded_parameters = ['job_title', 'company_name', 'mobile_number', 'user_password', 'security_question',
+                                'security_answer', 'enterprise_role', 'email_notification', 'country', 'time_zone',
+                                'language', 'user_ra_id', 'user_csp_id', 'certificate_alias', 'common_name']
+        for parameter in keyworded_parameters:
+            if parameter in kwargs:
+                data[parameter] = kwargs[parameter]
         data = json.dumps(data)
         return requests.post(url=url, data=data, headers=headers)
 
-    def get_enterprise_users(self, search_string=None):
-        url = "{}/v{}/enterprise/users".format(self.url, self.api_version)
+    def get_enterprise_users(self, **kwargs) -> requests.Response:
+        url = f"{self.url}/v{self.api_version}/enterprise/users"
         headers = {
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
-        if search_string:
-            headers['Accept'] = search_string
+        if 'x-search-text' in kwargs:
+            headers['x-search-text'] = kwargs['x-search-text']
         return requests.get(url=url, headers=headers)
 
     def update_enterprise_user(self, user_email: str, **kwargs) -> requests.Response:
@@ -295,34 +291,13 @@ class Connection:
         data = {
             "user_email": user_email
         }
-        if 'user_name' in kwargs:
-            data['user_name'] = kwargs['user_name']
-        if 'job_title' in kwargs:
-            data['job_title'] = kwargs['job_title']
-        if 'company_name' in kwargs:
-            data['company_name'] = kwargs['company_name']
-        if 'mobile_number' in kwargs:
-            data['mobile_number'] = kwargs['mobile_number']
-        if 'user_password' in kwargs:
-            data['user_password'] = kwargs['user_password']
-        if 'security_question' in kwargs:
-            data['security_question'] = kwargs['security_question']
-        if 'security_answer' in kwargs:
-            data['security_answer'] = kwargs['security_answer']
-        if 'enterprise_role' in kwargs:
-            data['enterprise_role'] = kwargs['enterprise_role']
-        if 'enabled' in kwargs:
-            data['enabled'] = kwargs['enabled']
-        if 'country' in kwargs:
-            data['country'] = kwargs['country']
-        if 'time_zone' in kwargs:
-            data['time_zone'] = kwargs['time_zone']
-        if 'language' in kwargs:
-            data['language'] = kwargs['language']
-        if 'user_ra_id' in kwargs:
-            data['user_ra_id'] = kwargs['user_ra_id']
-        if 'user_csp_id' in kwargs:
-            data['user_csp_id'] = kwargs['user_csp_id']
+        keyworded_parameters = ['user_name', 'job_title', 'company_name', 'mobile_number', 'user_old_password',
+                                'user_new_password', 'security_question', 'security_answer', 'enterprise_role',
+                                'email_notification', 'enabled', 'country', 'time_zone', 'language', 'user_ra_id',
+                                'user_csp_id', 'certificate_alias', 'common_name']
+        for parameter in keyworded_parameters:
+            if parameter in kwargs:
+                data[parameter] = kwargs[parameter]
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
@@ -333,7 +308,9 @@ class Connection:
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
-        data = json.dumps({'user_email': user_email})
+        data = json.dumps({
+            'user_email': user_email
+        })
         return requests.delete(url=url, headers=headers, data=data)
 
     def invite_enterprise_user(self, user_email: str, user_name: str, **kwargs) -> requests.Response:
@@ -350,7 +327,7 @@ class Connection:
         if 'enterprise_role' in kwargs:
             data['enterprise_role'] = kwargs['enterprise_role']
         data = json.dumps(data)
-        requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=data)
 
     def get_enterprise_invitations(self, page_number: int, records_per_page: int) -> requests.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/invitations/{page_number}/{records_per_page}"
@@ -434,7 +411,7 @@ class Connection:
         data = json.dumps({
             'user_email': user_email
         })
-        requests.delete(url=url, headers=headers, data=data)
+        return requests.delete(url=url, headers=headers, data=data)
 
     def get_enterprise_group(self, group_id: int):
         url = f"{self.url}/v{self.api_version}/enterprise/groups/{group_id}"
@@ -804,7 +781,7 @@ class Connection:
         :param package_id: int; Package ID of the package you want to get details on.
         :return: response object
         """
-        url = f"{self.url}/v{self.api_version}/packages/{package_id}/{workflow}"
+        url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -1179,7 +1156,7 @@ class Connection:
             data['authentication']['enabled'] = kwargs['authentication_enabled']
         if 'authentication_password_enabled' in kwargs:
             if type(kwargs['authentication_password_enabled']) is not bool:
-                raise raise_valueerror('authentication_password_enabled', 
+                raise raise_valueerror('authentication_password_enabled',
                                        type(kwargs['authentication_password_enabled']), type(bool))
             data['authentication']['password']['enabled'] = kwargs['authentication_password_enabled']
         if 'user_password' in kwargs:
@@ -1217,13 +1194,13 @@ class Connection:
                 kwargs['access_duration_by_date_end_date_time']
         if 'access_duration_duration_by_days_enabled' in kwargs:
             if type(kwargs['access_duration_duration_by_days_enabled']) is not bool:
-                raise raise_valueerror('access_duration_duration_by_days_enabled', 
+                raise raise_valueerror('access_duration_duration_by_days_enabled',
                                        type(kwargs['access_duration_duration_by_days_enabled']), type(bool))
             data['access_duration_enabled']['duration_by_days']['enabled'] = \
                 kwargs['access_duration_duration_by_days_enabled']
         if 'access_duration_duration_by_days_total_days' in kwargs:
             if type(kwargs['access_duration_duration_by_days_total_days']) is not str:
-                raise raise_valueerror('access_duration_duration_by_days_total_days', 
+                raise raise_valueerror('access_duration_duration_by_days_total_days',
                                        type(kwargs['access_duration_duration_by_days_total_days']), type(str))
             data['access_duration_enabled']['duration_by_days']['duration']['total_days'] = \
                 kwargs['access_duration_duration_by_days_total_days']
@@ -1959,7 +1936,7 @@ class Connection:
         })
         return requests.post(url=url, headers=headers, data=data)
 
-    def fill_initials(self, package_id: int, document_id: int, field_name: str, base64_image: bytes, **kwargs)\
+    def fill_initials(self, package_id: int, document_id: int, field_name: str, base64_image: bytes, **kwargs) \
             -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/otp"
         headers = {
@@ -2044,7 +2021,7 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def sign_document(self, package_id: int, document_id: int, field_name: int, hand_signature_image: bytes, **kwargs)\
+    def sign_document(self, package_id: int, document_id: int, field_name: int, hand_signature_image: bytes, **kwargs) \
             -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
         headers = {
@@ -2150,8 +2127,8 @@ class Connection:
             'Authorization': 'Bearer ' + self.access_token
         }
         return requests.get(url=url, headers=headers)
-    
-    def authorization_signing_request_status(self, package_id: int, document_id: int, field_name: str)\
+
+    def authorization_signing_request_status(self, package_id: int, document_id: int, field_name: str) \
             -> requests.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/field/status"
         headers = {
@@ -2516,7 +2493,7 @@ class Connection:
         })
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_hand_signature_browser(self, default_method: str, upload_image: bytes, text_value: str)\
+    def update_hand_signature_browser(self, default_method: str, upload_image: bytes, text_value: str) \
             -> requests.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/browser"
         headers = {
@@ -2531,7 +2508,7 @@ class Connection:
         })
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_hand_signature_mobile(self, default_method: str, upload_image: bytes, text_value: str)\
+    def update_hand_signature_mobile(self, default_method: str, upload_image: bytes, text_value: str) \
             -> requests.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/mobile"
         headers = {
