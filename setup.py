@@ -1,16 +1,15 @@
 from setuptools import setup, find_packages
 
 
-def readme():
-    with open('README.md') as f:
-        return f.read()
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
 
 
 setup(
     name='signinghubapi',
-    version='0.1.1',
+    version='0.1.2',
     description='Package with default calls for the SigningHub API',
-    long_description=readme(),
+    long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/erwinmintiens/signinghub-api',
     author='Erwin Mintiens',
