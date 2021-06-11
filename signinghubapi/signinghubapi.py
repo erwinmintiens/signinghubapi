@@ -1775,7 +1775,8 @@ class Connection:
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_in_person_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.models.Response:
+    def update_in_person_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
+            -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/in_person_signature"
         headers = {
             'Content-Type': 'application/json',
@@ -1814,7 +1815,8 @@ class Connection:
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_initials_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.models.Response:
+    def update_initials_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
+            -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/initials"
         headers = {
             'Content-Type': 'application/json',
@@ -1840,7 +1842,8 @@ class Connection:
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_textbox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.models.Response:
+    def update_textbox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
+            -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/text"
         headers = {
             'Content-Type': 'application/json',
@@ -1889,7 +1892,8 @@ class Connection:
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_radiobox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.models.Response:
+    def update_radiobox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
+            -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/radio"
         headers = {
             'Content-Type': 'application/json',
@@ -1917,7 +1921,8 @@ class Connection:
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
-    def update_checkbox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.models.Response:
+    def update_checkbox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
+            -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/checkbox"
         headers = {
             'Content-Type': 'application/json',
@@ -1963,7 +1968,8 @@ class Connection:
         data = json.dumps(data)
         return requests.delete(url=url, data=data, headers=headers)
 
-    def signer_authentication_via_otp(self, package_id: int, document_id: int, field_name: str) -> requests.models.Response:
+    def signer_authentication_via_otp(self, package_id: int, document_id: int, field_name: str) \
+            -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/otp"
         headers = {
             'Content-Type': 'application/json',
@@ -2253,7 +2259,8 @@ class Connection:
         })
         return requests.post(url=url, headers=headers, data=data)
 
-    def set_new_password(self, new_password: str, security_question: str, security_answer: str) -> requests.models.Response:
+    def set_new_password(self, new_password: str, security_question: str, security_answer: str) \
+            -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/password/new"
         headers = {
             'Content-Type': 'application/json',
@@ -2578,7 +2585,8 @@ class Connection:
         }
         return requests.get(url=url, headers=headers)
 
-    def update_initial_appearance(self, default_method: str, upload_image: bytes, text_value: str) -> requests.models.Response:
+    def update_initial_appearance(self, default_method: str, upload_image: bytes, text_value: str) \
+            -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/initials"
         headers = {
             'Content-Type': 'application/json',
