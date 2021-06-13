@@ -243,7 +243,13 @@ class Connection:
     def about_signinghub(self) -> requests.models.Response:
         """ Get information about the SigningHub enterprise this call is executed to.
 
-        :return: JSON response with SigningHub information
+        :return: requests.models.Response
+            Body contains JSON with SigningHub information:
+                installation_name: The name configured for SigningHub installation.
+                version: The exact version of SigningHub installation.
+                build: The full build number of SigningHub installation.
+                patents: The patents used by SigningHub product.
+                copyright: The copyright statement by Ascertia Limited.
         """
         url = f"{self.url}/v{self.api_version}/about"
         headers = {
@@ -262,12 +268,12 @@ class Connection:
             'user_email': user_email,
             'user_name': user_name
         }
-        keyworded_parameters = ['job_title', 'company_name', 'mobile_number', 'user_password', 'security_question',
+        keyworded_attributes = ['job_title', 'company_name', 'mobile_number', 'user_password', 'security_question',
                                 'security_answer', 'enterprise_role', 'email_notification', 'country', 'time_zone',
                                 'language', 'user_ra_id', 'user_csp_id', 'certificate_alias', 'common_name']
-        for parameter in keyworded_parameters:
-            if parameter in kwargs:
-                data[parameter] = kwargs[parameter]
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                data[attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.post(url=url, data=data, headers=headers)
 
@@ -291,13 +297,13 @@ class Connection:
         data = {
             "user_email": user_email
         }
-        keyworded_parameters = ['user_name', 'job_title', 'company_name', 'mobile_number', 'user_old_password',
+        keyworded_attributes = ['user_name', 'job_title', 'company_name', 'mobile_number', 'user_old_password',
                                 'user_new_password', 'security_question', 'security_answer', 'enterprise_role',
                                 'email_notification', 'enabled', 'country', 'time_zone', 'language', 'user_ra_id',
                                 'user_csp_id', 'certificate_alias', 'common_name']
-        for parameter in keyworded_parameters:
-            if parameter in kwargs:
-                data[parameter] = kwargs[parameter]
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                data[attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
@@ -359,21 +365,23 @@ class Connection:
     def get_package(self, package_id: int) -> requests.models.Response:
         """ Returns the info of a specific package.
 
-        :param package_id: the package ID of the package
-        :return: returns a response object with a json body with parameters:
-            package_id,
-            package_name,
-            package_owner,
-            owner_name,
-            package_status,
-            folder,
-            unread,
-            next_signer,
-            next_signer_email:
-                user_email,
-                user_name,
-            uploaded_on,
-            modified_on
+        :param package_id: int
+            ID of the package.
+        :return: requests.models.Response
+            JSON body contains:
+                package_id,
+                package_name,
+                package_owner,
+                owner_name,
+                package_status,
+                folder,
+                unread,
+                next_signer,
+                next_signer_email:
+                    user_email,
+                    user_name,
+                uploaded_on,
+                modified_on
         """
         url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}"
         headers = {
@@ -487,15 +495,16 @@ class Connection:
 
     # Document Package
 
-    def add_package(self, package_name, **kwargs) -> requests.models.Response:
+    def add_package(self, package_name: str, **kwargs) -> requests.models.Response:
         """ Create a new package in SigningHub.
 
-        :param package_name: Name of the package
+        :param package_name: str
+            Name of the new package.
         :param kwargs:
-            workflow_mode (optional)(str): The workflow mode of the package, possible values are "ONLY_ME",
-                "ME_AND_OTHERS" and "ONLY_OTHERS".
+            workflow_mode: str
+                The workflow mode of the package, possible values are "ONLY_ME", "ME_AND_OTHERS" and "ONLY_OTHERS".
                 If no workflow_mode is given, the default is used as per the settings in your SigningHub enterprise.
-        :return: response object
+        :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages"
         headers = {
@@ -512,6 +521,14 @@ class Connection:
         return requests.post(url=url, headers=headers, data=data)
 
     def rename_package(self, package_id: int, new_name: str) -> requests.models.Response:
+        """ Rename a specific package.
+
+        :param package_id: int
+            ID of the package to be renamed.
+        :param new_name: str
+            New name of the package.
+        :return: requests.models.Response
+        """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}"
         headers = {
             'Content-Type': 'application/json',
@@ -561,8 +578,8 @@ class Connection:
         :param template_name: str
             Name of the template to be applied.
         :param kwargs:
-            apply_to_all: (bool)(optional)
-                True, if template is to be applied on all the documents in the package.
+            apply_to_all: bool
+                True if the template is to be applied on all documents within the package.
                 False if not.
         :return: requests.models.Response
         """
@@ -581,7 +598,7 @@ class Connection:
         return requests.post(url=url, data=data, headers=headers)
 
     def share_document_package(self, package_id: int) -> requests.models.Response:
-        """ Share a package.
+        """ Share a specific package.
 
         :param package_id: int
             ID of the package to be shared.
@@ -611,9 +628,9 @@ class Connection:
         """ Get the details of a specific document
 
         :param package_id: int
-            ID of the package
+            ID of the package.
         :param document_id: int
-            ID of the document
+            ID of the document.
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/details"
@@ -654,6 +671,16 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def rename_document(self, package_id: int, document_id: int, new_document_name: str) -> requests.models.Response:
+        """ Rename a specific document within a package.
+
+        :param package_id: int
+            ID of the package in which the document is located.
+        :param document_id: int
+            ID of the document to be renamed.
+        :param new_document_name: str
+            New name for the document.
+        :return: requests.models.Response
+        """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
         headers = {
             'Content-Type': 'application/json',
@@ -666,6 +693,14 @@ class Connection:
         return requests.put(url=url, headers=headers, data=data)
 
     def delete_document(self, package_id: int, document_id: int) -> requests.models.Response:
+        """ Delete a specific document within a package.
+
+        :param package_id: int
+            ID of the package where the document is in.
+        :param document_id: int
+            ID of the document to be deleted.
+        :return: requests.models.Response
+        """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
         headers = {
             'Content-Type': 'application/json',
@@ -683,8 +718,8 @@ class Connection:
         }
         return requests.get(url=url, headers=headers)
 
-    def update_certify_policy_for_document(self, package_id: int, document_id: int,
-                                           enabled: bool, **kwargs) -> requests.models.Response:
+    def update_certify_policy_for_document(self, package_id: int, document_id: int, enabled: bool, **kwargs) \
+            -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/certify"
         headers = {
             'Content-Type': 'application/json',
@@ -759,9 +794,10 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def delete_package(self, package_id: int) -> requests.models.Response:
-        """ Deleting a package.
+        """ Delete a specific package.
 
-        :param package_id: int; Package ID of the package you want to delete
+        :param package_id: int
+            ID of the package to be deleted.
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}"
@@ -976,8 +1012,8 @@ class Connection:
             role: str
                 role of the group as a recipient in the workflow. Possible value are "SIGNER",
                 "REVIEWER", "EDITOR","CARBON_COPY" and "INPERSON_HOST".
-                However, while XML type document preparation, only supported role types are "SIGNER",
-                "REVIEWER" and "CARBON_COPY".
+                However, while XML type document preparation, only supported role types are "SIGNER", "REVIEWER"
+                and "CARBON_COPY".
             email_notifications: bool
                 Setting its value to "true" sends an email notification to the user when its turn arrives in workflow.
                 Setting its value to "false" does not send the email notification to the user on its turn.
@@ -1162,7 +1198,8 @@ class Connection:
         }
         return requests.get(url=url, headers=headers)
 
-    def update_workflow_user_authentication_document_opening(self, package_id: int, order: int, **kwargs):
+    def update_workflow_user_authentication_document_opening(self, package_id: int, order: int, **kwargs) \
+            -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication"
         headers = {
             'Content-Type': 'application/json',
@@ -1441,22 +1478,16 @@ class Connection:
         }
         data = {
             'order': order,
-            'page_no': page_no
+            'page_no': page_no,
+            'dimensions': dict()
         }
-        if 'field_name' in kwargs:
-            data['field_name'] = kwargs['field_name']
-        if 'display' in kwargs:
-            data['display'] = kwargs['display']
-        if 'x' in kwargs:
-            data['dimensions']['x'] = kwargs['x']
-        if 'y' in kwargs:
-            data['dimensions']['y'] = kwargs['y']
-        if 'width' in kwargs:
-            data['dimensions']['width'] = kwargs['width']
-        if 'height' in kwargs:
-            data['dimensions']['height'] = kwargs['height']
-        if 'level_of_assurance' in kwargs:
-            data['level_of_assurance'] = kwargs['level_of_assurance']
+        keyworded_attributes = ['field_name', 'display', 'x', 'y', 'width', 'height', 'level_of_assurance']
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                if attribute in ['x', 'y', 'width', 'height']:
+                    data['dimensions'][attribute] = kwargs[attribute]
+                else:
+                    data[attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.post(url=url, data=data, headers=headers)
 
@@ -1473,20 +1504,13 @@ class Connection:
             'page_no': page_number,
             'dimensions': dict()
         }
-        if 'field_name' in kwargs:
-            data['field_name'] = kwargs['field_name']
-        if 'placeholder' in kwargs:
-            data['placeholder'] = kwargs['placeholder']
-        if 'display' in kwargs:
-            data['display'] = kwargs['display']
-        if 'x' in kwargs:
-            data['dimensions']['x'] = kwargs['x']
-        if 'y' in kwargs:
-            data['dimensions']['y'] = kwargs['y']
-        if 'width' in kwargs:
-            data['dimensions']['width'] = kwargs['width']
-        if 'height' in kwargs:
-            data['dimensions']['height'] = kwargs['height']
+        keyworded_attributes = ['field_name', 'placeholder', 'display', 'x', 'y', 'width', 'height']
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                if attribute in ['x', 'y', 'width', 'height']:
+                    data['dimensions'][attribute] = kwargs[attribute]
+                else:
+                    data[attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
@@ -1503,16 +1527,13 @@ class Connection:
             'page_no': page_number,
             'dimensions': dict()
         }
-        if 'field_name' in kwargs:
-            data['field_name'] = kwargs['field_name']
-        if 'x' in kwargs:
-            data['dimensions']['x'] = kwargs['x']
-        if 'y' in kwargs:
-            data['dimensions']['y'] = kwargs['y']
-        if 'width' in kwargs:
-            data['dimensions']['width'] = kwargs['width']
-        if 'height' in kwargs:
-            data['dimensions']['height'] = kwargs['height']
+        keyworded_attributes = ['field_name', 'x', 'y', 'width', 'height']
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                if attribute in ['x', 'y', 'width', 'height']:
+                    data['dimensions'][attribute] = kwargs[attribute]
+                else:
+                    data[attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
@@ -1621,23 +1642,31 @@ class Connection:
 
     def autoplace_fields(self, package_id: int, document_id: int, search_text: str, order: int, field_type: str,
                          **kwargs) -> requests.models.Response:
-        """ Autoplacing fields to a string in the document.
+        """ Automatically placing fields to a predefined string in the document.
 
-        :param package_id: int; ID of the package.
-        :param document_id: int; ID of the document on which the fields should be added.
-        :param search_text: str; text to which the fields should be added on the document.
-        :param order: int; order of the user to which the fields should be assigned.
-        :param field_type: Type of field to be created in the document. Possible values are "ELECTRONIC_SIGNATURE",
+        :param package_id: int
+            ID of the package.
+        :param document_id: int
+            ID of the document on which the fields should be added.
+        :param search_text: str
+            Text to which the fields should be added on the document.
+        :param order: int
+            Order of the user to which the fields should be assigned.
+        :param field_type: str
+            Type of field to be created in the document. Possible values are "ELECTRONIC_SIGNATURE",
             "DIGITAL_SIGNATURE", "IN_PERSON_SIGNATURE", "INITIALS","TEXT", "NAME", "EMAIL", "COMPANY", "JOBTITLE",
             "RadioBox", "CheckBox", "DATE".
         :param kwargs:
-            width: (int)(optional); width of the field in pixels
-            height: (int)(optional); height of the field in pixels
-            placement: (str)(optional): If the text is found, fields are to be placed in the document.
+            width: int
+                Width of the field in pixels
+            height: int
+                Height of the field in pixels
+            placement: str
+                If the text is found, fields are to be placed in the document.
                 Placement of the field can be mentioned in this attribute.
                 Possible values of placement of a field are "LEFT", "RIGHT", "TOP", "BOTTOM".
                 If no value is provided the default value will be "LEFT".
-        :return: response object
+        :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/autoplace"
         headers = {
@@ -1951,10 +1980,13 @@ class Connection:
     def delete_document_field(self, package_id: int, document_id: int, field_name: str) -> requests.models.Response:
         """ Deleting a field from a document.
 
-        :param package_id: int; ID of the package.
-        :param document_id: int; ID of the document where the field is placed.
-        :param field_name: str; Name of the field which will be deleted.
-        :return: response object
+        :param package_id: int
+            ID of the package.
+        :param document_id: int
+            ID of the document where the field is placed.
+        :param field_name: str
+            Name of the field which will be deleted.
+        :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
         headers = {
@@ -1962,10 +1994,9 @@ class Connection:
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
-        data = {
-            "field_name": field_name
-        }
-        data = json.dumps(data)
+        data = json.dumps({
+            'field_name': field_name
+        })
         return requests.delete(url=url, data=data, headers=headers)
 
     def signer_authentication_via_otp(self, package_id: int, document_id: int, field_name: str) \
@@ -2047,26 +2078,18 @@ class Connection:
             'signing_server': signing_server,
             'signing_capacity': signing_capacity
         }
+
+        keyworded_attributes = ['signing_reason', 'signing_location', 'contact_information', 'user_name',
+                                'user_password', 'appearance_design', 'skip_verification']
         if 'x_otp' in kwargs:
             headers["x-otp"] = kwargs["x_otp"]
-        if "signing_reason" in kwargs:
-            data["signing_reason"] = kwargs["signing_reason"]
-        if "signing_location" in kwargs:
-            data["signing_location"] = kwargs["signing_location"]
-        if "contact_information" in kwargs:
-            data["contact_information"] = kwargs["contact_information"]
-        if "user_name" in kwargs:
-            data["user_name"] = kwargs["user_name"]
-        if 'user_password' in kwargs:
-            data["user_password"] = kwargs["user_password"]
-        if "appearance_design" in kwargs:
-            data["appearance_design"] = kwargs["appearance_design"]
-        if "skip_verification" in kwargs:
-            data["skip_verification"] = kwargs["skip_verification"]
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                data[attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def sign_document(self, package_id: int, document_id: int, field_name: int, hand_signature_image: bytes, **kwargs) \
+    def sign_document_v3(self, package_id: int, document_id: int, field_name: int, hand_signature_image: bytes, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
         headers = {
@@ -2078,26 +2101,14 @@ class Connection:
             'field_name': field_name,
             'hand_signature_image': hand_signature_image
         }
+        keyworded_attributes = ['signing_reason', 'signing_location', 'contact_information', 'user_name',
+                                'user_password', 'appearance_design', 'signing_capacity', 'witness_signing_capacity',
+                                'skip_verification']
         if 'x_otp' in kwargs:
             headers["x-otp"] = kwargs["x_otp"]
-        if "signing_reason" in kwargs:
-            data["signing_reason"] = kwargs["signing_reason"]
-        if "signing_location" in kwargs:
-            data["signing_location"] = kwargs["signing_location"]
-        if "contact_information" in kwargs:
-            data["contact_information"] = kwargs["contact_information"]
-        if "user_name" in kwargs:
-            data["user_name"] = kwargs["user_name"]
-        if 'user_password' in kwargs:
-            data["user_password"] = kwargs["user_password"]
-        if "appearance_design" in kwargs:
-            data["appearance_design"] = kwargs["appearance_design"]
-        if 'signing_capacity' in kwargs:
-            data["signing_capacity"] = kwargs["signing_capacity"]
-        if "witness_signing_capacity" in kwargs:
-            data["witness_signing_capacity"] = kwargs["witness_signing_capacity"]
-        if "skip_verification" in kwargs:
-            data["skip_verification"] = kwargs["skip_verification"]
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                data[attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
@@ -2145,7 +2156,7 @@ class Connection:
         }
         return requests.delete(url=url, headers=headers)
 
-    def finish_processing(self, package_id: int):
+    def finish_processing(self, package_id: int) -> requests.models.Response:
         """ Within native SigningHub mobile apps and mobile web use cases,
         this call is necessary to ensure that each user completes their respective actions with respect to SigningHub.
 
@@ -2164,7 +2175,7 @@ class Connection:
         }
         return requests.post(url=url, headers=headers)
 
-    def get_registered_devices(self):
+    def get_registered_devices(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/authorization/devices"
         headers = {
             'Content-Type': 'application/json',
@@ -2200,11 +2211,11 @@ class Connection:
             'user_name': user_name,
             'invitation': dict()
         }
-        keyworded_parameters = ['job_title', 'company_name', 'mobile_number', 'country', 'time_zone', 'language',
+        keyworded_attributes = ['job_title', 'company_name', 'mobile_number', 'country', 'time_zone', 'language',
                                 'service_agreements', 'marketing_emails']
-        for parameter in keyworded_parameters:
-            if parameter in kwargs:
-                data[parameter] = kwargs[parameter]
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                data[attribute] = kwargs[attribute]
         if 'invitation_to_enterprise_name' in kwargs:
             data['invitation']['enterprise_name'] = data['invitation_to_enterprise_name']
         data = json.dumps(data)
@@ -2390,11 +2401,11 @@ class Connection:
             'Authorization': 'Bearer ' + self.access_token
         }
         data = dict()
-        keyworded_parameters = ['user_name', 'job_title', 'company_name', 'mobile_number', 'country', 'time_zone',
+        keyworded_attributes = ['user_name', 'job_title', 'company_name', 'mobile_number', 'country', 'time_zone',
                                 'language', 'user_national_id']
-        for parameter in keyworded_parameters:
-            if parameter in kwargs:
-                data[parameter] = kwargs[parameter]
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                data[attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
@@ -2620,10 +2631,10 @@ class Connection:
         }
         if 'enabled' in kwargs:
             data['enabled'] = kwargs['enabled']
-        keyworded_parameters = ['user_name', 'user_email', 'from', 'to']
-        for parameter in keyworded_parameters:
-            if parameter in kwargs:
-                data['delegate'][parameter] = kwargs[parameter]
+        keyworded_attributes = ['user_name', 'user_email', 'from', 'to']
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                data['delegate'][attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
@@ -2646,10 +2657,10 @@ class Connection:
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
-        keyworded_parameters = ['x-search-text', 'x-enterprise']
-        for parameter in keyworded_parameters:
-            if parameter in kwargs:
-                headers[parameter] = kwargs[parameter]
+        keyworded_attributes = ['x-search-text', 'x-enterprise']
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                headers[attribute] = kwargs[attribute]
         return requests.get(url=url, headers=headers)
 
     def get_groups(self, records_per_page: int, page_number: int, **kwargs) -> requests.models.Response:
@@ -2658,10 +2669,10 @@ class Connection:
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
-        keyworded_parameters = ['x-search-text', 'x-enterprise']
-        for parameter in keyworded_parameters:
-            if parameter in kwargs:
-                headers[parameter] = kwargs[parameter]
+        keyworded_attributes = ['x-search-text', 'x-enterprise']
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                headers[attribute] = kwargs[attribute]
         return requests.get(url=url, headers=headers)
 
     def get_library_documents(self, records_per_page: int, page_number: int, **kwargs) -> requests.models.Response:
@@ -2670,10 +2681,10 @@ class Connection:
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
-        keyworded_parameters = ['x-search-text', 'x-enterprise']
-        for parameter in keyworded_parameters:
-            if parameter in kwargs:
-                headers[parameter] = kwargs[parameter]
+        keyworded_attributes = ['x-search-text', 'x-enterprise']
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                headers[attribute] = kwargs[attribute]
         return requests.get(url=url, headers=headers)
 
     def get_templates(self, records_per_page: int, page_number: int, **kwargs) -> requests.models.Response:
@@ -2682,10 +2693,10 @@ class Connection:
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + self.access_token
         }
-        keyworded_parameters = ['x-search-text', 'x-enterprise']
-        for parameter in keyworded_parameters:
-            if parameter in kwargs:
-                headers[parameter] = kwargs[parameter]
+        keyworded_attributes = ['x-search-text', 'x-enterprise']
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                headers[attribute] = kwargs[attribute]
         return requests.get(url=url, headers=headers)
 
     def reset_email_notifications(self) -> requests.models.Response:
@@ -2729,10 +2740,10 @@ class Connection:
             'Authorization': 'Bearer ' + self.access_token
         }
         data = dict()
-        keyworded_parameters = ['name', 'description', 'members']
-        for parameter in keyworded_parameters:
-            if parameter in kwargs:
-                data[parameter] = kwargs[parameter]
+        keyworded_attributes = ['name', 'description', 'members']
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                data[attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
