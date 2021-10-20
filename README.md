@@ -22,6 +22,7 @@ Install this package with the command ```pip install signinghubapi```.
 This package can be used to create a ```Connection``` object which connects to SigningHub.
 
 Required parameters are:
+
 - An URL;
 
 Optional parameters are:
