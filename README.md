@@ -22,11 +22,12 @@ Install this package with the command ```pip install signinghubapi```.
 This package can be used to create a ```Connection``` object which connects to SigningHub.
 
 Required parameters are:
-- An URL
+
+- An URL;
 
 Optional parameters are:
 - An API connector client ID;
-- An API connector client secret;
+- An API connector client secret.
 - A username (email address) to authenticate with;
 - A password to authenticate with;
 - A scope to authenticate with;
@@ -35,9 +36,9 @@ Optional parameters are:
 - An API version (3 or 4, depending on your SigningHub version);
 - An API port (if the API URL is not defined as a URL).
 
-This object can execute the calls which are found in the API guide. These calls are translated to Python and the ```requests.Response``` object will be returned each time.
+This object can execute the calls which are found in the API guide. These calls are translated to Python and the ```requests.models.Response``` object will be returned each time.
 
-The validity of the provided URL can be tested with a ```about_signinghub()``` call. This call only requires the provided URL to work.
+The validity of the provided URL can be tested with an ```about_signinghub()``` call. This call only requires the provided URL to work.
 
 ## Example
 ```python
