@@ -2089,7 +2089,7 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def sign_document_v3(self, package_id: int, document_id: int, field_name: int, hand_signature_image: bytes, **kwargs) \
+    def sign_document_v3(self, package_id: int, document_id: int, field_name: str, hand_signature_image: bytes, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
         headers = {
