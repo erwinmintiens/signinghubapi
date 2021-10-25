@@ -1964,12 +1964,12 @@ class Connection:
     def delete_document_field(self, package_id: int, document_id: int, field_name: str) -> requests.models.Response:
         """ Deleting a field from a document.
 
-        :param package_id: int
-            ID of the package.
-        :param document_id: int
-            ID of the document where the field is placed.
-        :param field_name: str
-            Name of the field which will be deleted.
+        :param package_id: ID of the package
+        :type package_id: int
+        :param document_id: ID of the document where the field is situated.
+        :type document_id: int
+        :param field_name: Name of the field which will be deleted.
+        :type field_name: str
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
