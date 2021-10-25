@@ -1884,40 +1884,17 @@ class Connection:
             'font': dict(),
             'dimensions': dict()
         }
-        if 'renamed_as' in kwargs:
-            data['renamed_as'] = kwargs['renamed_as']
-        if 'page_number' in kwargs:
-            data['page_no'] = kwargs['page_number']
-        if 'type' in kwargs:
-            data['type'] = kwargs['type']
-        if 'format' in kwargs:
-            data['format'] = kwargs['format']
-        if 'placeholder' in kwargs:
-            data['placeholder'] = kwargs['placeholder']
-        if 'value' in kwargs:
-            data['value'] = kwargs['value']
-        if 'max_length' in kwargs:
-            data['max_length'] = kwargs['max_length']
-        if 'multiline' in kwargs:
-            data['multiline'] = kwargs['multiline']
-        if 'field_type' in kwargs:
-            data['field_type'] = kwargs['field_type']
-        if 'validation_rule' in kwargs:
-            data['validation_rule'] = kwargs['validation_rule']
-        if 'font_name' in kwargs:
-            data['font']['name'] = kwargs['font_name']
-        if 'font_size' in kwargs:
-            data['font']['size'] = kwargs['font_size']
-        if 'font_embedded_size' in kwargs:
-            data['font']['embedded_size'] = kwargs['font_embedded_size']
-        if 'x' in kwargs:
-            data['dimensions']['x'] = kwargs['x']
-        if 'y' in kwargs:
-            data['dimensions']['y'] = kwargs['y']
-        if 'width' in kwargs:
-            data['dimensions']['width'] = kwargs['width']
-        if 'height' in kwargs:
-            data['dimensions']['height'] = kwargs['height']
+        keyworded_attributes = ['renamed_as', 'page_number', 'page_number', 'type', 'format', 'placeholder', 'value',
+                                'max_length', 'multiline', 'field_type', 'validation_rule', 'font_name', 'font_size',
+                                'font_embedded_size', 'x', 'y', 'width', 'height']
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                if 'font' in attribute:
+                    data['font'][attribute[5:]] = kwargs[attribute]
+                elif attribute in ['x', 'y', 'width', 'height']:
+                    data['dimensions'][attribute] = kwargs[attribute]
+                else:
+                    data[attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
@@ -2061,8 +2038,28 @@ class Connection:
         return requests.put(url=url, headers=headers, data=data)
 
     # For API v4 and higher only.
-    def sign_document_v4(self, package_id: int, document_id: int, field_name: str, hand_signature_image: bytes,
+    def sign_document_v4(self, package_id: int, document_id: int, field_name: str, hand_signature_image: str,
                          signing_server: str, signing_capacity: str, **kwargs) -> requests.models.Response:
+        """ Sign a signature field. This function is for API version 4 (SigningHub version 7.7.9 and above).
+
+        :param package_id: ID of the package
+        :param document_id: ID of the document
+        :param field_name: Name of the signature field to sign
+        :param hand_signature_image: Image of the signature to set in base64
+        :param signing_server: Name of the signing server of which to sign with
+        :param signing_capacity: Name of the signing capacity to sign with
+        :param kwargs:
+            x-otp: OTP used as a second factor authentication for the signing operation
+            signing_reason: Reason of signing provided by the recipient
+            signing_location: Locale of the signing provided by the recipient
+            contact_information: Contact information (mobile number) of the signer provided by the recipient
+            user_name: Name of the signer
+            user_password: Password of the user
+            appearance_design: Name of the signature appearance to use. If none is provided, default setting will be
+                used.
+            skip_verification: If true: No signature verification returns in response body
+        :return:
+        """
         if self.api_version < 4:
             raise ValueError(f"API version is set to {self.api_version}."
                              f" This call can only be used for API version >= 4.")
@@ -2089,8 +2086,28 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def sign_document_v3(self, package_id: int, document_id: int, field_name: str, hand_signature_image: bytes, **kwargs) \
+    def sign_document_v3(self, package_id: int, document_id: int, field_name: str, hand_signature_image: str, **kwargs) \
             -> requests.models.Response:
+        """ Sign a signature field. This function is for API version 3 (SigningHub version 7.7.9 and below).
+
+        :param package_id: ID of the package
+        :param document_id: ID of the document
+        :param field_name: Name of the signature field to sign
+        :param hand_signature_image: Image of the signature to set in base64
+        :param kwargs:
+            x-otp: OTP used as a second factor authentication for the signing operation
+            signing_reason: Reason of signing provided by the recipient
+            signing_location: Locale of the signing provided by the recipient
+            contact_information: Contact information (mobile number) of the signer provided by the recipient
+            user_name: Name of the signer
+            user_password: Password of the user
+            appearance_design: Name of the signature appearance to use. If none is provided, default setting will be
+                used.
+            signing_server: Name of the signing server of which to sign with
+            signing_capacity: Name of the signing capacity to sign with
+            skip_verification: If true: No signature verification returns in response body
+        :return:
+        """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
         headers = {
             'Content-Type': 'application/json',
@@ -2113,6 +2130,14 @@ class Connection:
         return requests.post(url=url, headers=headers, data=data)
 
     def decline_document(self, package_id: int, **kwargs) -> requests.models.Response:
+        """ Decline a pending package through the API
+
+        :param package_id: ID of the package
+        :type package_id: int
+        :param kwargs:
+            reason: Reason for the decline of the package
+        :return:
+        """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/decline"
         headers = {
             'Content-Type': 'application/json',
@@ -2164,7 +2189,8 @@ class Connection:
         this method is invoked by the application to ensure the workflow continues to process
         and the next signatory is notified, and the document status is available via the configured call-back URL.
 
-        :param package_id: (int) | ID of the package that needs to be finished
+        :param package_id: ID of the package that needs to be finished
+        :type package_id: int
         :return: response object
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/finish"
