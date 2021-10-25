@@ -12,7 +12,7 @@ class Connection:
         - URL
 
         This can be combined with either:
-        - An valid access token;
+        - A valid access token;
         - A combination of username, password, client_id and client_secret;
         - A refresh token with client_id and client_secret.
 
@@ -20,29 +20,35 @@ class Connection:
         no login required), or just fetching the URL, which should return a
         success.
 
-        :param url: str
-            The API URL of the SigningHub instance
-        :param client_id: str
-            The client id of the integration in your SigningHub
-        :param client_secret: str
-            The client secret of the integration of your SigningHub
-        :param username: str
-            The username of the user you want to authenticate with
-        :param password: str
-            The password of the given user
-        :param api_port: int
-            The port of the API instance. Default value: None
-        :param scope: str
-            The user email address we wish to scope with. Default value: None
-        :param api_version: int
+        :param url: The API URL of the SigningHub instance
+        :type url: str
+        :param client_id: The client id of the integration in your SigningHub. Default value: None
+        :type client_id: str
+        :param client_secret: The client secret of the integration of your SigningHub. Default value: None
+        :type client_secret: str
+        :param username: The username of the user you want to authenticate with. Default value: None
+        :type username: str
+        :param password: The password of the given user. Default value: None
+        :type password: str
+        :param api_port: The port of the API instance. Default value: None
+        :type api_port: int
+        :param scope: The user email address we wish to scope with. Default value: None
+        :type scope: str
+        :param api_version:
             The version of the API of SigningHub. SigningHub version <=7.7.9: api_version = 3,
             SigningHub version >=7.7.9: api_version = 4
-        :param access_token: str
+            Default value: None
+        :type api_version: int
+        :param access_token:
             A previously obtained access token which can be used in further calls.
             No authentication necessary if valid.
-        :param refresh_token: str
+            Default value: None
+        :type access_token: str
+        :param refresh_token:
             A previously obtained refresh token (from a default authentication call) which can be used to authenticate
             with refresh token in combination of url, client_id and client_secret.
+            Default value: None
+        :type refresh_token: str
         """
         self._client_id = client_id
         self._client_secret = client_secret
@@ -365,8 +371,8 @@ class Connection:
     def get_package(self, package_id: int) -> requests.models.Response:
         """ Returns the info of a specific package.
 
-        :param package_id: int
-            ID of the package.
+        :param package_id: ID of the package
+        :type package_id: int
         :return: requests.models.Response
             JSON body contains:
                 package_id,
@@ -498,8 +504,8 @@ class Connection:
     def add_package(self, package_name: str, **kwargs) -> requests.models.Response:
         """ Create a new package in SigningHub.
 
-        :param package_name: str
-            Name of the new package.
+        :param package_name: Name of the package
+        :type package_name: str
         :param kwargs:
             workflow_mode: str
                 The workflow mode of the package, possible values are "ONLY_ME", "ME_AND_OTHERS" and "ONLY_OTHERS".
@@ -540,18 +546,19 @@ class Connection:
         })
         return requests.put(url=url, headers=headers, data=data)
 
-    def upload_document(self, package_id: int, path_to_files_folder: str, file_name: str, x_source="API", **kwargs) \
-            -> requests.models.Response:
+    def upload_document(self, package_id: int, path_to_files_folder: str, file_name: str, x_source: str = "API",
+                        **kwargs) -> requests.models.Response:
         """ Uploading a document to a specific package.
 
-        :param package_id: int
-            ID of the package to which the document needs to be added.
-        :param path_to_files_folder: str
-            Absolute path of the file that needs to be uploaded.
-        :param file_name: str
-            Name of the file.
-        :param x_source: str
+        :param package_id: ID of the package to which the document needs to be added.
+        :type package_id: int
+        :param path_to_files_folder: Absolute path of the file that needs to be uploaded.
+        :type path_to_files_folder: str
+        :param file_name: Name of the file.
+        :type file_name: str
+        :param x_source:
             This is the identification of the source of the document from where the document is uploaded, e.g. "My App".
+        :type x_source: str
         :return: response object
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents"
@@ -571,12 +578,12 @@ class Connection:
             -> requests.models.Response:
         """ Applying a template on a document within a package.
 
-        :param package_id: int
-            ID of the package the template should be applied to.
-        :param document_id: int
-            ID of the document within the package the template should be applied to.
-        :param template_name: str
-            Name of the template to be applied.
+        :param package_id: ID of the package the template should be applied to.
+        :type package_id: int
+        :param document_id: ID of the document within the package the template should be applied to.
+        :type document_id: int
+        :param template_name: Name of the template to be applied.
+        :type template_name: str
         :param kwargs:
             apply_to_all: bool
                 True if the template is to be applied on all documents within the package.
@@ -600,8 +607,8 @@ class Connection:
     def share_document_package(self, package_id: int) -> requests.models.Response:
         """ Share a specific package.
 
-        :param package_id: int
-            ID of the package to be shared.
+        :param package_id: ID of the package to be shared.
+        :type package_id: int
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow"
@@ -627,10 +634,10 @@ class Connection:
     def get_document_details(self, package_id: int, document_id: int) -> requests.models.Response:
         """ Get the details of a specific document
 
-        :param package_id: int
-            ID of the package.
-        :param document_id: int
-            ID of the document.
+        :param package_id: ID of the package
+        :type package_id: int
+        :param document_id: ID of the document
+        :type document_id: int
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/details"
