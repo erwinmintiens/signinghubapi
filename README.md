@@ -10,7 +10,7 @@ SigningHub API guide can be found [here](https://manuals.keysign.eu).
 Both API v3 (SigningHub 7.7.9 and earlier) and API v4 (SigningHub 7.7.9 and above) have been integrated.
 
 # Dependencies
-This Python package depends 1 external module:
+This Python package depends on 1 external module:
 ```requests```
 
 [Requests on PyPI](https://pypi.org/project/requests/)
