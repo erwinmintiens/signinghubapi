@@ -20,3 +20,11 @@ def get_and_set_api_version(resp: requests.Response, connection) -> None:
             connection.api_version = 4
         else:
             raise ValueError("Unknown length of version number")
+
+
+def post_headers() -> dict:
+    return {"Content-Type": "application/json", "Accept": "application/json"}
+
+
+def get_headers() -> dict:
+    return {"Accept": "application/json"}
