@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pytest
 import requests
+
 from signinghubapi.signinghubapi import Connection
 
 from .utils import MockResponse

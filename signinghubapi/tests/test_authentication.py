@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import requests
+
 from signinghubapi.signinghubapi import Connection
 
 from .utils import MockResponse

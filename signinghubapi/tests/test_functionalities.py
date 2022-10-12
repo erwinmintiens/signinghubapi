@@ -2,6 +2,7 @@ import json
 import unittest
 
 import requests
+
 from signinghubapi.signinghubapi import Connection
 from signinghubapi.utils import GET_HEADERS_NO_AUTH
 
