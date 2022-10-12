@@ -15,7 +15,7 @@ class Connection:
         password: str = None,
         api_port: int = None,
         scope: str = None,
-        api_version: int = 3,
+        api_version: int = 4,
         access_token: str = None,
         refresh_token: str = None,
         admin_url: str = None,
