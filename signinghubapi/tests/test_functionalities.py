@@ -1,4 +1,5 @@
 import json
+import unittest
 
 import requests
 from signinghubapi.signinghubapi import Connection
@@ -10,23 +11,8 @@ POST_HEADERS_NO_AUTH = {
 }
 
 
-def test_headers():
-    conn = Connection(url="testurl", access_token="test_access_token")
-
-    headers = conn.get_headers(headers_type="get")
-    assert headers == GET_HEADERS_NO_AUTH
-
-    headers = conn.get_headers(headers_type="post")
-    assert headers == POST_HEADERS_NO_AUTH
-
-    headers = conn.get_headers(headers_type="get", authentication=True)
-    assert headers == {
-        **GET_HEADERS_NO_AUTH,
-        **{"Authorization": f"Bearer {conn.access_token}"},
-    }
-
-    headers = conn.get_headers(headers_type="post", authentication=True)
-    assert headers == {
-        **POST_HEADERS_NO_AUTH,
-        **{"Authorization": f"Bearer {conn.access_token}"},
-    }
+class TestRaiseIfWrongValue(unittest.TestCase):
+    def test_wrong_api_version_value(self):
+        conn = Connection(url="https://test.com")
+        with self.assertRaises(ValueError):
+            conn.api_version = 5

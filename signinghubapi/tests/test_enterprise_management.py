@@ -31,7 +31,7 @@ def test_about_signinghub_set_api_version():
 
 
 def test_about_signinghub_not_set_api_version():
-    conn = Connection(url="https://testurl.com")
+    conn = Connection(url="https://testurl.com", api_version=3)
     with patch("signinghubapi.signinghubapi.requests.get") as mock_get:
         mock_get.return_value = MockResponse(
             status_code=200,
