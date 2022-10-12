@@ -5,14 +5,14 @@ import json
 class Connection:
     def __init__(self, url: str, client_id: str = None, client_secret: str = None, username: str = None,
                  password: str = None, api_port: int = None, scope: str = None, api_version: int = 3,
-                 access_token: str = None, refresh_token: str = None):
+                 access_token: str = None, refresh_token: str = None, admin_url: str = None, admin_port: int = None):
         """ Initialize a connection between Python and a SigningHub REST API endpoint.
 
         What needs to be defined:
         - URL
 
         This can be combined with either:
-        - An valid access token;
+        - A valid access token;
         - A combination of username, password, client_id and client_secret;
         - A refresh token with client_id and client_secret.
 
@@ -20,29 +20,35 @@ class Connection:
         no login required), or just fetching the URL, which should return a
         success.
 
-        :param url: str
-            The API URL of the SigningHub instance
-        :param client_id: str
-            The client id of the integration in your SigningHub
-        :param client_secret: str
-            The client secret of the integration of your SigningHub
-        :param username: str
-            The username of the user you want to authenticate with
-        :param password: str
-            The password of the given user
-        :param api_port: int
-            The port of the API instance. Default value: None
-        :param scope: str
-            The user email address we wish to scope with. Default value: None
-        :param api_version: int
+        :param url: The API URL of the SigningHub instance
+        :type url: str
+        :param client_id: The client id of the integration in your SigningHub. Default value: None
+        :type client_id: str
+        :param client_secret: The client secret of the integration of your SigningHub. Default value: None
+        :type client_secret: str
+        :param username: The username of the user you want to authenticate with. Default value: None
+        :type username: str
+        :param password: The password of the given user. Default value: None
+        :type password: str
+        :param api_port: The port of the API instance. Default value: None
+        :type api_port: int
+        :param scope: The user email address we wish to scope with. Default value: None
+        :type scope: str
+        :param api_version:
             The version of the API of SigningHub. SigningHub version <=7.7.9: api_version = 3,
             SigningHub version >=7.7.9: api_version = 4
-        :param access_token: str
+            Default value: None
+        :type api_version: int
+        :param access_token:
             A previously obtained access token which can be used in further calls.
             No authentication necessary if valid.
-        :param refresh_token: str
+            Default value: None
+        :type access_token: str
+        :param refresh_token:
             A previously obtained refresh token (from a default authentication call) which can be used to authenticate
             with refresh token in combination of url, client_id and client_secret.
+            Default value: None
+        :type refresh_token: str
         """
         self._client_id = client_id
         self._client_secret = client_secret
@@ -63,6 +69,8 @@ class Connection:
         self._access_token = access_token
         self._refresh_token = refresh_token
         self._x_change_password_token = None
+        self._admin_url = admin_url
+        self._admin_port = admin_port
 
     # Getters and setters
     @property
@@ -105,6 +113,14 @@ class Connection:
     def x_change_password_token(self):
         return self._x_change_password_token
 
+    @property
+    def admin_url(self):
+        return self._admin_url
+
+    @property
+    def admin_port(self):
+        return self._admin_port
+
     @api_version.setter
     def api_version(self, new_api_version: int):
         self._api_version = new_api_version
@@ -145,6 +161,14 @@ class Connection:
     @refresh_token.setter
     def refresh_token(self, new_refresh_token: str):
         self._refresh_token = new_refresh_token
+
+    @admin_url.setter
+    def admin_url(self, new_admin_url: str):
+        self._admin_url = new_admin_url
+
+    @admin_port.setter
+    def admin_port(self, new_admin_port: int):
+        self._admin_port = new_admin_port
 
     # Documented SigningHub API Calls
     def authenticate(self) -> requests.models.Response:
@@ -219,20 +243,43 @@ class Connection:
             return r
 
     def get_service_agreements(self) -> requests.models.Response:
+        """ Business applications can use this service API to get terms of services and privacy policy that are
+        configured in SigningHub Admin console.
+
+        :return:
+        """
         url = f"{self.url}/v{self.api_version}/terms"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def otp_login_authentication(self, mobile_number: str) -> requests.models.Response:
+    def otp_login_authentication(self, mobile_number: str = None) -> requests.models.Response:
+        """ SigningHub supports second factor authentication using OTP via SMS at login time via the web site GUI.
+        Note this is different to OTP via SMS used in electronic signatures at the point of signing.
+        This specifically refers to using the second factor authentication for SigningHub system access.
+
+        To enable OTP via SMS second factor authentication see Enterprise Settings > Roles.
+
+        At least one SMS provider must be configured in SigningHub administration in order to use this functionality.
+
+        This API call is used to allow business applications to request an OTP via SMS to the user's mobile device
+        for subsequent use in second factor authentication in the GUI.
+
+        Note the mobile number is an optional field.  If not supplied, SigningHub will attempt to send the OTP to the
+        mobile number stored in the user's Profile settings.
+        If a mobile number is supplied in the call, then the OTP will be sent to this number,
+        and any stored one under Profile settings will be ignored.
+
+        In the event that no mobile number is supplied, nor found under the user's Profile settings,
+        an error will be returned.
+
+        :param mobile_number: Mobile number to send the SMS text message to
+        :type mobile_number: str
+        :return:
+        """
         url = f"{self.url}/v{self.api_version}/authentication/otp"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'mobile_number': mobile_number
         })
@@ -252,18 +299,13 @@ class Connection:
                 copyright: The copyright statement by Ascertia Limited.
         """
         url = f"{self.url}/v{self.api_version}/about"
-        headers = {
-            'Accept': 'application/json'
-        }
+        headers = get_headers()
         return requests.get(url=url, headers=headers)
 
     def register_enterprise_user(self, user_email: str, user_name: str, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/users"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'user_email': user_email,
             'user_name': user_name
@@ -279,21 +321,16 @@ class Connection:
 
     def get_enterprise_users(self, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/users"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         if 'x-search-text' in kwargs:
             headers['x-search-text'] = kwargs['x-search-text']
         return requests.get(url=url, headers=headers)
 
     def update_enterprise_user(self, user_email: str, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/users"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             "user_email": user_email
         }
@@ -309,11 +346,8 @@ class Connection:
 
     def delete_enterprise_user(self, user_email: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/users"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'user_email': user_email
         })
@@ -321,11 +355,8 @@ class Connection:
 
     def invite_enterprise_user(self, user_email: str, user_name: str, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/invitations"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'user_email': user_email,
             'user_name': user_name
@@ -337,67 +368,41 @@ class Connection:
 
     def get_enterprise_invitations(self, page_number: int, records_per_page: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/invitations/{page_number}/{records_per_page}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def delete_enterprise_user_invitation(self, user_email: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/invitations"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({'user_email': user_email})
         return requests.delete(url=url, headers=headers, data=data)
 
     def get_enterprise_branding(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/branding"
-        headers = {
-            'Accept': 'application/json',
-            'x-base64': True,
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
+        headers['x-base64'] = True
         return requests.get(url=url, headers=headers)
 
     def get_package(self, package_id: int) -> requests.models.Response:
         """ Returns the info of a specific package.
 
-        :param package_id: int
-            ID of the package.
+        :param package_id: ID of the package
+        :type package_id: int
         :return: requests.models.Response
-            JSON body contains:
-                package_id,
-                package_name,
-                package_owner,
-                owner_name,
-                package_status,
-                folder,
-                unread,
-                next_signer,
-                next_signer_email:
-                    user_email,
-                    user_name,
-                uploaded_on,
-                modified_on
         """
         url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def add_certificate(self, user_email: str, capacity_name: str, certificate_alias: str, level_of_assurance: str,
                         key_protection_option: str, is_default: bool) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/signingcertificates"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'user_email': user_email,
             'capacity_name': capacity_name,
@@ -411,11 +416,8 @@ class Connection:
     def update_certificate(self, certificate_id: int, user_email: str, capacity_name: str, certificate_alias: str,
                            level_of_assurance: str, is_default: bool) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/signingcertificates/{certificate_id}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'user_email': user_email,
             'capacity_name': capacity_name,
@@ -427,11 +429,8 @@ class Connection:
 
     def delete_certificate(self, certificate_id: int, user_email: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/signingcertificates/{certificate_id}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'user_email': user_email
         })
@@ -439,20 +438,14 @@ class Connection:
 
     def get_enterprise_group(self, group_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/groups/{group_id}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def add_enterprise_group(self, group_name: str, members: list, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/groups"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             "Name": group_name,
             "Members": list()
@@ -466,11 +459,8 @@ class Connection:
 
     def update_enterprise_group(self, group_id: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/groups/{group_id}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = dict()
         if 'name' in kwargs:
             data['Name'] = kwargs['name']
@@ -486,11 +476,8 @@ class Connection:
 
     def delete_enterprise_group(self, group_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/groups/{group_id}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
     # Document Package
@@ -498,8 +485,8 @@ class Connection:
     def add_package(self, package_name: str, **kwargs) -> requests.models.Response:
         """ Create a new package in SigningHub.
 
-        :param package_name: str
-            Name of the new package.
+        :param package_name: Name of the package
+        :type package_name: str
         :param kwargs:
             workflow_mode: str
                 The workflow mode of the package, possible values are "ONLY_ME", "ME_AND_OTHERS" and "ONLY_OTHERS".
@@ -507,11 +494,8 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'package_name': package_name
         }
@@ -530,38 +514,33 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'package_name': new_name
         })
         return requests.put(url=url, headers=headers, data=data)
 
-    def upload_document(self, package_id: int, path_to_files_folder: str, file_name: str, x_source="API", **kwargs) \
-            -> requests.models.Response:
+    def upload_document(self, package_id: int, path_to_files_folder: str, file_name: str, x_source: str = "API",
+                        **kwargs) -> requests.models.Response:
         """ Uploading a document to a specific package.
 
-        :param package_id: int
-            ID of the package to which the document needs to be added.
-        :param path_to_files_folder: str
-            Absolute path of the file that needs to be uploaded.
-        :param file_name: str
-            Name of the file.
-        :param x_source: str
+        :param package_id: ID of the package to which the document needs to be added.
+        :type package_id: int
+        :param path_to_files_folder: Absolute path of the file that needs to be uploaded.
+        :type path_to_files_folder: str
+        :param file_name: Name of the file.
+        :type file_name: str
+        :param x_source:
             This is the identification of the source of the document from where the document is uploaded, e.g. "My App".
+        :type x_source: str
         :return: response object
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-            'x-file-name': file_name,
-            'x-source': x_source,
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
+        headers['x-file-name'] = file_name
+        headers['x-source'] = x_source
         if 'x-convert-document' in kwargs:
             headers['x-convert-document'] = kwargs['x-convert-document']
         data = open(path_to_files_folder + file_name, "rb").read()
@@ -571,12 +550,12 @@ class Connection:
             -> requests.models.Response:
         """ Applying a template on a document within a package.
 
-        :param package_id: int
-            ID of the package the template should be applied to.
-        :param document_id: int
-            ID of the document within the package the template should be applied to.
-        :param template_name: str
-            Name of the template to be applied.
+        :param package_id: ID of the package the template should be applied to.
+        :type package_id: int
+        :param document_id: ID of the document within the package the template should be applied to.
+        :type document_id: int
+        :param template_name: Name of the template to be applied.
+        :type template_name: str
         :param kwargs:
             apply_to_all: bool
                 True if the template is to be applied on all documents within the package.
@@ -584,11 +563,8 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/template"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             "template_name": template_name
         }
@@ -600,25 +576,19 @@ class Connection:
     def share_document_package(self, package_id: int) -> requests.models.Response:
         """ Share a specific package.
 
-        :param package_id: int
-            ID of the package to be shared.
+        :param package_id: ID of the package to be shared.
+        :type package_id: int
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
     def change_document_package_owner(self, package_id: int, new_owner: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/owner"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'owner': new_owner
         })
@@ -627,17 +597,15 @@ class Connection:
     def get_document_details(self, package_id: int, document_id: int) -> requests.models.Response:
         """ Get the details of a specific document
 
-        :param package_id: int
-            ID of the package.
-        :param document_id: int
-            ID of the document.
+        :param package_id: ID of the package
+        :type package_id: int
+        :param document_id: ID of the document
+        :type document_id: int
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/details"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_document_image(self, package_id: int, document_id: int, page_number: int, resolution: str, base_64=False,
@@ -682,11 +650,8 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'document_name': new_document_name
         })
@@ -702,30 +667,21 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
     def get_certify_policy_for_document(self, package_id: int, document_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/certify"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_certify_policy_for_document(self, package_id: int, document_id: int, enabled: bool, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/certify"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'certify': {
                 'enabled': enabled,
@@ -740,32 +696,23 @@ class Connection:
 
     def get_package_verification(self, package_id: int, base_64=True) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/verification"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-            'x-base64': base_64
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
+        headers['x-base64'] = base_64
         return requests.get(url=url, headers=headers)
 
     def get_document_verification(self, package_id: int, document_id: int, base_64=True) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/verification"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-            'x-base64': base_64
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
+        headers['x-base64'] = base_64
         return requests.get(url=url, headers=headers)
 
     def change_document_order(self, package_id: int, document_id: int, new_document_order: int) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/reorder"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'order': new_document_order
         })
@@ -785,10 +732,8 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{document_status}/{page_number}/{records_per_page}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         if 'x_search_text' in kwargs:
             headers['x-search-text'] = kwargs['x_search_text']
         return requests.get(url=url, headers=headers)
@@ -801,11 +746,8 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
     def download_package(self, package_id: int, base_64=False, **kwargs) -> requests.models.Response:
@@ -824,11 +766,8 @@ class Connection:
 
     def open_document_package(self, package_id: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.url}/packages/{package_id}/open"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         if 'x-password' in kwargs:
             headers['x-password'] = kwargs['x-password']
         if 'x-otp' in kwargs:
@@ -837,11 +776,8 @@ class Connection:
 
     def close_document_package(self, package_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.url}/packages/{package_id}/close"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     # Document workflow
@@ -849,25 +785,19 @@ class Connection:
     def get_workflow_details(self, package_id: int) -> requests.models.Response:
         """ Get the details of a specific workflow.
 
-        :param package_id: int
-            Package ID of the package you want to get details on.
+        :param package_id: Package ID of the package you want to get details on
+        :type package_id: int
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_workflow_details(self, package_id: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = dict()
         keyworded_arguments = ['workflow_mode', 'workflow_type', 'continue_on_decline', 'message']
         for argument in keyworded_arguments:
@@ -878,46 +808,36 @@ class Connection:
 
     def get_workflow_history(self, package_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/log"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_workflow_history_details(self, package_id: int, log_id: int, base_64=True) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/log/{log_id}/details"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-            'x-base64': base_64
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
+        headers['x-base64'] = base_64
         return requests.get(url=url, headers=headers)
 
     def get_certificate_saved_in_workflow_history(self, package_id: int, log_id: int, encryption_key: str) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/log/{log_id}/details/{encryption_key}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_process_evidence_report(self, package_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/report"
         headers = {
-            'Accept': 'application/octet-stream',
-            'Authorization': 'Bearer ' + self.access_token
+            'Accept': 'application/octet-stream'
         }
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_post_processing(self, package_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/post_process"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def add_users_to_workflow(self, package_id: int, user_email: str, user_name: str, role: str, **kwargs) \
@@ -944,11 +864,8 @@ class Connection:
         :return: response object
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/users"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = [{
             'user_email': user_email,
             'user_name': user_name,
@@ -988,11 +905,8 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/user"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = dict()
         keyworded_arguments = ['user_email', 'user_name', 'role', 'email_notification', 'signing_order']
         for argument in keyworded_arguments:
@@ -1024,11 +938,8 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/groups"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'group_name': group_name
         }
@@ -1043,11 +954,8 @@ class Connection:
 
     def update_workflow_group(self, package_id: int, order: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/group"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = dict()
         keyworded_arguments = ['group_name', 'role', 'email_notification', 'signing_order']
         for argument in keyworded_arguments:
@@ -1057,11 +965,8 @@ class Connection:
 
     def add_placeholder_to_workflow(self, package_id: int, placeholder_name: str, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/placeholder"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = [
             {
                 'placeholder': placeholder_name
@@ -1098,11 +1003,8 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/placeholder"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = dict()
         keyworded_arguments = ['placeholder', 'role', 'email_notification', 'signing_order']
         for argument in keyworded_arguments:
@@ -1113,19 +1015,14 @@ class Connection:
 
     def get_workflow_users(self, package_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/users"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_workflow_users_order(self, package_id: int, old_order: int, new_order: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{old_order}/reorder"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             "order": new_order
         })
@@ -1133,20 +1030,14 @@ class Connection:
 
     def get_workflow_user_permissions(self, package_id: int, order: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/permissions"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_workflow_user_permissions(self, package_id: int, order: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/permissions"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'permissions': {
                 'legal_notice': dict()
@@ -1191,21 +1082,15 @@ class Connection:
     def get_workflow_user_authentication_document_opening(self, package_id: int, order: int) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_workflow_user_authentication_document_opening(self, package_id: int, order: int, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'authentication': {
                 'password': dict(),
@@ -1283,29 +1168,20 @@ class Connection:
 
     def delete_workflow_user(self, package_id: int, order: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
     def open_document_via_otp(self, package_id: int, order: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication/otp"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
     def open_document_via_password(self, package_id: int, order: int, password: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication/password"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'password': password
         })
@@ -1313,20 +1189,14 @@ class Connection:
 
     def get_workflow_reminders(self, package_id: int, order: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/reminders"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_workflow_reminders(self, package_id: int, order: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow/{order}/reminders"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'repeat': dict()
         }
@@ -1365,31 +1235,23 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/enterprise/packages/{package_id}/complete"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
     # Document Preparation
 
     def get_document_fields(self, package_id: int, document_id: int, page_number: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/{page_number}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def assign_document_field(self, package_id: int, document_id: int, field_name: str, order: int) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/assign"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps([{
             'field_name': field_name,
             'order': order
@@ -1400,11 +1262,8 @@ class Connection:
     def add_digital_signature_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/digital_signature"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'order': order,
             'page_no': page_number,
@@ -1430,11 +1289,8 @@ class Connection:
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}" \
               f"/fields/electronic_signature"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'order': order,
             'page_no': page_no,
@@ -1471,11 +1327,8 @@ class Connection:
         if self.api_version < 4:
             raise ValueError("API version should be 4 or more recent")
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/signature"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'order': order,
             'page_no': page_no,
@@ -1494,11 +1347,8 @@ class Connection:
     def add_in_person_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/in_person_signature"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'order': order,
             'page_no': page_number,
@@ -1517,11 +1367,8 @@ class Connection:
     def add_initials_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/initials"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'order': order,
             'page_no': page_number,
@@ -1540,11 +1387,8 @@ class Connection:
     def add_textbox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/text"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'order': order,
             'page_no': page_number,
@@ -1589,11 +1433,8 @@ class Connection:
     def add_radiobox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/radio"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'order': order,
             'page_no': page_number,
@@ -1617,11 +1458,8 @@ class Connection:
     def add_checkbox_field(self, package_id: int, document_id: int, order: int, page_number: int, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/checkbox"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'order': order,
             'page_no': page_number,
@@ -1669,11 +1507,8 @@ class Connection:
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/autoplace"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'search_text': search_text,
             'order': order,
@@ -1739,11 +1574,8 @@ class Connection:
     def update_digital_signature_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/digital_signature"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'field_name': field_name,
             'dimensions': dict()
@@ -1769,11 +1601,8 @@ class Connection:
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}" \
               f"/fields/electronic_signature"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'field_name': field_name,
             'dimensions': dict(),
@@ -1807,11 +1636,8 @@ class Connection:
     def update_in_person_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/in_person_signature"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'field_name': field_name,
             'dimensions': dict(),
@@ -1847,11 +1673,8 @@ class Connection:
     def update_initials_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/initials"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'field_name': field_name,
             'dimensions': dict()
@@ -1874,61 +1697,32 @@ class Connection:
     def update_textbox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/text"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'field_name': field_name,
             'font': dict(),
             'dimensions': dict()
         }
-        if 'renamed_as' in kwargs:
-            data['renamed_as'] = kwargs['renamed_as']
-        if 'page_number' in kwargs:
-            data['page_no'] = kwargs['page_number']
-        if 'type' in kwargs:
-            data['type'] = kwargs['type']
-        if 'format' in kwargs:
-            data['format'] = kwargs['format']
-        if 'placeholder' in kwargs:
-            data['placeholder'] = kwargs['placeholder']
-        if 'value' in kwargs:
-            data['value'] = kwargs['value']
-        if 'max_length' in kwargs:
-            data['max_length'] = kwargs['max_length']
-        if 'multiline' in kwargs:
-            data['multiline'] = kwargs['multiline']
-        if 'field_type' in kwargs:
-            data['field_type'] = kwargs['field_type']
-        if 'validation_rule' in kwargs:
-            data['validation_rule'] = kwargs['validation_rule']
-        if 'font_name' in kwargs:
-            data['font']['name'] = kwargs['font_name']
-        if 'font_size' in kwargs:
-            data['font']['size'] = kwargs['font_size']
-        if 'font_embedded_size' in kwargs:
-            data['font']['embedded_size'] = kwargs['font_embedded_size']
-        if 'x' in kwargs:
-            data['dimensions']['x'] = kwargs['x']
-        if 'y' in kwargs:
-            data['dimensions']['y'] = kwargs['y']
-        if 'width' in kwargs:
-            data['dimensions']['width'] = kwargs['width']
-        if 'height' in kwargs:
-            data['dimensions']['height'] = kwargs['height']
+        keyworded_attributes = ['renamed_as', 'page_number', 'page_number', 'type', 'format', 'placeholder', 'value',
+                                'max_length', 'multiline', 'field_type', 'validation_rule', 'font_name', 'font_size',
+                                'font_embedded_size', 'x', 'y', 'width', 'height']
+        for attribute in keyworded_attributes:
+            if attribute in kwargs:
+                if 'font' in attribute:
+                    data['font'][attribute[5:]] = kwargs[attribute]
+                elif attribute in ['x', 'y', 'width', 'height']:
+                    data['dimensions'][attribute] = kwargs[attribute]
+                else:
+                    data[attribute] = kwargs[attribute]
         data = json.dumps(data)
         return requests.put(url=url, headers=headers, data=data)
 
     def update_radiobox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/radio"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'field_name': field_name,
             'dimensions': dict()
@@ -1953,11 +1747,8 @@ class Connection:
     def update_checkbox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/checkbox"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'field_name': field_name,
             'dimensions': dict()
@@ -1980,20 +1771,17 @@ class Connection:
     def delete_document_field(self, package_id: int, document_id: int, field_name: str) -> requests.models.Response:
         """ Deleting a field from a document.
 
-        :param package_id: int
-            ID of the package.
-        :param document_id: int
-            ID of the document where the field is placed.
-        :param field_name: str
-            Name of the field which will be deleted.
+        :param package_id: ID of the package
+        :type package_id: int
+        :param document_id: ID of the document where the field is situated.
+        :type document_id: int
+        :param field_name: Name of the field which will be deleted.
+        :type field_name: str
         :return: requests.models.Response
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'field_name': field_name
         })
@@ -2002,11 +1790,8 @@ class Connection:
     def signer_authentication_via_otp(self, package_id: int, document_id: int, field_name: str) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/otp"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'field_name': field_name
         })
@@ -2015,11 +1800,8 @@ class Connection:
     def fill_initials(self, package_id: int, document_id: int, field_name: str, base64_image: bytes, **kwargs) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/otp"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'field_name': field_name,
             'image': base64_image
@@ -2032,11 +1814,8 @@ class Connection:
     def fill_form_fields(self, package_id: int, document_id: int, field_type: str, field_name: str, field_value,
                          radio_group_name=None, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'text': list(),
             'radio': list(),
@@ -2061,17 +1840,34 @@ class Connection:
         return requests.put(url=url, headers=headers, data=data)
 
     # For API v4 and higher only.
-    def sign_document_v4(self, package_id: int, document_id: int, field_name: str, hand_signature_image: bytes,
+    def sign_document_v4(self, package_id: int, document_id: int, field_name: str, hand_signature_image: str,
                          signing_server: str, signing_capacity: str, **kwargs) -> requests.models.Response:
+        """ Sign a signature field. This function is for API version 4 (SigningHub version 7.7.9 and above).
+
+        :param package_id: ID of the package
+        :param document_id: ID of the document
+        :param field_name: Name of the signature field to sign
+        :param hand_signature_image: Image of the signature to set in base64
+        :param signing_server: Name of the signing server of which to sign with
+        :param signing_capacity: Name of the signing capacity to sign with
+        :param kwargs:
+            x-otp: OTP used as a second factor authentication for the signing operation
+            signing_reason: Reason of signing provided by the recipient
+            signing_location: Locale of the signing provided by the recipient
+            contact_information: Contact information (mobile number) of the signer provided by the recipient
+            user_name: Name of the signer
+            user_password: Password of the user
+            appearance_design: Name of the signature appearance to use. If none is provided, default setting will be
+                used.
+            skip_verification: If true: No signature verification returns in response body
+        :return:
+        """
         if self.api_version < 4:
             raise ValueError(f"API version is set to {self.api_version}."
                              f" This call can only be used for API version >= 4.")
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'field_name': field_name,
             'hand_signature_image': hand_signature_image,
@@ -2089,14 +1885,31 @@ class Connection:
         data = json.dumps(data)
         return requests.post(url=url, headers=headers, data=data)
 
-    def sign_document_v3(self, package_id: int, document_id: int, field_name: str, hand_signature_image: bytes, **kwargs) \
+    def sign_document_v3(self, package_id: int, document_id: int, field_name: str, hand_signature_image: str, **kwargs) \
             -> requests.models.Response:
+        """ Sign a signature field. This function is for API version 3 (SigningHub version 7.7.9 and below).
+
+        :param package_id: ID of the package
+        :param document_id: ID of the document
+        :param field_name: Name of the signature field to sign
+        :param hand_signature_image: Image of the signature to set in base64
+        :param kwargs:
+            x-otp: OTP used as a second factor authentication for the signing operation
+            signing_reason: Reason of signing provided by the recipient
+            signing_location: Locale of the signing provided by the recipient
+            contact_information: Contact information (mobile number) of the signer provided by the recipient
+            user_name: Name of the signer
+            user_password: Password of the user
+            appearance_design: Name of the signature appearance to use. If none is provided, default setting will be
+                used.
+            signing_server: Name of the signing server of which to sign with
+            signing_capacity: Name of the signing capacity to sign with
+            skip_verification: If true: No signature verification returns in response body
+        :return:
+        """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'field_name': field_name,
             'hand_signature_image': hand_signature_image
@@ -2113,12 +1926,17 @@ class Connection:
         return requests.post(url=url, headers=headers, data=data)
 
     def decline_document(self, package_id: int, **kwargs) -> requests.models.Response:
+        """ Decline a pending package through the API
+
+        :param package_id: ID of the package
+        :type package_id: int
+        :param kwargs:
+            reason: Reason for the decline of the package
+        :return:
+        """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/decline"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = dict()
         if 'reason' in kwargs:
             data['reason'] = kwargs['reason']
@@ -2127,11 +1945,8 @@ class Connection:
 
     def approve_document(self, package_id: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/approve"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = dict()
         if 'reason' in kwargs:
             data['reason'] = kwargs['reason']
@@ -2140,20 +1955,14 @@ class Connection:
 
     def submit_document(self, package_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/submit"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
     def recall_document(self, package_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/workflow"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
     def finish_processing(self, package_id: int) -> requests.models.Response:
@@ -2164,34 +1973,26 @@ class Connection:
         this method is invoked by the application to ensure the workflow continues to process
         and the next signatory is notified, and the document status is available via the configured call-back URL.
 
-        :param package_id: (int) | ID of the package that needs to be finished
+        :param package_id: ID of the package that needs to be finished
+        :type package_id: int
         :return: response object
         """
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/finish"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
     def get_registered_devices(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/authorization/devices"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def authorization_signing_request_status(self, package_id: int, document_id: int, field_name: str) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/field/status"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'field_name': field_name
         })
@@ -2201,11 +2002,8 @@ class Connection:
 
     def register_user_free_trial(self, user_email: str, user_name: str, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'user_email': user_email,
             'user_name': user_name,
@@ -2223,36 +2021,27 @@ class Connection:
 
     def get_account(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_account_password_policy(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/password_policy"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
-    def get_user_role(self, base64=True) -> requests.models.Response:
+    def get_user_role(self, base_64=True) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/role"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-            'x-base64': base64
-        }
+        headers = get_headers()
+        headers['x-base64'] = base_64
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def resend_activation_email(self, user_email: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/activation/resend"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'user_email': user_email
         })
@@ -2260,11 +2049,8 @@ class Connection:
 
     def send_forgot_password_request(self, user_email: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/password/reset"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'user_email': user_email
         })
@@ -2273,11 +2059,8 @@ class Connection:
     def set_new_password(self, new_password: str, security_question: str, security_answer: str) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/password/new"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.x_change_password_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'password': new_password,
             'security_question': security_question,
@@ -2287,19 +2070,14 @@ class Connection:
 
     def get_account_invitations(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/invitations"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
     def accept_account_invitations(self, enterprise_name: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/invitations"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'enterprise_name': enterprise_name
         })
@@ -2307,42 +2085,32 @@ class Connection:
 
     def reject_all_account_invitations(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/invitations"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
     def account_usage_statistics(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/statistics/usage"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def document_statistics(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/statistics/documents"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_notifications(self, records_per_page: int, page_number: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/notifications/{records_per_page}/{page_number}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def device_registration_for_push_notification(self, device_token: str, os_type: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/users/notifications/devices"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'device_token': device_token,
             'os_type': os_type
@@ -2351,29 +2119,22 @@ class Connection:
 
     def get_user_activity_logs(self, records_per_page: int, page_number: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/log/{page_number}/{records_per_page}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def get_user_activity_logs_details(self, log_id: int, base64=True) -> requests.models.Response:
+    def get_user_activity_logs_details(self, log_id: int, base_64=True) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/log/{log_id}/details"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-            'x-base64': base64
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
+        headers['x-base64'] = base_64
         return requests.get(url=url, headers=headers)
 
     def add_identity_for_a_user(self, user_email: str, provider: str, name: str, key: str, value: str) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/account/identity"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'user_email': user_email,
             'provider': provider,
@@ -2387,19 +2148,14 @@ class Connection:
 
     def get_general_profile_information(self):
         url = f"{self.url}/v{self.api_version}/settings/profile"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_general_profile_information(self, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/profile/general"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = dict()
         keyworded_attributes = ['user_name', 'job_title', 'company_name', 'mobile_number', 'country', 'time_zone',
                                 'language', 'user_national_id']
@@ -2411,11 +2167,8 @@ class Connection:
 
     def change_password(self, old_password: str, new_password: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/profile/password"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'user_old_password': old_password,
             'user_new_password': new_password
@@ -2426,20 +2179,14 @@ class Connection:
         url = f"{self.url}/v{self.api_version}/settings/profile/general/photo"
         if base64:
             url += "/base64"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_profile_picture(self, profile_picture: bytes) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/profile/general/photo/base64"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'photo': profile_picture
         })
@@ -2448,11 +2195,8 @@ class Connection:
     def update_security_settings(self, password: str, security_question: str, security_answer: str) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/profile/security"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'password': password,
             'question': security_question,
@@ -2462,11 +2206,8 @@ class Connection:
 
     def update_locale_settings(self, country: str, timezone: str, language: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/profile/locale"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'country': country,
             'timezone': timezone,
@@ -2474,62 +2215,47 @@ class Connection:
         })
         return requests.put(url=url, headers=headers, data=data)
 
-    def get_signature_settings(self, base64=True) -> requests.models.Response:
+    def get_signature_settings(self, base_64=True) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token,
-            'x-base64': base64
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
+        headers['x-base64'] = base_64
         return requests.get(url=url, headers=headers)
 
     def get_signature_appearance(self, signature_type: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/design/{signature_type}/preview"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_hand_signature_text_for_web(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/hand_signature/web/text"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_hand_signature_text_for_mobile(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/hand_signature/mobile/text"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_hand_signature_upload_for_web(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/hand_signature/web/upload"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_hand_signature_upload_for_mobile(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/hand_signature/mobile/upload"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_signature_appearance_design(self, default_design: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/design"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'default_design': default_design
         })
@@ -2538,11 +2264,8 @@ class Connection:
     def update_signature_settings_metadata(self, signing_reason: str, signing_location: str, contact_information: str) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/metadata"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'signing_reason': signing_reason,
             'signing_location': signing_location,
@@ -2553,11 +2276,8 @@ class Connection:
     def update_hand_signature_browser(self, default_method: str, upload_image: bytes, text_value: str) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/browser"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'default_method': default_method,
             'upload_image': upload_image,
@@ -2568,11 +2288,8 @@ class Connection:
     def update_hand_signature_mobile(self, default_method: str, upload_image: bytes, text_value: str) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/mobile"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'default_method': default_method,
             'upload_image': upload_image,
@@ -2582,28 +2299,21 @@ class Connection:
 
     def get_initials_for_upload_option(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/initials/upload"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_initials_for_text_option(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/initials/text"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_initial_appearance(self, default_method: str, upload_image: bytes, text_value: str) \
             -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/signatures/appearance/initials"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'default_method': default_method,
             'upload_image': upload_image,
@@ -2613,19 +2323,14 @@ class Connection:
 
     def get_signature_delegation_settings(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/delegate"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_signature_delegation_settings(self, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/delegate"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'delegate': dict()
         }
@@ -2640,11 +2345,8 @@ class Connection:
 
     def add_contact(self, user_email: str, user_name: str) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/contacts"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = json.dumps({
             'user_email': user_email,
             'user_name': user_name
@@ -2653,10 +2355,8 @@ class Connection:
 
     def get_contacts(self, records_per_page: int, page_number: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/contacts/{records_per_page}/{page_number}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         keyworded_attributes = ['x-search-text', 'x-enterprise']
         for attribute in keyworded_attributes:
             if attribute in kwargs:
@@ -2665,10 +2365,8 @@ class Connection:
 
     def get_groups(self, records_per_page: int, page_number: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/groups/{records_per_page}/{page_number}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         keyworded_attributes = ['x-search-text', 'x-enterprise']
         for attribute in keyworded_attributes:
             if attribute in kwargs:
@@ -2677,10 +2375,8 @@ class Connection:
 
     def get_library_documents(self, records_per_page: int, page_number: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/library/{records_per_page}/{page_number}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         keyworded_attributes = ['x-search-text', 'x-enterprise']
         for attribute in keyworded_attributes:
             if attribute in kwargs:
@@ -2689,10 +2385,8 @@ class Connection:
 
     def get_templates(self, records_per_page: int, page_number: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/templates/{records_per_page}/{page_number}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         keyworded_attributes = ['x-search-text', 'x-enterprise']
         for attribute in keyworded_attributes:
             if attribute in kwargs:
@@ -2701,28 +2395,20 @@ class Connection:
 
     def reset_email_notifications(self) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/notifications/email/reset"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.put(url=url, headers=headers)
 
     def get_personal_group(self, group_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/groups/{group_id}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def add_personal_group(self, group_name: str, members: list, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/groups"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = {
             'Name': group_name,
             'Members': members
@@ -2734,11 +2420,8 @@ class Connection:
 
     def update_personal_group(self, group_id: int, **kwargs) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/groups/{group_id}"
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = post_headers()
+        headers = self.add_bearer(headers)
         data = dict()
         keyworded_attributes = ['name', 'description', 'members']
         for attribute in keyworded_attributes:
@@ -2749,12 +2432,27 @@ class Connection:
 
     def delete_personal_group(self, group_id: int) -> requests.models.Response:
         url = f"{self.url}/v{self.api_version}/settings/groups/{group_id}"
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
-        }
+        headers = get_headers()
+        headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
+
+    def add_bearer(self, headers: dict) -> dict:
+        headers['Authorization'] = f'Bearer {self.access_token}'
+        return headers
 
 
 def raise_valueerror(keyword: str, received_type: type, expected_type: type):
     return ValueError(f"Keyword '{keyword}' should be {expected_type} but instead type {received_type} was received")
+
+
+def post_headers() -> dict:
+    return {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+
+
+def get_headers() -> dict:
+    return {
+        'Accept': 'application/json'
+    }
