@@ -222,14 +222,14 @@ class Connection:
         authentication_call = requests.post(url, data, headers)
         try:
             authentication_text = json.loads(authentication_call.text)
-            self.access_token = authentication_text["access_token"]
-            self.refresh_token = authentication_text["refresh_token"]
-            if "x-change-password" in authentication_call.headers:
-                self._x_change_password_token = authentication_call.headers[
-                    "x-change-password"
-                ]
+            self.access_token = authentication_text.get("access_token")
+            self.refresh_token = authentication_text.get("refresh_token")
+            self._x_change_password_token = authentication_call.headers.get(
+                "x-change-password"
+            )
         except:
             self.access_token = None
+            self.refresh_token = None
             self._x_change_password_token = None
         finally:
             return authentication_call
