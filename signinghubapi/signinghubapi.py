@@ -266,8 +266,8 @@ class Connection:
         r = requests.post(url, data, headers)
         try:
             response_json = json.loads(r.text)
-            self.access_token = response_json["access_token"]
-            self.refresh_token = response_json["refresh_token"]
+            self.access_token = response_json.get("access_token")
+            self.refresh_token = response_json.get("refresh_token")
         except:
             self.access_token = None
         finally:
