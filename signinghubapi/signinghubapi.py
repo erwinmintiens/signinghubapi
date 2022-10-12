@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from .utils import get_and_set_api_version
+from .utils import get_and_set_api_version, get_headers, post_headers
 
 
 class Connection:
@@ -138,16 +138,15 @@ class Connection:
 
     @api_version.setter
     def api_version(self, new_api_version: int):
+        if new_api_version not in (3, 4):
+            raise ValueError("API version should be either 3 or 4")
         self._api_version = new_api_version
 
     @url.setter
-    def url(self, new_url: str, api_port=None):
+    def url(self, new_url: str):
         if new_url.endswith("/"):
-            new_url = new_url[-1]
-        if api_port is not None:
-            self._url = new_url + ":" + str(api_port)
-        else:
-            self._url = new_url
+            new_url = new_url[:-1]
+        self._url = new_url
 
     @client_id.setter
     def client_id(self, new_client_id: str):
@@ -2799,11 +2798,3 @@ def raise_valueerror(keyword: str, received_type: type, expected_type: type):
     return ValueError(
         f"Keyword '{keyword}' should be {expected_type} but instead type {received_type} was received"
     )
-
-
-def post_headers() -> dict:
-    return {"Content-Type": "application/json", "Accept": "application/json"}
-
-
-def get_headers() -> dict:
-    return {"Accept": "application/json"}
