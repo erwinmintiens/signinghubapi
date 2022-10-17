@@ -212,7 +212,7 @@ class Connection:
         If another status code than 200 is received and thus the call fails, the _access_token attribute will receive
         value None.
 
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         if (
             not self.full_url
@@ -259,7 +259,7 @@ class Connection:
         If the authentication succeeds, the _access_token attribute will be set to the received value.
         If the authentication fails or this function fails in some way, the _access_token attribute will be set to None.
 
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         if (
             not self.full_url
@@ -295,7 +295,7 @@ class Connection:
         """Business applications can use this service API to get terms of services and privacy policy that are
         configured in SigningHub Admin console.
 
-        :return:
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/terms"
         headers = post_headers()
@@ -326,7 +326,8 @@ class Connection:
 
         :param mobile_number: Mobile number to send the SMS text message to
         :type mobile_number: str
-        :return:
+
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/authentication/otp"
         headers = post_headers()
@@ -339,7 +340,7 @@ class Connection:
     def about_signinghub(self, set_api_version=False) -> requests.models.Response:
         """Get information about the SigningHub enterprise this call is executed to.
 
-        :return: requests.models.Response
+        :rtype: requests.models.Response
             Body contains JSON with SigningHub information:
                 installation_name: The name configured for SigningHub installation.
                 version: The exact version of SigningHub installation.
@@ -473,7 +474,7 @@ class Connection:
 
         :param package_id: ID of the package
         :type package_id: int
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/enterprise/packages/{package_id}"
         headers = get_headers()
@@ -592,7 +593,7 @@ class Connection:
             workflow_mode: str
                 The workflow mode of the package, possible values are "ONLY_ME", "ME_AND_OTHERS" and "ONLY_OTHERS".
                 If no workflow_mode is given, the default is used as per the settings in your SigningHub enterprise.
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages"
         headers = post_headers()
@@ -612,7 +613,7 @@ class Connection:
             ID of the package to be renamed.
         :param new_name: str
             New name of the package.
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}"
         headers = post_headers()
@@ -639,7 +640,8 @@ class Connection:
         :param x_source:
             This is the identification of the source of the document from where the document is uploaded, e.g. "My App".
         :type x_source: str
-        :return: response object
+
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents"
         headers = post_headers()
@@ -666,7 +668,7 @@ class Connection:
             apply_to_all: bool
                 True if the template is to be applied on all documents within the package.
                 False if not.
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/template"
         headers = post_headers()
@@ -682,7 +684,7 @@ class Connection:
 
         :param package_id: ID of the package to be shared.
         :type package_id: int
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow"
         headers = post_headers()
@@ -692,6 +694,12 @@ class Connection:
     def change_document_package_owner(
         self, package_id: int, new_owner: str
     ) -> requests.models.Response:
+        """Change the owner of a specific package.
+
+        :param package_id: ID of the package
+        :type package_id: int
+        :param new_owner: email address of the account which should become the new owner
+        :type new_owner: str"""
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/owner"
         headers = post_headers()
         headers = self.add_bearer(headers)
@@ -701,13 +709,13 @@ class Connection:
     def get_document_details(
         self, package_id: int, document_id: int
     ) -> requests.models.Response:
-        """Get the details of a specific document
+        """Get the details of a specific document.
 
         :param package_id: ID of the package
         :type package_id: int
         :param document_id: ID of the document
         :type document_id: int
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/details"
         headers = get_headers()
@@ -742,6 +750,14 @@ class Connection:
     def download_document(
         self, package_id: int, document_id: str, base_64=False, **kwargs
     ) -> requests.models.Response:
+        """Download a document.
+
+        :param package_id: ID of the package where the document is located
+        :type package_id: int
+        :param document_id: ID of the document to be downloaded
+        :type document_id: int
+        :param base_64: whether or not the document should be downloaded in base64 format
+        :type base_64: bool"""
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
         if base_64:
             url += "/base64"
@@ -766,7 +782,7 @@ class Connection:
             ID of the document to be renamed.
         :param new_document_name: str
             New name for the document.
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
         headers = post_headers()
@@ -779,11 +795,12 @@ class Connection:
     ) -> requests.models.Response:
         """Delete a specific document within a package.
 
-        :param package_id: int
-            ID of the package where the document is in.
-        :param document_id: int
-            ID of the document to be deleted.
-        :return: requests.models.Response
+        :param package_id: ID of the package where the document is in
+        :type package_id: int
+        :param document_id: ID of the document to be deleted
+        :type document_id: int
+
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
         headers = post_headers()
@@ -855,7 +872,7 @@ class Connection:
             Page number of the returned info.
         :param records_per_page: int
             Number of records per page.
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{document_status}/{page_number}/{records_per_page}"
         headers = get_headers()
@@ -869,7 +886,7 @@ class Connection:
 
         :param package_id: int
             ID of the package to be deleted.
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}"
         headers = post_headers()
@@ -917,7 +934,7 @@ class Connection:
 
         :param package_id: Package ID of the package you want to get details on
         :type package_id: int
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow"
         headers = post_headers()
@@ -952,9 +969,7 @@ class Connection:
     def get_workflow_history_details(
         self, package_id: int, log_id: int, base_64=True
     ) -> requests.models.Response:
-        url = (
-            f"{self.full_url}/v{self.api_version}/packages/{package_id}/log/{log_id}/details"
-        )
+        url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/log/{log_id}/details"
         headers = get_headers()
         headers = self.add_bearer(headers)
         headers["x-base64"] = base_64
@@ -1002,9 +1017,11 @@ class Connection:
             signing_order: (int)(optional)
                 Order of the recipient in the workflow.
                 This signing order is mandatory when workflow type is "CUSTOM".
-        :return: response object
+        :rtype: requests.models.Response
         """
-        url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/users"
+        url = (
+            f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/users"
+        )
         headers = post_headers()
         headers = self.add_bearer(headers)
         data = [
@@ -1047,7 +1064,7 @@ class Connection:
             signing_order: int
                 Order in which the workflow will be signed by the recipients.
                 This signing order is important when workflow type is set to "CUSTOM".
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/user"
         headers = post_headers()
@@ -1088,9 +1105,11 @@ class Connection:
             signing_order: int
                 Order in which the workflow will be signed by the recipients.
                 This signing order is only important when workflow type is set to "CUSTOM".
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
-        url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/groups"
+        url = (
+            f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/groups"
+        )
         headers = post_headers()
         headers = self.add_bearer(headers)
         data = {"group_name": group_name}
@@ -1124,9 +1143,7 @@ class Connection:
     def add_placeholder_to_workflow(
         self, package_id: int, placeholder_name: str, **kwargs
     ) -> requests.models.Response:
-        url = (
-            f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/placeholder"
-        )
+        url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/placeholder"
         headers = post_headers()
         headers = self.add_bearer(headers)
         data = [{"placeholder": placeholder_name}]
@@ -1160,7 +1177,7 @@ class Connection:
             signing_order: int
                 Order in which the workflow will be signed by the recipients.
                 The signing order is only important when workflow type is set to "CUSTOM".
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/placeholder"
         headers = post_headers()
@@ -1179,7 +1196,9 @@ class Connection:
         return requests.put(url=url, data=data, headers=headers)
 
     def get_workflow_users(self, package_id: int) -> requests.models.Response:
-        url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/users"
+        url = (
+            f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/users"
+        )
         headers = get_headers()
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
@@ -1474,11 +1493,9 @@ class Connection:
 
         :param package_id: int
             Package ID of the workflow that needs to be completed.
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
-        url = (
-            f"{self.full_url}/v{self.api_version}/enterprise/packages/{package_id}/complete"
-        )
+        url = f"{self.full_url}/v{self.api_version}/enterprise/packages/{package_id}/complete"
         headers = get_headers()
         headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
@@ -1756,7 +1773,7 @@ class Connection:
                 Placement of the field can be mentioned in this attribute.
                 Possible values of placement of a field are "LEFT", "RIGHT", "TOP", "BOTTOM".
                 If no value is provided the default value will be "LEFT".
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/autoplace"
         headers = post_headers()
@@ -2069,7 +2086,7 @@ class Connection:
         :type document_id: int
         :param field_name: Name of the field which will be deleted.
         :type field_name: str
-        :return: requests.models.Response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
         headers = post_headers()
@@ -2167,7 +2184,7 @@ class Connection:
             appearance_design: Name of the signature appearance to use. If none is provided, default setting will be
                 used.
             skip_verification: If true: No signature verification returns in response body
-        :return:
+        :rtype: requests.models.Response
         """
         if self.api_version < 4:
             raise ValueError(
@@ -2227,7 +2244,7 @@ class Connection:
             signing_server: Name of the signing server of which to sign with
             signing_capacity: Name of the signing capacity to sign with
             skip_verification: If true: No signature verification returns in response body
-        :return:
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
         headers = post_headers()
@@ -2259,7 +2276,7 @@ class Connection:
         :type package_id: int
         :param kwargs:
             reason: Reason for the decline of the package
-        :return:
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/decline"
         headers = post_headers()
@@ -2302,7 +2319,7 @@ class Connection:
 
         :param package_id: ID of the package that needs to be finished
         :type package_id: int
-        :return: response object
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/finish"
         headers = get_headers()
@@ -2536,7 +2553,9 @@ class Connection:
     def update_profile_picture(
         self, profile_picture: bytes
     ) -> requests.models.Response:
-        url = f"{self.full_url}/v{self.api_version}/settings/profile/general/photo/base64"
+        url = (
+            f"{self.full_url}/v{self.api_version}/settings/profile/general/photo/base64"
+        )
         headers = post_headers()
         headers = self.add_bearer(headers)
         data = json.dumps({"photo": profile_picture})
@@ -2608,7 +2627,9 @@ class Connection:
     def update_signature_appearance_design(
         self, default_design: str
     ) -> requests.models.Response:
-        url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/design"
+        url = (
+            f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/design"
+        )
         headers = post_headers()
         headers = self.add_bearer(headers)
         data = json.dumps({"default_design": default_design})
@@ -2647,7 +2668,9 @@ class Connection:
     def update_hand_signature_mobile(
         self, default_method: str, upload_image: bytes, text_value: str
     ) -> requests.models.Response:
-        url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/mobile"
+        url = (
+            f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/mobile"
+        )
         headers = post_headers()
         headers = self.add_bearer(headers)
         data = json.dumps(
