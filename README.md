@@ -29,7 +29,7 @@ This package can be used to create a ```Connection``` object which connects to S
 
 Required parameters are:
 
-- An URL;
+- A URL;
 
 Optional parameters are:
 - An API connector client ID (Default value = None);
@@ -86,7 +86,7 @@ This refresh token can be used to authenticate with in future calls.
 ## URL check example
 ```python
 >>> from signinghubapi.signinghubapi import Connection
->>> conn = Connection(url='https://api.signinghub.com/', client_id='testclientid', client_secret='testclientsecret', username='test@email.com', password='1234')
+>>> conn = Connection(url='https://api.signinghub.com/')
 >>> about = conn.about_signinghub()
 >>> about.status_code
 200
