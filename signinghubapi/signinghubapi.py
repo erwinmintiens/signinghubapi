@@ -776,12 +776,13 @@ class Connection:
     ) -> requests.models.Response:
         """Rename a specific document within a package.
 
-        :param package_id: int
-            ID of the package in which the document is located.
-        :param document_id: int
-            ID of the document to be renamed.
-        :param new_document_name: str
-            New name for the document.
+        :param package_id: ID of the package in which the document is located.
+        :type package_id: int
+        :param document_id: ID of the document to be renamed.
+        :type document_id: int
+        :param new_document_name: New name for the document.
+        :type new_document_name: str
+        
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
