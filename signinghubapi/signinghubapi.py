@@ -3,7 +3,7 @@ from typing import Union
 
 import requests
 
-from .utils import get_headers, post_headers
+from .utils import GET_HEADERS, POST_HEADERS
 
 
 class Connection:
@@ -66,6 +66,8 @@ class Connection:
             Default value: None
         :type refresh_token: str
         """
+        self.post_headers = POST_HEADERS
+        self.get_headers = GET_HEADERS
         self._url = url
         self._client_id = client_id
         self._client_secret = client_secret
@@ -298,7 +300,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/terms"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -330,7 +332,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/authentication/otp"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.post(
             url=url, headers=headers, data=json.dumps({"mobile_number": mobile_number})
@@ -350,7 +352,7 @@ class Connection:
                 copyright: The copyright statement by Ascertia Limited.
         """
         url = f"{self.full_url}/v{self.api_version}/about"
-        headers = get_headers()
+        headers = self.get_headers
         response = requests.get(url=url, headers=headers)
         return response
 
@@ -358,7 +360,7 @@ class Connection:
         self, user_email: str, user_name: str, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"user_email": user_email, "user_name": user_name}
         keyworded_attributes = [
@@ -385,7 +387,7 @@ class Connection:
 
     def get_enterprise_users(self, **kwargs) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         if "x-search-text" in kwargs:
             headers["x-search-text"] = kwargs["x-search-text"]
@@ -395,7 +397,7 @@ class Connection:
         self, user_email: str, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"user_email": user_email}
         keyworded_attributes = [
@@ -425,7 +427,7 @@ class Connection:
 
     def delete_enterprise_user(self, user_email: str) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.delete(
             url=url, headers=headers, data=json.dumps({"user_email": user_email})
@@ -435,7 +437,7 @@ class Connection:
         self, user_email: str, user_name: str, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/invitations"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"user_email": user_email, "user_name": user_name}
         if "enterprise_role" in kwargs:
@@ -446,7 +448,7 @@ class Connection:
         self, page_number: int, records_per_page: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/invitations/{page_number}/{records_per_page}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -454,7 +456,7 @@ class Connection:
         self, user_email: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/invitations"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.delete(
             url=url, headers=headers, data=json.dumps({"user_email": user_email})
@@ -462,7 +464,7 @@ class Connection:
 
     def get_enterprise_branding(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/branding"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         headers["x-base64"] = True
         return requests.get(url=url, headers=headers)
@@ -475,7 +477,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/enterprise/packages/{package_id}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -489,7 +491,7 @@ class Connection:
         is_default: bool,
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/signingcertificates"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = json.dumps(
             {
@@ -513,7 +515,7 @@ class Connection:
         is_default: bool,
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/signingcertificates/{certificate_id}"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = json.dumps(
             {
@@ -530,7 +532,7 @@ class Connection:
         self, certificate_id: int, user_email: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/signingcertificates/{certificate_id}"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.delete(
             url=url, headers=headers, data=json.dumps({"user_email": user_email})
@@ -538,7 +540,7 @@ class Connection:
 
     def get_enterprise_group(self, group_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups/{group_id}"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -546,7 +548,7 @@ class Connection:
         self, group_name: str, members: list, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"Name": group_name, "Members": list()}
         for member in members:
@@ -559,7 +561,7 @@ class Connection:
         self, group_id: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups/{group_id}"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
         if "name" in kwargs:
@@ -575,7 +577,7 @@ class Connection:
 
     def delete_enterprise_group(self, group_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups/{group_id}"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
@@ -593,7 +595,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"package_name": package_name}
         if "workflow_mode" in kwargs:
@@ -612,7 +614,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(
             url=url, headers=headers, data=json.dumps({"package_name": new_name})
@@ -641,7 +643,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         headers["x-file-name"] = file_name
         headers["x-source"] = x_source
@@ -671,7 +673,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/template"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"template_name": template_name}
         if "apply_to_all" in kwargs:
@@ -686,7 +688,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
@@ -700,7 +702,7 @@ class Connection:
         :param new_owner: email address of the account which should become the new owner
         :type new_owner: str"""
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/owner"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(
             url=url, headers=headers, data=json.dumps({"owner": new_owner})
@@ -718,7 +720,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/details"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -786,7 +788,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(
             url=url,
@@ -807,7 +809,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
@@ -815,7 +817,7 @@ class Connection:
         self, package_id: int, document_id: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/certify"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -823,7 +825,7 @@ class Connection:
         self, package_id: int, document_id: int, enabled: bool, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/certify"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {
             "certify": {
@@ -840,7 +842,7 @@ class Connection:
         self, package_id: int, base_64=True
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/verification"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         headers["x-base64"] = base_64
         return requests.get(url=url, headers=headers)
@@ -849,7 +851,7 @@ class Connection:
         self, package_id: int, document_id: int, base_64=True
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/verification"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         headers["x-base64"] = base_64
         return requests.get(url=url, headers=headers)
@@ -858,7 +860,7 @@ class Connection:
         self, package_id: int, document_id: int, new_document_order: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/reorder"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(
             url=url, headers=headers, data=json.dumps({"order": new_document_order})
@@ -879,7 +881,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{document_status}/{page_number}/{records_per_page}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         if "x_search_text" in kwargs:
             headers["x-search-text"] = kwargs["x_search_text"]
@@ -893,7 +895,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
@@ -917,7 +919,7 @@ class Connection:
         self, package_id: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.full_url}/packages/{package_id}/open"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         if "x-password" in kwargs:
             headers["x-password"] = kwargs["x-password"]
@@ -927,7 +929,7 @@ class Connection:
 
     def close_document_package(self, package_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.full_url}/packages/{package_id}/close"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -941,7 +943,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -949,7 +951,7 @@ class Connection:
         self, package_id: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
         keyworded_arguments = [
@@ -965,7 +967,7 @@ class Connection:
 
     def get_workflow_history(self, package_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/log"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -973,7 +975,7 @@ class Connection:
         self, package_id: int, log_id: int, base_64=True
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/log/{log_id}/details"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         headers["x-base64"] = base_64
         return requests.get(url=url, headers=headers)
@@ -982,7 +984,7 @@ class Connection:
         self, package_id: int, log_id: int, encryption_key: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/log/{log_id}/details/{encryption_key}"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -994,7 +996,7 @@ class Connection:
 
     def update_post_processing(self, package_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/post_process"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -1025,7 +1027,7 @@ class Connection:
         url = (
             f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/users"
         )
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = [
             {
@@ -1069,7 +1071,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/user"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
         keyworded_arguments = [
@@ -1111,7 +1113,7 @@ class Connection:
         url = (
             f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/groups"
         )
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"group_name": group_name}
         keyworded_arguments = ["role", "email_notification", "signing_order"]
@@ -1126,7 +1128,7 @@ class Connection:
         self, package_id: int, order: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/group"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
         keyworded_arguments = [
@@ -1144,7 +1146,7 @@ class Connection:
         self, package_id: int, placeholder_name: str, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/placeholder"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = [{"placeholder": placeholder_name}]
         keyworded_arguments = ["role", "email_notification", "signing_order"]
@@ -1179,7 +1181,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/placeholder"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
         keyworded_arguments = [
@@ -1197,7 +1199,7 @@ class Connection:
         url = (
             f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/users"
         )
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -1205,7 +1207,7 @@ class Connection:
         self, package_id: int, old_order: int, new_order: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{old_order}/reorder"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(
             url=url, headers=headers, data=json.dumps({"order": new_order})
@@ -1215,7 +1217,7 @@ class Connection:
         self, package_id: int, order: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/permissions"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -1223,7 +1225,7 @@ class Connection:
         self, package_id: int, order: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/permissions"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"permissions": {"legal_notice": dict()}}
         if "apply_to_all" in kwargs:
@@ -1281,7 +1283,7 @@ class Connection:
         self, package_id: int, order: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -1289,7 +1291,7 @@ class Connection:
         self, package_id: int, order: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {
             "authentication": {"password": dict(), "sms_otp": dict()},
@@ -1408,7 +1410,7 @@ class Connection:
         self, package_id: int, order: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
@@ -1416,7 +1418,7 @@ class Connection:
         self, package_id: int, order: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication/otp"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
@@ -1424,7 +1426,7 @@ class Connection:
         self, package_id: int, order: int, password: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication/password"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.post(
             url=url, headers=headers, data=json.dumps({"password": password})
@@ -1434,7 +1436,7 @@ class Connection:
         self, package_id: int, order: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/reminders"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -1442,7 +1444,7 @@ class Connection:
         self, package_id: int, order: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/reminders"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"repeat": dict()}
         if "apply_to_all" in kwargs:
@@ -1493,7 +1495,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/enterprise/packages/{package_id}/complete"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
@@ -1503,7 +1505,7 @@ class Connection:
         self, package_id: int, document_id: int, page_number: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/{page_number}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -1511,7 +1513,7 @@ class Connection:
         self, package_id: int, document_id: int, field_name: str, order: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/assign"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(
             url=url,
@@ -1524,7 +1526,7 @@ class Connection:
         self, package_id: int, document_id: int, order: int, page_number: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/digital_signature"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_number, "dimensions": dict()}
         if "field_name" in kwargs:
@@ -1549,7 +1551,7 @@ class Connection:
             f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
             f"/fields/electronic_signature"
         )
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {
             "order": order,
@@ -1586,7 +1588,7 @@ class Connection:
         if self.api_version < 4:
             raise ValueError("API version should be 4 or more recent")
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/signature"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_no, "dimensions": dict()}
         keyworded_attributes = [
@@ -1610,7 +1612,7 @@ class Connection:
         self, package_id: int, document_id: int, order: int, page_number: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/in_person_signature"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_number, "dimensions": dict()}
         keyworded_attributes = [
@@ -1634,7 +1636,7 @@ class Connection:
         self, package_id: int, document_id: int, order: int, page_number: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/initials"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_number, "dimensions": dict()}
         keyworded_attributes = ["field_name", "x", "y", "width", "height"]
@@ -1650,7 +1652,7 @@ class Connection:
         self, package_id: int, document_id: int, order: int, page_number: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/text"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {
             "order": order,
@@ -1696,7 +1698,7 @@ class Connection:
         self, package_id: int, document_id: int, order: int, page_number: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/radio"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_number, "dimensions": dict()}
         if "field_name" in kwargs:
@@ -1717,7 +1719,7 @@ class Connection:
         self, package_id: int, document_id: int, order: int, page_number: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/checkbox"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_number, "dimensions": dict()}
         if "field_name" in kwargs:
@@ -1768,7 +1770,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/autoplace"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {
             "search_text": search_text,
@@ -1863,7 +1865,7 @@ class Connection:
         self, package_id: int, document_id: int, field_name: str, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/digital_signature"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"field_name": field_name, "dimensions": dict()}
         if "renamed_as" in kwargs:
@@ -1889,7 +1891,7 @@ class Connection:
             f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
             f"/fields/electronic_signature"
         )
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {
             "field_name": field_name,
@@ -1924,7 +1926,7 @@ class Connection:
         self, package_id: int, document_id: int, field_name: str, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/in_person_signature"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {
             "field_name": field_name,
@@ -1961,7 +1963,7 @@ class Connection:
         self, package_id: int, document_id: int, field_name: str, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/initials"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"field_name": field_name, "dimensions": dict()}
         if "renamed_as" in kwargs:
@@ -1982,7 +1984,7 @@ class Connection:
         self, package_id: int, document_id: int, field_name: str, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/text"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"field_name": field_name, "font": dict(), "dimensions": dict()}
         keyworded_attributes = [
@@ -2019,7 +2021,7 @@ class Connection:
         self, package_id: int, document_id: int, field_name: str, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/radio"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"field_name": field_name, "dimensions": dict()}
         if "renamed_as" in kwargs:
@@ -2042,7 +2044,7 @@ class Connection:
         self, package_id: int, document_id: int, field_name: str, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/checkbox"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"field_name": field_name, "dimensions": dict()}
         if "renamed_as" in kwargs:
@@ -2073,7 +2075,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.delete(
             url=url, data=json.dumps({"field_name": field_name}), headers=headers
@@ -2083,7 +2085,7 @@ class Connection:
         self, package_id: int, document_id: int, field_name: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/otp"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.post(
             url=url, headers=headers, data=json.dumps({"field_name": field_name})
@@ -2098,7 +2100,7 @@ class Connection:
         **kwargs,
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/otp"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"field_name": field_name, "image": base64_image}
         if "apply_to_all" in kwargs:
@@ -2116,7 +2118,7 @@ class Connection:
         **kwargs,
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {
             "text": list(),
@@ -2176,7 +2178,7 @@ class Connection:
                 f" This call can only be used for API version >= 4."
             )
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {
             "field_name": field_name,
@@ -2230,7 +2232,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"field_name": field_name, "hand_signature_image": hand_signature_image}
         keyworded_attributes = [
@@ -2261,7 +2263,7 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/decline"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
         if "reason" in kwargs:
@@ -2270,7 +2272,7 @@ class Connection:
 
     def approve_document(self, package_id: int, **kwargs) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/approve"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
         if "reason" in kwargs:
@@ -2279,13 +2281,13 @@ class Connection:
 
     def submit_document(self, package_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/submit"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
     def recall_document(self, package_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
@@ -2302,13 +2304,13 @@ class Connection:
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/finish"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
     def get_registered_devices(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/authorization/devices"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -2316,7 +2318,7 @@ class Connection:
         self, package_id: int, document_id: int, field_name: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/field/status"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.post(
             url=url, headers=headers, data=json.dumps({"field_name": field_name})
@@ -2328,7 +2330,7 @@ class Connection:
         self, user_email: str, user_name: str, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"user_email": user_email, "user_name": user_name, "invitation": dict()}
         keyworded_attributes = [
@@ -2352,26 +2354,26 @@ class Connection:
 
     def get_account(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_account_password_policy(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/password_policy"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
     def get_user_role(self, base_64=True) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/role"
-        headers = get_headers()
+        headers = self.get_headers
         headers["x-base64"] = base_64
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def resend_activation_email(self, user_email: str) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/activation/resend"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.post(
             url=url, headers=headers, data=json.dumps({"user_email": user_email})
@@ -2379,7 +2381,7 @@ class Connection:
 
     def send_forgot_password_request(self, user_email: str) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/password/reset"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.post(
             url=url, headers=headers, data=json.dumps({"user_email": user_email})
@@ -2389,7 +2391,7 @@ class Connection:
         self, new_password: str, security_question: str, security_answer: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/password/new"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = json.dumps(
             {
@@ -2402,7 +2404,7 @@ class Connection:
 
     def get_account_invitations(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/invitations"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
@@ -2410,7 +2412,7 @@ class Connection:
         self, enterprise_name: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/invitations"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(
             url=url,
@@ -2420,19 +2422,19 @@ class Connection:
 
     def reject_all_account_invitations(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/invitations"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
     def account_usage_statistics(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/statistics/usage"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def document_statistics(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/statistics/documents"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -2440,7 +2442,7 @@ class Connection:
         self, records_per_page: int, page_number: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/notifications/{records_per_page}/{page_number}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -2448,7 +2450,7 @@ class Connection:
         self, device_token: str, os_type: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/users/notifications/devices"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.post(
             url=url,
@@ -2460,7 +2462,7 @@ class Connection:
         self, records_per_page: int, page_number: int
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/log/{page_number}/{records_per_page}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -2468,7 +2470,7 @@ class Connection:
         self, log_id: int, base_64=True
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/log/{log_id}/details"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         headers["x-base64"] = base_64
         return requests.get(url=url, headers=headers)
@@ -2477,7 +2479,7 @@ class Connection:
         self, user_email: str, provider: str, name: str, key: str, value: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/identity"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = json.dumps(
             {
@@ -2494,13 +2496,13 @@ class Connection:
 
     def get_general_profile_information(self):
         url = f"{self.full_url}/v{self.api_version}/settings/profile"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_general_profile_information(self, **kwargs) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/profile/general"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
         keyworded_attributes = [
@@ -2522,7 +2524,7 @@ class Connection:
         self, old_password: str, new_password: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/profile/password"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = json.dumps(
             {"user_old_password": old_password, "user_new_password": new_password}
@@ -2533,7 +2535,7 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/settings/profile/general/photo"
         if base64:
             url += "/base64"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -2543,7 +2545,7 @@ class Connection:
         url = (
             f"{self.full_url}/v{self.api_version}/settings/profile/general/photo/base64"
         )
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(
             url=url, headers=headers, data=json.dumps({"photo": profile_picture})
@@ -2553,7 +2555,7 @@ class Connection:
         self, password: str, security_question: str, security_answer: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/profile/security"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = json.dumps(
             {
@@ -2568,7 +2570,7 @@ class Connection:
         self, country: str, timezone: str, language: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/profile/locale"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = json.dumps(
             {"country": country, "timezone": timezone, "language": language}
@@ -2577,38 +2579,38 @@ class Connection:
 
     def get_signature_settings(self, base_64=True) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         headers["x-base64"] = base_64
         return requests.get(url=url, headers=headers)
 
     def get_signature_appearance(self, signature_type: str) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/design/{signature_type}/preview"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_hand_signature_text_for_web(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/hand_signature/web/text"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_hand_signature_text_for_mobile(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/hand_signature/mobile/text"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_hand_signature_upload_for_web(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/hand_signature/web/upload"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_hand_signature_upload_for_mobile(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/hand_signature/mobile/upload"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -2618,7 +2620,7 @@ class Connection:
         url = (
             f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/design"
         )
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(
             url=url,
@@ -2630,7 +2632,7 @@ class Connection:
         self, signing_reason: str, signing_location: str, contact_information: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures/metadata"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = json.dumps(
             {
@@ -2645,7 +2647,7 @@ class Connection:
         self, default_method: str, upload_image: bytes, text_value: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/browser"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = json.dumps(
             {
@@ -2662,7 +2664,7 @@ class Connection:
         url = (
             f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/mobile"
         )
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = json.dumps(
             {
@@ -2675,13 +2677,13 @@ class Connection:
 
     def get_initials_for_upload_option(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/initials/upload"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def get_initials_for_text_option(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/initials/text"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -2689,7 +2691,7 @@ class Connection:
         self, default_method: str, upload_image: bytes, text_value: str
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/initials"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = json.dumps(
             {
@@ -2702,7 +2704,7 @@ class Connection:
 
     def get_signature_delegation_settings(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/delegate"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -2710,7 +2712,7 @@ class Connection:
         self, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/delegate"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"delegate": dict()}
         if "enabled" in kwargs:
@@ -2723,7 +2725,7 @@ class Connection:
 
     def add_contact(self, user_email: str, user_name: str) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/contacts"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.post(
             url=url,
@@ -2735,7 +2737,7 @@ class Connection:
         self, records_per_page: int, page_number: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/contacts/{records_per_page}/{page_number}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         keyworded_attributes = ["x-search-text", "x-enterprise"]
         for attribute in keyworded_attributes:
@@ -2747,7 +2749,7 @@ class Connection:
         self, records_per_page: int, page_number: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/groups/{records_per_page}/{page_number}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         keyworded_attributes = ["x-search-text", "x-enterprise"]
         for attribute in keyworded_attributes:
@@ -2759,7 +2761,7 @@ class Connection:
         self, records_per_page: int, page_number: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/library/{records_per_page}/{page_number}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         keyworded_attributes = ["x-search-text", "x-enterprise"]
         for attribute in keyworded_attributes:
@@ -2771,7 +2773,7 @@ class Connection:
         self, records_per_page: int, page_number: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/templates/{records_per_page}/{page_number}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         keyworded_attributes = ["x-search-text", "x-enterprise"]
         for attribute in keyworded_attributes:
@@ -2781,13 +2783,13 @@ class Connection:
 
     def reset_email_notifications(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/notifications/email/reset"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.put(url=url, headers=headers)
 
     def get_personal_group(self, group_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/groups/{group_id}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
@@ -2795,7 +2797,7 @@ class Connection:
         self, group_name: str, members: list, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/groups"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"Name": group_name, "Members": members}
         if "description" in kwargs:
@@ -2806,7 +2808,7 @@ class Connection:
         self, group_id: int, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/groups/{group_id}"
-        headers = post_headers()
+        headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
         keyworded_attributes = ["name", "description", "members"]
@@ -2817,7 +2819,7 @@ class Connection:
 
     def delete_personal_group(self, group_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/groups/{group_id}"
-        headers = get_headers()
+        headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
