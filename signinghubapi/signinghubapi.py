@@ -332,8 +332,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/authentication/otp"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"mobile_number": mobile_number})
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(
+            url=url, headers=headers, data=json.dumps({"mobile_number": mobile_number})
+        )
 
     # Enterprise Management
 
@@ -382,8 +383,7 @@ class Connection:
         for attribute in keyworded_attributes:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
-        data = json.dumps(data)
-        return requests.post(url=url, data=data, headers=headers)
+        return requests.post(url=url, data=json.dumps(data), headers=headers)
 
     def get_enterprise_users(self, **kwargs) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
@@ -423,15 +423,15 @@ class Connection:
         for attribute in keyworded_attributes:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def delete_enterprise_user(self, user_email: str) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"user_email": user_email})
-        return requests.delete(url=url, headers=headers, data=data)
+        return requests.delete(
+            url=url, headers=headers, data=json.dumps({"user_email": user_email})
+        )
 
     def invite_enterprise_user(
         self, user_email: str, user_name: str, **kwargs
@@ -442,8 +442,7 @@ class Connection:
         data = {"user_email": user_email, "user_name": user_name}
         if "enterprise_role" in kwargs:
             data["enterprise_role"] = kwargs["enterprise_role"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def get_enterprise_invitations(
         self, page_number: int, records_per_page: int
@@ -459,8 +458,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/enterprise/invitations"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"user_email": user_email})
-        return requests.delete(url=url, headers=headers, data=data)
+        return requests.delete(
+            url=url, headers=headers, data=json.dumps({"user_email": user_email})
+        )
 
     def get_enterprise_branding(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/branding"
@@ -534,8 +534,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/enterprise/signingcertificates/{certificate_id}"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"user_email": user_email})
-        return requests.delete(url=url, headers=headers, data=data)
+        return requests.delete(
+            url=url, headers=headers, data=json.dumps({"user_email": user_email})
+        )
 
     def get_enterprise_group(self, group_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups/{group_id}"
@@ -554,8 +555,7 @@ class Connection:
             data["Members"].append(member)
         if "description" in kwargs:
             data["Description"] = kwargs["description"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def update_enterprise_group(
         self, group_id: int, **kwargs
@@ -573,8 +573,7 @@ class Connection:
                 data["Members"] = list()
                 for member in kwargs["members"]:
                     data["Members"].append(member)
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def delete_enterprise_group(self, group_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups/{group_id}"
@@ -601,8 +600,7 @@ class Connection:
         data = {"package_name": package_name}
         if "workflow_mode" in kwargs:
             data["workflow_mode"] = kwargs["workflow_mode"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def rename_package(
         self, package_id: int, new_name: str
@@ -618,8 +616,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"package_name": new_name})
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(
+            url=url, headers=headers, data=json.dumps({"package_name": new_name})
+        )
 
     def upload_document(
         self,
@@ -650,8 +649,11 @@ class Connection:
         headers["x-source"] = x_source
         if "x-convert-document" in kwargs:
             headers["x-convert-document"] = kwargs["x-convert-document"]
-        data = open(path_to_files_folder + file_name, "rb").read()
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(
+            url=url,
+            headers=headers,
+            data=open(path_to_files_folder + file_name, "rb").read(),
+        )
 
     def apply_workflow_template(
         self, package_id: int, document_id: int, template_name: str, **kwargs
@@ -676,8 +678,7 @@ class Connection:
         data = {"template_name": template_name}
         if "apply_to_all" in kwargs:
             data["apply_to_all"] = kwargs["apply_to_all"]
-        data = json.dumps(data)
-        return requests.post(url=url, data=data, headers=headers)
+        return requests.post(url=url, data=json.dumps(data), headers=headers)
 
     def share_document_package(self, package_id: int) -> requests.models.Response:
         """Share a specific package.
@@ -703,8 +704,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/owner"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"owner": new_owner})
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(
+            url=url, headers=headers, data=json.dumps({"owner": new_owner})
+        )
 
     def get_document_details(
         self, package_id: int, document_id: int
@@ -782,14 +784,17 @@ class Connection:
         :type document_id: int
         :param new_document_name: New name for the document.
         :type new_document_name: str
-        
+
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"document_name": new_document_name})
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(
+            url=url,
+            headers=headers,
+            data=json.dumps({"document_name": new_document_name}),
+        )
 
     def delete_document(
         self, package_id: int, document_id: int
@@ -831,8 +836,7 @@ class Connection:
             data["certify"]["permission"] = kwargs["permission"]
         if "lock_form_fields" in kwargs:
             data["lock_form_fields"] = kwargs["lock_form_fields"]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def get_package_verification(
         self, package_id: int, base_64=True
@@ -858,8 +862,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/reorder"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"order": new_document_order})
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(
+            url=url, headers=headers, data=json.dumps({"order": new_document_order})
+        )
 
     def get_packages(
         self, document_status: str, page_number: int, records_per_page: int, **kwargs
@@ -958,8 +963,7 @@ class Connection:
         for argument in keyworded_arguments:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def get_workflow_history(self, package_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/log"
@@ -1036,8 +1040,7 @@ class Connection:
             data[0]["email_notifications"] = kwargs["email_notifications"]
         if "signing_order" in kwargs:
             data[0]["signing_order"] = kwargs["signing_order"]
-        data = json.dumps(data)
-        return requests.post(url=url, data=data, headers=headers)
+        return requests.post(url=url, data=json.dumps(data), headers=headers)
 
     def update_workflow_user(
         self, package_id: int, order: int, **kwargs
@@ -1081,8 +1084,7 @@ class Connection:
         for argument in keyworded_arguments:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def add_groups_to_workflow(
         self, package_id: int, group_name: str, **kwargs
@@ -1120,8 +1122,7 @@ class Connection:
                 data[argument] = kwargs[argument]
         payload = list()
         payload.append(data)
-        payload = json.dumps(payload)
-        return requests.post(url=url, headers=headers, data=payload)
+        return requests.post(url=url, headers=headers, data=json.dumps(payload))
 
     def update_workflow_group(
         self, package_id: int, order: int, **kwargs
@@ -1139,7 +1140,7 @@ class Connection:
         for argument in keyworded_arguments:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def add_placeholder_to_workflow(
         self, package_id: int, placeholder_name: str, **kwargs
@@ -1152,8 +1153,7 @@ class Connection:
         for argument in keyworded_arguments:
             if argument in kwargs:
                 data[0][argument] = kwargs[argument]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def update_placeholder(
         self, package_id: int, order: int, **kwargs
@@ -1193,8 +1193,7 @@ class Connection:
         for argument in keyworded_arguments:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
-        data = json.dumps(data)
-        return requests.put(url=url, data=data, headers=headers)
+        return requests.put(url=url, data=json.dumps(data), headers=headers)
 
     def get_workflow_users(self, package_id: int) -> requests.models.Response:
         url = (
@@ -1210,8 +1209,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{old_order}/reorder"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"order": new_order})
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(
+            url=url, headers=headers, data=json.dumps({"order": new_order})
+        )
 
     def get_workflow_user_permissions(
         self, package_id: int, order: int
@@ -1277,8 +1277,7 @@ class Connection:
                 "legal_notice_name"
             ]
 
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def get_workflow_user_authentication_document_opening(
         self, package_id: int, order: int
@@ -1405,8 +1404,7 @@ class Connection:
             data["access_duration_enabled"]["duration_by_days"]["duration"][
                 "total_days"
             ] = kwargs["access_duration_duration_by_days_total_days"]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def delete_workflow_user(
         self, package_id: int, order: int
@@ -1430,8 +1428,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication/password"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"password": password})
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(
+            url=url, headers=headers, data=json.dumps({"password": password})
+        )
 
     def get_workflow_reminders(
         self, package_id: int, order: int
@@ -1484,8 +1483,7 @@ class Connection:
                     "total_reminders", type(kwargs["total_reminders"]), type(int)
                 )
             data["repeat"]["total_reminders"] = kwargs["total_reminders"]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def complete_workflow_in_the_middle(
         self, package_id: int
@@ -1517,8 +1515,11 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/assign"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps([{"field_name": field_name, "order": order}])
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(
+            url=url,
+            headers=headers,
+            data=json.dumps([{"field_name": field_name, "order": order}]),
+        )
 
     # This call is meant for API version 3 only. However, this will work on API version > 3 as well.
     def add_digital_signature_field(
@@ -1540,8 +1541,7 @@ class Connection:
             data["dimensions"]["width"] = kwargs["width"]
         if "height" in kwargs:
             data["dimensions"]["height"] = kwargs["height"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     # This call is meant for API version 3 only. However, this will work on API version 4 as well.
     def add_electronic_signature_field(
@@ -1579,8 +1579,7 @@ class Connection:
             ]
         if "mobile_number" in kwargs:
             data["authentication"]["sms_opt"]["mobile_number"] = kwargs["mobile_number"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     # This call is meant for API version 4 (or higher).
     def add_signature_field(
@@ -1607,8 +1606,7 @@ class Connection:
                     data["dimensions"][attribute] = kwargs[attribute]
                 else:
                     data[attribute] = kwargs[attribute]
-        data = json.dumps(data)
-        return requests.post(url=url, data=data, headers=headers)
+        return requests.post(url=url, data=json.dumps(data), headers=headers)
 
     def add_in_person_field(
         self, package_id: int, document_id: int, order: int, page_number: int, **kwargs
@@ -1632,8 +1630,7 @@ class Connection:
                     data["dimensions"][attribute] = kwargs[attribute]
                 else:
                     data[attribute] = kwargs[attribute]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def add_initials_field(
         self, package_id: int, document_id: int, order: int, page_number: int, **kwargs
@@ -1649,8 +1646,7 @@ class Connection:
                     data["dimensions"][attribute] = kwargs[attribute]
                 else:
                     data[attribute] = kwargs[attribute]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def add_textbox_field(
         self, package_id: int, document_id: int, order: int, page_number: int, **kwargs
@@ -1696,8 +1692,7 @@ class Connection:
             data["dimensions"]["width"] = kwargs["width"]
         if "height" in kwargs:
             data["dimensions"]["height"] = kwargs["height"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def add_radiobox_field(
         self, package_id: int, document_id: int, order: int, page_number: int, **kwargs
@@ -1718,8 +1713,7 @@ class Connection:
             data["dimensions"]["x"] = kwargs["x"]
         if "y" in kwargs:
             data["dimensions"]["y"] = kwargs["y"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def add_checkbox_field(
         self, package_id: int, document_id: int, order: int, page_number: int, **kwargs
@@ -1738,8 +1732,7 @@ class Connection:
             data["dimensions"]["x"] = kwargs["x"]
         if "y" in kwargs:
             data["dimensions"]["y"] = kwargs["y"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def autoplace_fields(
         self,
@@ -1866,8 +1859,7 @@ class Connection:
             data["dimensions"]["width"] = kwargs["width"]
         if "height" in kwargs:
             data["dimensions"]["height"] = kwargs["height"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def update_digital_signature_field(
         self, package_id: int, document_id: int, field_name: str, **kwargs
@@ -1890,8 +1882,7 @@ class Connection:
             data["dimensions"]["width"] = kwargs["width"]
         if "height" in kwargs:
             data["dimensions"]["height"] = kwargs["height"]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def update_electronic_signature_fields(
         self, package_id: int, document_id: int, field_name: str, **kwargs
@@ -1929,8 +1920,7 @@ class Connection:
             ]
         if "mobile_number" in kwargs:
             data["authentication"]["sms_opt"]["mobile_number"] = kwargs["mobile_number"]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def update_in_person_field(
         self, package_id: int, document_id: int, field_name: str, **kwargs
@@ -1967,8 +1957,7 @@ class Connection:
             ]
         if "mobile_number" in kwargs:
             data["authentication"]["sms_opt"]["mobile_number"] = kwargs["mobile_number"]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def update_initials_field(
         self, package_id: int, document_id: int, field_name: str, **kwargs
@@ -1989,8 +1978,7 @@ class Connection:
             data["dimensions"]["width"] = kwargs["width"]
         if "height" in kwargs:
             data["dimensions"]["height"] = kwargs["height"]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def update_textbox_field(
         self, package_id: int, document_id: int, field_name: str, **kwargs
@@ -2027,8 +2015,7 @@ class Connection:
                     data["dimensions"][attribute] = kwargs[attribute]
                 else:
                     data[attribute] = kwargs[attribute]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def update_radiobox_field(
         self, package_id: int, document_id: int, field_name: str, **kwargs
@@ -2051,8 +2038,7 @@ class Connection:
             data["dimensions"]["x"] = kwargs["x"]
         if "y" in kwargs:
             data["dimensions"]["y"] = kwargs["y"]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def update_checkbox_field(
         self, package_id: int, document_id: int, field_name: str, **kwargs
@@ -2073,8 +2059,7 @@ class Connection:
             data["dimensions"]["x"] = kwargs["x"]
         if "y" in kwargs:
             data["dimensions"]["y"] = kwargs["y"]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def delete_document_field(
         self, package_id: int, document_id: int, field_name: str
@@ -2092,8 +2077,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"field_name": field_name})
-        return requests.delete(url=url, data=data, headers=headers)
+        return requests.delete(
+            url=url, data=json.dumps({"field_name": field_name}), headers=headers
+        )
 
     def signer_authentication_via_otp(
         self, package_id: int, document_id: int, field_name: str
@@ -2101,8 +2087,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/otp"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"field_name": field_name})
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(
+            url=url, headers=headers, data=json.dumps({"field_name": field_name})
+        )
 
     def fill_initials(
         self,
@@ -2118,8 +2105,7 @@ class Connection:
         data = {"field_name": field_name, "image": base64_image}
         if "apply_to_all" in kwargs:
             data["apply_to_all"] = kwargs["apply_to_all"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def fill_form_fields(
         self,
@@ -2153,8 +2139,7 @@ class Connection:
                     )
                 field_data["radio_group_name"] = radio_group_name
             data[field_type].append(field_data)
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     # For API v4 and higher only.
     def sign_document_v4(
@@ -2216,8 +2201,7 @@ class Connection:
         for attribute in keyworded_attributes:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def sign_document_v3(
         self,
@@ -2267,8 +2251,7 @@ class Connection:
         for attribute in keyworded_attributes:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def decline_document(self, package_id: int, **kwargs) -> requests.models.Response:
         """Decline a pending package through the API
@@ -2285,8 +2268,7 @@ class Connection:
         data = dict()
         if "reason" in kwargs:
             data["reason"] = kwargs["reason"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def approve_document(self, package_id: int, **kwargs) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/approve"
@@ -2295,8 +2277,7 @@ class Connection:
         data = dict()
         if "reason" in kwargs:
             data["reason"] = kwargs["reason"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def submit_document(self, package_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/submit"
@@ -2339,8 +2320,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/field/status"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"field_name": field_name})
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(
+            url=url, headers=headers, data=json.dumps({"field_name": field_name})
+        )
 
     # Account Management
 
@@ -2368,8 +2350,7 @@ class Connection:
             data["invitation"]["enterprise_name"] = data[
                 "invitation_to_enterprise_name"
             ]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def get_account(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account"
@@ -2394,15 +2375,17 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/account/activation/resend"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"user_email": user_email})
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(
+            url=url, headers=headers, data=json.dumps({"user_email": user_email})
+        )
 
     def send_forgot_password_request(self, user_email: str) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/password/reset"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"user_email": user_email})
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(
+            url=url, headers=headers, data=json.dumps({"user_email": user_email})
+        )
 
     def set_new_password(
         self, new_password: str, security_question: str, security_answer: str
@@ -2431,8 +2414,11 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/account/invitations"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"enterprise_name": enterprise_name})
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(
+            url=url,
+            headers=headers,
+            data=json.dumps({"enterprise_name": enterprise_name}),
+        )
 
     def reject_all_account_invitations(self) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/invitations"
@@ -2466,8 +2452,11 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/users/notifications/devices"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"device_token": device_token, "os_type": os_type})
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(
+            url=url,
+            headers=headers,
+            data=json.dumps({"device_token": device_token, "os_type": os_type}),
+        )
 
     def get_user_activity_logs(
         self, records_per_page: int, page_number: int
@@ -2529,8 +2518,7 @@ class Connection:
         for attribute in keyworded_attributes:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def change_password(
         self, old_password: str, new_password: str
@@ -2559,8 +2547,9 @@ class Connection:
         )
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"photo": profile_picture})
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(
+            url=url, headers=headers, data=json.dumps({"photo": profile_picture})
+        )
 
     def update_security_settings(
         self, password: str, security_question: str, security_answer: str
@@ -2633,8 +2622,11 @@ class Connection:
         )
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"default_design": default_design})
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(
+            url=url,
+            headers=headers,
+            data=json.dumps({"default_design": default_design}),
+        )
 
     def update_signature_settings_metadata(
         self, signing_reason: str, signing_location: str, contact_information: str
@@ -2729,15 +2721,17 @@ class Connection:
         for attribute in keyworded_attributes:
             if attribute in kwargs:
                 data["delegate"][attribute] = kwargs[attribute]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def add_contact(self, user_email: str, user_name: str) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/contacts"
         headers = post_headers()
         headers = self.add_bearer(headers)
-        data = json.dumps({"user_email": user_email, "user_name": user_name})
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(
+            url=url,
+            headers=headers,
+            data=json.dumps({"user_email": user_email, "user_name": user_name}),
+        )
 
     def get_contacts(
         self, records_per_page: int, page_number: int, **kwargs
@@ -2808,8 +2802,7 @@ class Connection:
         data = {"Name": group_name, "Members": members}
         if "description" in kwargs:
             data["Description"] = kwargs["description"]
-        data = json.dumps(data)
-        return requests.post(url=url, headers=headers, data=data)
+        return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def update_personal_group(
         self, group_id: int, **kwargs
@@ -2822,8 +2815,7 @@ class Connection:
         for attribute in keyworded_attributes:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
-        data = json.dumps(data)
-        return requests.put(url=url, headers=headers, data=data)
+        return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def delete_personal_group(self, group_id: int) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/groups/{group_id}"

@@ -33,7 +33,7 @@ class Package:
             self.set_workflow_details(workflow_details)
 
     def __str__(self):
-        return f'Package with ID {self.id}'
+        return f"Package with ID {self.id}"
 
     @property
     def id(self):
@@ -126,7 +126,10 @@ class Package:
     def set_workflow_details(self, workflow_details_json: dict):
         self._id = workflow_details_json["package_id"]
         self._name = workflow_details_json["package_name"]
-        self._owner = User(user_email=workflow_details_json["package_owner"], user_name=workflow_details_json["owner_name"])
+        self._owner = User(
+            user_email=workflow_details_json["package_owner"],
+            user_name=workflow_details_json["owner_name"],
+        )
         self._owner_name = workflow_details_json["owner_name"]
         self._status = workflow_details_json["package_status"]
         self._folder = workflow_details_json["folder"]
@@ -137,7 +140,9 @@ class Package:
         self._uploaded_on = workflow_details_json["uploaded_on"]
         self._modified_on = workflow_details_json["modified_on"]
         self._workflow_type = workflow_details_json["workflow"]["workflow_type"]
-        self._continue_on_decline = workflow_details_json["workflow"]["continue_on_decline"]
+        self._continue_on_decline = workflow_details_json["workflow"][
+            "continue_on_decline"
+        ]
         self._status = workflow_details_json["package_status"]
         self._workflow_mode = workflow_details_json["workflow"]["workflow_mode"]
         self._message = workflow_details_json["workflow"]["message"]
@@ -145,7 +150,13 @@ class Package:
         self._post_process = workflow_details_json["workflow"]["post_process"]
         self._documents = list()
         for document in workflow_details_json["documents"]:
-            self._documents.append(Document(package=self, document_id=document["document_id"], workflow_details=workflow_details_json))
+            self._documents.append(
+                Document(
+                    package=self,
+                    document_id=document["document_id"],
+                    workflow_details=workflow_details_json,
+                )
+            )
         self._signers = list()
         self._reviewers = list()
         self._carbon_copy = list()
@@ -173,10 +184,14 @@ class Package:
         if not self.id:
             raise ValueError("Package ID is None")
         if type(self.id) is not int:
-            raise TypeError(f"Package ID is not of type int, instead it is {type(self.id)}")
+            raise TypeError(
+                f"Package ID is not of type int, instead it is {type(self.id)}"
+            )
         call = connection.get_workflow_details(self.id)
         if call.status_code != 200:
-            raise ConnectionError(f"Get workflow details call did not return 200: it returned {call.status_code} with message {call.text}")
+            raise ConnectionError(
+                f"Get workflow details call did not return 200: it returned {call.status_code} with message {call.text}"
+            )
         workflow_details_json = json.loads(call.text)
         if not workflow_details_json:
             raise TypeError("Workflow details is empty")
@@ -184,7 +199,9 @@ class Package:
 
     def share_call(self, connection: Connection) -> requests.Response:
         if self.status != "DRAFT":
-            raise ValueError(f"Package status is not set to DRAFT. Package cannot be shared.")
+            raise ValueError(
+                f"Package status is not set to DRAFT. Package cannot be shared."
+            )
         return connection.share_document_package(self.id)
 
     def get_workflow_details_call(self, connection: Connection) -> requests.Response:
@@ -224,7 +241,7 @@ class Document:
             self.set_document_details(workflow_details)
 
     def __str__(self):
-        return f'Document with ID {self.id}'
+        return f"Document with ID {self.id}"
 
     @property
     def id(self):
@@ -317,21 +334,33 @@ class Document:
                 self._form_fields = document["form_fields"]
                 self._template = document["template"]
                 self._certify["enabled"] = document["certify"]["enabled"]
-                self._certify["allowed_permissions"] = document["certify"]["allowed_permissions"]
-                self._certify["default_permission"] = document["certify"]["default_permission"]
+                self._certify["allowed_permissions"] = document["certify"][
+                    "allowed_permissions"
+                ]
+                self._certify["default_permission"] = document["certify"][
+                    "default_permission"
+                ]
                 self._lock_form_fields = document["lock_form_fields"]
                 self._locked = document["locked"]
                 for page in range(1, self._number_of_pages + 1):
-                    self._pages.append(Page(package=self.package, document=self, page_number=page))
+                    self._pages.append(
+                        Page(package=self.package, document=self, page_number=page)
+                    )
 
     def get_document_fields_call(self, connection: Connection, page_number: int):
         if page_number > self.number_of_pages:
-            raise ValueError("page_number cannot be greater than the total number of pages")
-        return connection.get_document_fields(package_id=self.package.id, document_id=self.id, page_no=page_number)
+            raise ValueError(
+                "page_number cannot be greater than the total number of pages"
+            )
+        return connection.get_document_fields(
+            package_id=self.package.id, document_id=self.id, page_no=page_number
+        )
 
     def set_page_fields(self, connection: Connection):
         for page in range(1, self.number_of_pages + 1):
-            get_fields_call = self.get_document_fields_call(connection=connection, page_number=page)
+            get_fields_call = self.get_document_fields_call(
+                connection=connection, page_number=page
+            )
             if get_fields_call.status_code == 200:
                 self.page_properties[page] = json.loads(get_fields_call.text)
 
@@ -352,7 +381,9 @@ class Page:
         return self._number
 
     def set_fields(self, connection: Connection):
-        get_fields_call = connection.get_document_fields(self._package.id, self._document.id, self.number)
+        get_fields_call = connection.get_document_fields(
+            self._package.id, self._document.id, self.number
+        )
         if get_fields_call.status_code == 200:
             self._fields = json.loads(get_fields_call.text)
         else:
@@ -361,9 +392,13 @@ class Page:
 
 
 class User:
-    def __init__(self, user_email=None, user_name=None, general_profile_information_json=None):
+    def __init__(
+        self, user_email=None, user_name=None, general_profile_information_json=None
+    ):
         if not user_email and not general_profile_information_json:
-            raise ValueError("Both user_email and general_profile_information_json cannot be None")
+            raise ValueError(
+                "Both user_email and general_profile_information_json cannot be None"
+            )
         if not user_email:
             self.set_general_profile_information(general_profile_information_json)
         else:
@@ -457,28 +492,49 @@ class User:
         self._name = general_profile_information_json["general"]["user_name"]
         self._job_title = general_profile_information_json["general"]["job_title"]
         self._company_name = general_profile_information_json["general"]["company_name"]
-        self._mobile_number = general_profile_information_json["general"]["mobile_number"]
-        self._enterprise_role = general_profile_information_json["general"]["enterprise_role"]
+        self._mobile_number = general_profile_information_json["general"][
+            "mobile_number"
+        ]
+        self._enterprise_role = general_profile_information_json["general"][
+            "enterprise_role"
+        ]
         self._ra_userid = general_profile_information_json["general"]["ra_userid"]
-        self._user_national_id = general_profile_information_json["general"]["user_national_id"]
-        self._security_question = general_profile_information_json["security"]["question"]
+        self._user_national_id = general_profile_information_json["general"][
+            "user_national_id"
+        ]
+        self._security_question = general_profile_information_json["security"][
+            "question"
+        ]
         self._country = general_profile_information_json["locale"]["country"]
         self._timezone = general_profile_information_json["locale"]["timezone"]
         self._language = general_profile_information_json["locale"]["language"]
-        self._enterprise_name = SigningHubEnterprise(general_profile_information_json=general_profile_information_json)
-        self._enterprise_owner = User(user_email=general_profile_information_json["enterprise"]["owner_email"], user_name=general_profile_information_json["enterprise"]["owner"])
-        self._enterprise_owner_email = general_profile_information_json["enterprise"]["owner_email"]
-        self._enterprise_mobile_number = general_profile_information_json["enterprise"]["mobile_number"]
+        self._enterprise_name = SigningHubEnterprise(
+            general_profile_information_json=general_profile_information_json
+        )
+        self._enterprise_owner = User(
+            user_email=general_profile_information_json["enterprise"]["owner_email"],
+            user_name=general_profile_information_json["enterprise"]["owner"],
+        )
+        self._enterprise_owner_email = general_profile_information_json["enterprise"][
+            "owner_email"
+        ]
+        self._enterprise_mobile_number = general_profile_information_json["enterprise"][
+            "mobile_number"
+        ]
 
     def get_general_profile_information_call(self, connection: Connection):
         call = connection.get_general_profile_information()
         if call.status_code == 200:
-            self.set_general_profile_information(general_profile_information_json=json.loads(call.text))
+            self.set_general_profile_information(
+                general_profile_information_json=json.loads(call.text)
+            )
         return call
 
 
 class Recipient:
-    def __init__(self, user_email=None, group_name=None, workflow_details_user_json=None):
+    def __init__(
+        self, user_email=None, group_name=None, workflow_details_user_json=None
+    ):
         if workflow_details_user_json:
             self.set_details(workflow_details_user_json)
         else:
@@ -547,7 +603,9 @@ class Recipient:
 class SigningHubEnterprise:
     def __init__(self, enterprise_name=None, general_profile_information_json=None):
         if not enterprise_name and not general_profile_information_json:
-            raise ValueError("Both enterprise name and general profile information json cannot be None")
+            raise ValueError(
+                "Both enterprise name and general profile information json cannot be None"
+            )
         self._name = enterprise_name
         self._owner_email = None
         self._owner_name = None
@@ -568,5 +626,7 @@ class SigningHubEnterprise:
 
     def set_details(self, general_profile_information_json: dict):
         self._name = general_profile_information_json["enterprise"]["enterprise_name"]
-        self._owner_email = general_profile_information_json["enterprise"]["owner_email"]
+        self._owner_email = general_profile_information_json["enterprise"][
+            "owner_email"
+        ]
         self._owner_name = general_profile_information_json["enterprise"]["owner"]
