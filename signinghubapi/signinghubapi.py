@@ -3,7 +3,7 @@ from typing import Union
 
 import requests
 
-from .utils import get_and_set_api_version, get_headers, post_headers
+from .utils import get_headers, post_headers
 
 
 class Connection:
@@ -338,7 +338,7 @@ class Connection:
 
     # Enterprise Management
 
-    def about_signinghub(self, set_api_version=False) -> requests.models.Response:
+    def about_signinghub(self) -> requests.models.Response:
         """Get information about the SigningHub enterprise this call is executed to.
 
         :rtype: requests.models.Response
@@ -352,8 +352,6 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/about"
         headers = get_headers()
         response = requests.get(url=url, headers=headers)
-        if set_api_version:
-            get_and_set_api_version(resp=response, connection=self)
         return response
 
     def register_enterprise_user(
