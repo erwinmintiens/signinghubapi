@@ -243,10 +243,12 @@ class Connection:
         response = requests.post(url, data, headers)
         try:
             if response.status_code == 200:
-                self.access_token = json.loads(response.text).get("access_token")
-                self.refresh_token = json.loads(response.text).get("refresh_token")
+                self.access_token = json.loads(response.text).get("access_token", None)
+                self.refresh_token = json.loads(response.text).get(
+                    "refresh_token", None
+                )
                 self._x_change_password_token = response.headers.get(
-                    "x-change-password"
+                    "x-change-password", None
                 )
         except:
             self.access_token = None
@@ -1005,17 +1007,16 @@ class Connection:
     ) -> requests.models.Response:
         """Adding a user to a workflow.
 
-        :param package_id: int
-            ID of the package the user should be added to.
-        :param user_email: str
-            email address of the user whom should be added
-        :param user_name: str
-            username of the user whom should be added
-        :param role: str
-            role of the user in the workflow. Possible values include:  "SIGNER", "REVIEWER", "EDITOR",
-            "CARBON_COPY" or "INPERSON_HOST"
+        :param package_id: ID of the package the user should be added to.
+        :type package_id: int
+        :param user_email: email address of the user whom should be added
+        :type user_email: str
+        :param user_name: display name of the user to be added
+        :type user_name: str
+        :param role: role of the user in the workflow. Possible values include:  "SIGNER", "REVIEWER", "EDITOR", "CARBON_COPY" or "INPERSON_HOST"
+        :type role: str
         :param kwargs:
-            email_notifications: (bool)(optional)
+            email_notification: (bool)(optional)
                 If set to True, SigningHub will send notifications to the user via email as per the document owner
                 and user notification settings.
                 A value of False means no notifications will be sent to user throughout the workflow.
@@ -1036,8 +1037,8 @@ class Connection:
                 "role": role,
             }
         ]
-        if "email_notifications" in kwargs:
-            data[0]["email_notifications"] = kwargs["email_notifications"]
+        if "email_notification" in kwargs:
+            data[0]["email_notification"] = kwargs["email_notification"]
         if "signing_order" in kwargs:
             data[0]["signing_order"] = kwargs["signing_order"]
         return requests.post(url=url, data=json.dumps(data), headers=headers)
@@ -1047,10 +1048,10 @@ class Connection:
     ) -> requests.models.Response:
         """Updating a workflow user.
 
-        :param package_id: int
-            ID of the package in which the user should be updated.
-        :param order: int
-            Order of the user in the workflow.
+        :param package_id: ID of the package in which the user should be updated.
+        :type package_id: int
+        :param order: Order of the user in the workflow.
+        :type order: int
         :param kwargs:
             user_email: str
                 New email address of the recipient to be updated.
@@ -1061,7 +1062,7 @@ class Connection:
                 or "INPERSON_HOST". If no value is provided, old value will be retained.
                 However, while XML type document preparation, only supported role types are "SIGNER",
                 "REVIEWER" and "CARBON_COPY".
-            email_notifications: bool
+            email_notification: bool
                 Setting its value to "true" sends an email notification to the user when its turn arrives in workflow.
                 Setting its value to "false" does not send the email notification to the user on its turn.
                 If no value is provided, old value will be retained.
@@ -1091,17 +1092,17 @@ class Connection:
     ) -> requests.models.Response:
         """Adding pre-defined groups to a package workflow.
 
-        :param package_id: int
-            ID of the package the group should be added to.
-        :param group_name: str
-            Name of the group that should be added to the workflow.
+        :param package_id: ID of the package the group should be added to.
+        :type package_id: int
+        :param group_name: Name of the group that should be added to the workflow.
+        :type group_name: str
         :param kwargs:
             role: str
                 role of the group as a recipient in the workflow. Possible value are "SIGNER",
                 "REVIEWER", "EDITOR","CARBON_COPY" and "INPERSON_HOST".
                 However, while XML type document preparation, only supported role types are "SIGNER", "REVIEWER"
                 and "CARBON_COPY".
-            email_notifications: bool
+            email_notification: bool
                 Setting its value to "true" sends an email notification to the user when its turn arrives in workflow.
                 Setting its value to "false" does not send the email notification to the user on its turn.
                 If no value is provided, default value of "true" will be set.
@@ -1161,17 +1162,17 @@ class Connection:
         """Updating a placeholder on a workflow.
         Changeable properties include: placeholder name, role, email notifications, signing order.
 
-        :param package_id: int
-            ID of the package in which you want to update the placeholder.
-        :param order: int
-            The order of the placeholder.
+        :param package_id: ID of the package in which you want to update the placeholder.
+        :type package_id: int
+        :param order: The order of the placeholder.
+        :type order: int
         :param kwargs:
             placeholder: str
                 Changing the name of the placeholder.
             role: str
                 Changing the role of the placeholder. Options: "SIGNER", "REVIEWER", "EDITOR", "CARBON_COPY" and
                 "INPERSON_HOST".
-            email_notifications: bool
+            email_notification: bool
                 Setting its value to "true" sends an email notification to the user when its turn arrives in workflow.
                 Setting its value to "false" does not send the email notification to the user on its turn.
                 If no value is provided, old value will be retained.

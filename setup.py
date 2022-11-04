@@ -6,11 +6,11 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="signinghubapi",
-    version="0.1.4",
+    version="0.1.5",
     description="Package with default calls for the SigningHub API",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/erwinmintiens/signinghub-api",
+    url="https://github.com/erwinmintiens/signinghubapi",
     author="Erwin Mintiens",
     author_email="erwin.mintiens@protonmail.com",
     keywords=["SigningHub", "API"],

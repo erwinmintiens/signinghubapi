@@ -1,7 +1,5 @@
-import json
 import unittest
 
-import requests
 from signinghubapi.signinghubapi import Connection
 
 
