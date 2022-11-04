@@ -10,7 +10,7 @@ setup(
     description="Package with default calls for the SigningHub API",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/erwinmintiens/signinghub-api",
+    url="https://github.com/erwinmintiens/signinghubapi",
     author="Erwin Mintiens",
     author_email="erwin.mintiens@protonmail.com",
     keywords=["SigningHub", "API"],
