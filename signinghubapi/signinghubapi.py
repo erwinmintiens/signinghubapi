@@ -243,10 +243,12 @@ class Connection:
         response = requests.post(url, data, headers)
         try:
             if response.status_code == 200:
-                self.access_token = json.loads(response.text).get("access_token")
-                self.refresh_token = json.loads(response.text).get("refresh_token")
+                self.access_token = json.loads(response.text).get("access_token", None)
+                self.refresh_token = json.loads(response.text).get(
+                    "refresh_token", None
+                )
                 self._x_change_password_token = response.headers.get(
-                    "x-change-password"
+                    "x-change-password", None
                 )
         except:
             self.access_token = None
