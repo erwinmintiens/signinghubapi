@@ -5,3 +5,7 @@
 ### Fixes
 
 - `add_users_to_workflow` email notifications
+
+### Features
+
+- Code optimizations
