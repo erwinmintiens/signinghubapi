@@ -81,8 +81,7 @@ class Connection:
         self._x_change_password_token = None
         self._admin_url = admin_url
         self._admin_port = admin_port
-        self._full_url = None
-        self.set_full_url()
+        self._full_url = self.set_full_url()
 
     # Getters and setters
     @property
@@ -150,7 +149,7 @@ class Connection:
     @url.setter
     def url(self, new_url: str):
         self._url = new_url
-        self.set_full_url()
+        self._full_url = self.set_full_url()
 
     @client_id.setter
     def client_id(self, new_client_id: str):
@@ -171,7 +170,7 @@ class Connection:
     @api_port.setter
     def api_port(self, new_api_port: int):
         self._api_port = new_api_port
-        self.set_full_url()
+        self._full_url = self.set_full_url()
 
     @scope.setter
     def scope(self, new_scope: str):
@@ -194,16 +193,11 @@ class Connection:
         self._admin_port = new_admin_port
 
     def set_full_url(self):
+        if self.url.endswith("/"):
+            self.url = self.url[:-1]
         if self.api_port:
-            if self.url.endswith("/"):
-                self._full_url = f"{self.url[:-1]}:{self.api_port}"
-            else:
-                self._full_url = f"{self.url}:{self.api_port}"
-        else:
-            if self.url.endswith("/"):
-                self._full_url = self.url[:-1]
-            else:
-                self._full_url = self.url
+            return f"{self.url}:{self.api_port}"
+        return self.url
 
     # Documented SigningHub API Calls
     def authenticate(self) -> requests.models.Response:
