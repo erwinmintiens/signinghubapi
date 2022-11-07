@@ -1,4 +1,5 @@
 import json
+from typing import Union
 
 import requests
 
@@ -6,8 +7,14 @@ from .signinghubapi import Connection
 
 
 class Package:
-    def __init__(self, package_id: int, workflow_details=None):
+    def __init__(
+        self,
+        package_id: int,
+        connection: Union[None, Connection] = None,
+        workflow_details: Union[None, dict] = None,
+    ):
         self._id = package_id
+        self._connection = connection
         self._documents = list()
         self._name = None
         self._owner = None
@@ -124,36 +131,37 @@ class Package:
         self._id = new_id
 
     def set_workflow_details(self, workflow_details_json: dict):
-        self._id = workflow_details_json["package_id"]
-        self._name = workflow_details_json["package_name"]
+        if type(workflow_details_json) is not dict:
+            raise TypeError("Type dict is expected for workflow_details_json")
+        self._id = workflow_details_json.get("package_id", None)
+        self._name = workflow_details_json.get("package_name", None)
         self._owner = User(
-            user_email=workflow_details_json["package_owner"],
-            user_name=workflow_details_json["owner_name"],
+            user_email=workflow_details_json.get("package_owner", None),
+            user_name=workflow_details_json.get("owner_name", None),
         )
-        self._owner_name = workflow_details_json["owner_name"]
-        self._status = workflow_details_json["package_status"]
-        self._folder = workflow_details_json["folder"]
-        self._next_signer = workflow_details_json["next_signer"]
+        self._owner_name = workflow_details_json.get("owner_name", None)
+        self._status = workflow_details_json.get("package_status", None)
+        self._folder = workflow_details_json.get("folder", None)
+        self._next_signer = workflow_details_json.get("next_signer", None)
         self._next_signer_email.clear()
-        for signer in workflow_details_json["next_signer_email"]:
+        for signer in workflow_details_json.get("next_signer_email", {}):
             self._next_signer_email.append(signer)
-        self._uploaded_on = workflow_details_json["uploaded_on"]
-        self._modified_on = workflow_details_json["modified_on"]
-        self._workflow_type = workflow_details_json["workflow"]["workflow_type"]
-        self._continue_on_decline = workflow_details_json["workflow"][
-            "continue_on_decline"
-        ]
-        self._status = workflow_details_json["package_status"]
-        self._workflow_mode = workflow_details_json["workflow"]["workflow_mode"]
-        self._message = workflow_details_json["workflow"]["message"]
-        self._read_only = workflow_details_json["workflow"]["message"]
-        self._post_process = workflow_details_json["workflow"]["post_process"]
+        self._uploaded_on = workflow_details_json.get("uploaded_on", None)
+        self._modified_on = workflow_details_json.get("modified_on", None)
+        workflow_section = workflow_details_json.get("workflow", {})
+        self._workflow_type = workflow_section.get("workflow_type", None)
+        self._continue_on_decline = workflow_section.get("continue_on_decline", None)
+        self._status = workflow_details_json.get("package_status", None)
+        self._workflow_mode = workflow_section.get("workflow_mode", None)
+        self._message = workflow_section.get("message", None)
+        self._read_only = workflow_section.get("read_only", None)
+        self._post_process = workflow_section.get("post_process", None)
         self._documents = list()
-        for document in workflow_details_json["documents"]:
+        for document in workflow_details_json.get("documents", [{}]):
             self._documents.append(
                 Document(
                     package=self,
-                    document_id=document["document_id"],
+                    document_id=document.get("document_id", None),
                     workflow_details=workflow_details_json,
                 )
             )
@@ -170,23 +178,11 @@ class Package:
                 self._carbon_copy.append(person)
             self._users.append(Recipient(workflow_details_user_json=person))
 
-    def set_users(self, get_workflow_users_json):
-        for person in get_workflow_users_json:
-            if person["role"] == "SIGNER":
-                self._signers.append(person)
-            if person["role"] == "REVIEWER":
-                self._reviewers.append(person)
-            if person["role"] == "CARBON_COPY":
-                self._carbon_copy.append(person)
-            self._users.append(Recipient(workflow_details_user_json=person))
-
     def fetch_info_and_set_details(self, connection: Connection):
         if not self.id:
             raise ValueError("Package ID is None")
         if type(self.id) is not int:
-            raise TypeError(
-                f"Package ID is not of type int, instead it is {type(self.id)}"
-            )
+            raise TypeError("Package ID should be of type int")
         call = connection.get_workflow_details(self.id)
         if call.status_code != 200:
             raise ConnectionError(
@@ -197,23 +193,21 @@ class Package:
             raise TypeError("Workflow details is empty")
         self.set_workflow_details(workflow_details_json)
 
-    def share_call(self, connection: Connection) -> requests.Response:
+    def share(self, connection: Connection) -> requests.models.Response:
         if self.status != "DRAFT":
             raise ValueError(
                 f"Package status is not set to DRAFT. Package cannot be shared."
             )
         return connection.share_document_package(self.id)
 
-    def get_workflow_details_call(self, connection: Connection) -> requests.Response:
+    def get_workflow_details(self, connection: Connection) -> requests.models.Response:
         call = connection.get_workflow_details(self.id)
         if call.status_code == 200:
             self.set_workflow_details(json.loads(call.text))
         return call
 
-    def get_workflow_users_call(self, connection: Connection) -> requests.Response:
+    def get_workflow_users(self, connection: Connection) -> requests.models.Response:
         call = connection.get_workflow_users(self.id)
-        if call.status_code == 200:
-            self.set_users(json.loads(call.text))
         return call
 
 
