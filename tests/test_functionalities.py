@@ -19,11 +19,15 @@ def test_url_ending_with_slash():
 
 
 def test_api_port():
-    conn = Connection(url="https://test.com/", api_port=433)
-    assert conn.full_url == "https://test.com:433"
+    conn = Connection(url="https://test.com/", api_port=9999)
+    assert conn.full_url == "https://test.com:9999"
     conn.api_port = None
     assert conn.full_url == "https://test.com"
+    conn.api_port = 9999
+    assert conn.full_url == "https://test.com:9999"
 
     conn = Connection(url="https://test.com/", api_port=None)
-    conn.api_port = 433
-    assert conn.full_url == "https://test.com:433"
+    conn.api_port = 9999
+    assert conn.full_url == "https://test.com:9999"
+    conn.api_port = None
+    assert conn.full_url == "https://test.com"
