@@ -2675,9 +2675,3 @@ class Connection:
     def add_bearer(self, headers: dict) -> dict:
         headers["Authorization"] = f"Bearer {self.access_token}"
         return headers
-
-
-def raise_valueerror(keyword: str, received_type: type, expected_type: type):
-    return ValueError(
-        f"Keyword '{keyword}' should be {expected_type} but instead type {received_type} was received"
-    )
