@@ -3,7 +3,7 @@ from typing import Union
 
 import requests
 
-from .utils import GET_HEADERS, POST_HEADERS
+from .utils import GET_HEADERS, KEYWORDED_ARGUMENTS, POST_HEADERS
 
 
 class Connection:
@@ -359,24 +359,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"user_email": user_email, "user_name": user_name}
-        keyworded_attributes = [
-            "job_title",
-            "company_name",
-            "mobile_number",
-            "user_password",
-            "security_question",
-            "security_answer",
-            "enterprise_role",
-            "email_notification",
-            "country",
-            "time_zone",
-            "language",
-            "user_ra_id",
-            "user_csp_id",
-            "certificate_alias",
-            "common_name",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["register_enterprise_user"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.post(url=url, data=json.dumps(data), headers=headers)
@@ -385,8 +368,8 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
         headers = self.get_headers
         headers = self.add_bearer(headers)
-        if "x-search-text" in kwargs:
-            headers["x-search-text"] = kwargs["x-search-text"]
+        if "x_search_text" in kwargs:
+            headers["x-search-text"] = kwargs["x_search_text"]
         return requests.get(url=url, headers=headers)
 
     def update_enterprise_user(
@@ -396,27 +379,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"user_email": user_email}
-        keyworded_attributes = [
-            "user_name",
-            "job_title",
-            "company_name",
-            "mobile_number",
-            "user_old_password",
-            "user_new_password",
-            "security_question",
-            "security_answer",
-            "enterprise_role",
-            "email_notification",
-            "enabled",
-            "country",
-            "time_zone",
-            "language",
-            "user_ra_id",
-            "user_csp_id",
-            "certificate_alias",
-            "common_name",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["update_enterprise_user"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -603,10 +566,10 @@ class Connection:
     ) -> requests.models.Response:
         """Rename a specific package.
 
-        :param package_id: int
-            ID of the package to be renamed.
+        :param package_id: ID of the package to be renamed
+        :type package_id: int
+        :param new_name: New name of the package
         :param new_name: str
-            New name of the package.
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}"
@@ -643,8 +606,8 @@ class Connection:
         headers = self.add_bearer(headers)
         headers["x-file-name"] = file_name
         headers["x-source"] = x_source
-        if "x-convert-document" in kwargs:
-            headers["x-convert-document"] = kwargs["x-convert-document"]
+        if "x_convert_document" in kwargs:
+            headers["x-convert-document"] = kwargs["x_convert_document"]
         return requests.post(
             url=url,
             headers=headers,
@@ -739,10 +702,10 @@ class Connection:
             "Accept": "image/png",
             "Authorization": "Bearer " + self.access_token,
         }
-        if "x-password" in kwargs:
-            headers["x-password"] = kwargs["x-password"]
-        if "x-otp" in kwargs:
-            headers["x-otp"] = kwargs["x-otp"]
+        if "x_password" in kwargs:
+            headers["x-password"] = kwargs["x_password"]
+        if "x_otp" in kwargs:
+            headers["x-otp"] = kwargs["x_otp"]
         return requests.get(url=url, headers=headers)
 
     def download_document(
@@ -905,10 +868,10 @@ class Connection:
             "Accept": "application/octet-stream",
             "Authorization": "Bearer " + self.access_token,
         }
-        if "x-password" in kwargs:
-            headers["x-password"] = kwargs["x-password"]
-        if "x-otp" in kwargs:
-            headers["x-otp"] = kwargs["x-otp"]
+        if "x_password" in kwargs:
+            headers["x-password"] = kwargs["x_password"]
+        if "x_otp" in kwargs:
+            headers["x-otp"] = kwargs["x_otp"]
         return requests.get(url=url, headers=headers)
 
     def open_document_package(
@@ -917,10 +880,10 @@ class Connection:
         url = f"{self.full_url}/v{self.full_url}/packages/{package_id}/open"
         headers = self.post_headers
         headers = self.add_bearer(headers)
-        if "x-password" in kwargs:
-            headers["x-password"] = kwargs["x-password"]
-        if "x-otp" in kwargs:
-            headers["x-otp"] = kwargs["x-otp"]
+        if "x_password" in kwargs:
+            headers["x-password"] = kwargs["x_password"]
+        if "x_otp" in kwargs:
+            headers["x-otp"] = kwargs["x_otp"]
         return requests.get(url=url, headers=headers)
 
     def close_document_package(self, package_id: int) -> requests.models.Response:
@@ -950,13 +913,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_arguments = [
-            "workflow_mode",
-            "workflow_type",
-            "continue_on_decline",
-            "message",
-        ]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["update_workflow_details"]:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -1069,14 +1026,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_arguments = [
-            "user_email",
-            "user_name",
-            "role",
-            "email_notification",
-            "signing_order",
-        ]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["update_workflow_user"]:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -1111,8 +1061,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"group_name": group_name}
-        keyworded_arguments = ["role", "email_notification", "signing_order"]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["add_groups_to_workflow"]:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
         payload = list()
@@ -1126,13 +1075,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_arguments = [
-            "group_name",
-            "role",
-            "email_notification",
-            "signing_order",
-        ]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["update_workflow_group"]:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -1144,8 +1087,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = [{"placeholder": placeholder_name}]
-        keyworded_arguments = ["role", "email_notification", "signing_order"]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["add_placeholder_to_workflow"]:
             if argument in kwargs:
                 data[0][argument] = kwargs[argument]
         return requests.post(url=url, headers=headers, data=json.dumps(data))
@@ -1179,13 +1121,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_arguments = [
-            "placeholder",
-            "role",
-            "email_notification",
-            "signing_order",
-        ]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["update_placeholder"]:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
         return requests.put(url=url, data=json.dumps(data), headers=headers)
@@ -1224,50 +1160,22 @@ class Connection:
         headers = self.add_bearer(headers)
         data = {"permissions": {"legal_notice": dict()}}
         if "apply_to_all" in kwargs:
-            if type(kwargs["apply_to_all"]) is not bool:
-                raise raise_valueerror(
-                    "apply_to_all", type(kwargs["apply_to_all"]), type(bool)
-                )
             data["apply_to_all"] = kwargs["apply_to_all"]
         if "print" in kwargs:
-            if type(kwargs["print"]) is not bool:
-                raise raise_valueerror("print", type(kwargs["print"]), type(bool))
             data["permissions"]["print"] = kwargs["print"]
         if "download" in kwargs:
-            if type(kwargs["download"]) is not bool:
-                raise raise_valueerror("download", type(kwargs["download"]), type(bool))
             data["permissions"]["download"] = kwargs["download"]
         if "add_text" in kwargs:
-            if type(kwargs["add_text"]) is not bool:
-                raise raise_valueerror("add_text", type(kwargs["add_text"]), type(bool))
             data["permissions"]["add_text"] = kwargs["add_text"]
         if "add_attachment" in kwargs:
-            if type(kwargs["add_attachment"]) is not bool:
-                raise raise_valueerror(
-                    "add_attachment", type(kwargs["add_attachment"]), type(bool)
-                )
             data["permissions"]["add_attachment"] = kwargs["add_attachment"]
         if "change_recipients" in kwargs:
-            if type(kwargs["change_recipients"]) is not bool:
-                raise raise_valueerror(
-                    "change_recipients", type(kwargs["change_recipients"]), type(bool)
-                )
             data["permissions"]["change_recipients"] = kwargs["change_recipients"]
         if "legal_notice_enabled" in kwargs:
-            if type(kwargs["legal_notice_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "legal_notice_enabled",
-                    type(kwargs["legal_notice_enabled"]),
-                    type(bool),
-                )
             data["permissions"]["legal_notice"]["enabled"] = kwargs[
                 "legal_notice_enabled"
             ]
         if "legal_notice_name" in kwargs:
-            if type(kwargs["legal_notice_name"]) is not str:
-                raise raise_valueerror(
-                    "legal_notice_name", type(kwargs["legal_notice_name"]), type(str)
-                )
             data["permissions"]["legal_notice"]["legal_notice_name"] = kwargs[
                 "legal_notice_name"
             ]
@@ -1296,106 +1204,42 @@ class Connection:
             },
         }
         if "apply_to_all" in kwargs:
-            if type(kwargs["apply_to_all"]) is not bool:
-                raise raise_valueerror(
-                    "apply_to_all", type(kwargs["apply_to_all"]), type(bool)
-                )
             data["apply_to_all"] = kwargs["apply_to_all"]
         if "authentication_enabled" in kwargs:
-            if type(kwargs["authentication_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "authentication_enabled",
-                    type(kwargs["authentication_enabled"]),
-                    type(bool),
-                )
             data["authentication"]["enabled"] = kwargs["authentication_enabled"]
         if "authentication_password_enabled" in kwargs:
-            if type(kwargs["authentication_password_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "authentication_password_enabled",
-                    type(kwargs["authentication_password_enabled"]),
-                    type(bool),
-                )
             data["authentication"]["password"]["enabled"] = kwargs[
                 "authentication_password_enabled"
             ]
         if "user_password" in kwargs:
-            if type(kwargs["user_password"]) is not str:
-                raise raise_valueerror(
-                    "user_password", type(kwargs["user_password"]), type(str)
-                )
             data["authentication"]["password"]["user_password"] = kwargs[
                 "user_password"
             ]
         if "sms_otp_enabled" in kwargs:
-            if type(kwargs["sms_otp_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "sms_otp_enabled", type(kwargs["sms_otp_enabled"]), type(bool)
-                )
             data["authentication"]["sms_otp"]["enabled"] = kwargs["sms_otp_enabled"]
         if "mobile_number" in kwargs:
-            if type(kwargs["mobile_number"]) is not str:
-                raise raise_valueerror(
-                    "mobile_number", type(kwargs["mobile_number"]), type(str)
-                )
             data["authentication"]["sms_otp"]["mobile_number"] = kwargs["mobile_number"]
         if "access_duration_enabled" in kwargs:
-            if type(kwargs["access_duration_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "access_duration_enabled",
-                    type(kwargs["access_duration_enabled"]),
-                    type(bool),
-                )
             data["access_duration_enabled"]["enabled"] = kwargs[
                 "access_duration_enabled"
             ]
         if "access_duration_duration_by_date" in kwargs:
-            if type(kwargs["access_duration_duration_by_date"]) is not bool:
-                raise raise_valueerror(
-                    "access_duration_duration_by_date",
-                    type(kwargs["access_duration_duration_by_date"]),
-                    type(bool),
-                )
             data["access_duration_enabled"]["duration_by_date"]["enabled"] = kwargs[
                 "access_duration_duration_by_date"
             ]
         if "access_duration_by_date_start_date_time" in kwargs:
-            if type(kwargs["access_duration_by_date_start_date_time"]) is not str:
-                raise raise_valueerror(
-                    "access_duration_by_date_start_date_time",
-                    type(kwargs["access_duration_by_date_start_date_time"]),
-                    type(str),
-                )
             data["access_duration_enabled"]["duration_by_date"]["duration"][
                 "start_date_time"
             ] = kwargs["access_duration_by_date_start_date_time"]
         if "access_duration_by_date_end_date_time" in kwargs:
-            if type(kwargs["access_duration_by_date_end_date_time"]) is not str:
-                raise raise_valueerror(
-                    "access_duration_by_date_end_date_time",
-                    type(kwargs["access_duration_by_date_end_date_time"]),
-                    type(str),
-                )
             data["access_duration_enabled"]["duration_by_date"]["duration"][
                 "end_date_time"
             ] = kwargs["access_duration_by_date_end_date_time"]
         if "access_duration_duration_by_days_enabled" in kwargs:
-            if type(kwargs["access_duration_duration_by_days_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "access_duration_duration_by_days_enabled",
-                    type(kwargs["access_duration_duration_by_days_enabled"]),
-                    type(bool),
-                )
             data["access_duration_enabled"]["duration_by_days"]["enabled"] = kwargs[
                 "access_duration_duration_by_days_enabled"
             ]
         if "access_duration_duration_by_days_total_days" in kwargs:
-            if type(kwargs["access_duration_duration_by_days_total_days"]) is not str:
-                raise raise_valueerror(
-                    "access_duration_duration_by_days_total_days",
-                    type(kwargs["access_duration_duration_by_days_total_days"]),
-                    type(str),
-                )
             data["access_duration_enabled"]["duration_by_days"]["duration"][
                 "total_days"
             ] = kwargs["access_duration_duration_by_days_total_days"]
@@ -1443,40 +1287,16 @@ class Connection:
         headers = self.add_bearer(headers)
         data = {"repeat": dict()}
         if "apply_to_all" in kwargs:
-            if type(kwargs["apply_to_all"]) is not bool:
-                raise raise_valueerror(
-                    "apply_to_all", type(kwargs["apply_to_all"]), type(bool)
-                )
             data["apply_to_all"] = kwargs["apply_to_all"]
         if "enabled" in kwargs:
-            if type(kwargs["enabled"]) is not bool:
-                raise raise_valueerror("enabled", type(kwargs["enabled"]), type(bool))
             data["enabled"] = kwargs["enabled"]
         if "remind_after" in kwargs:
-            if type(kwargs["remind_after"]) is not int:
-                raise raise_valueerror(
-                    "remind_after", type(kwargs["remind_after"]), type(int)
-                )
             data["remind_after"] = kwargs["remind_after"]
         if "repeat_enabled" in kwargs:
-            if type(kwargs["repeat_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "repeat_enabled", type(kwargs["repeat_enabled"]), type(bool)
-                )
             data["repeat"]["enabled"] = kwargs["repeat_enabled"]
         if "keep_reminding_after" in kwargs:
-            if type(kwargs["keep_reminding_after"]) is not int:
-                raise raise_valueerror(
-                    "keep_reminding_after",
-                    type(kwargs["keep_reminding_after"]),
-                    type(int),
-                )
             data["repeat"]["keep_reminding_after"] = kwargs["keep_reminding_after"]
         if "total_reminders" in kwargs:
-            if type(kwargs["total_reminders"]) is not int:
-                raise raise_valueerror(
-                    "total_reminders", type(kwargs["total_reminders"]), type(int)
-                )
             data["repeat"]["total_reminders"] = kwargs["total_reminders"]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
 
@@ -1586,16 +1406,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_no, "dimensions": dict()}
-        keyworded_attributes = [
-            "field_name",
-            "display",
-            "x",
-            "y",
-            "width",
-            "height",
-            "level_of_assurance",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["add_signature_field"]:
             if attribute in kwargs:
                 if attribute in ["x", "y", "width", "height"]:
                     data["dimensions"][attribute] = kwargs[attribute]
@@ -1610,16 +1421,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_number, "dimensions": dict()}
-        keyworded_attributes = [
-            "field_name",
-            "placeholder",
-            "display",
-            "x",
-            "y",
-            "width",
-            "height",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["add_in_person_field"]:
             if attribute in kwargs:
                 if attribute in ["x", "y", "width", "height"]:
                     data["dimensions"][attribute] = kwargs[attribute]
@@ -1634,8 +1436,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_number, "dimensions": dict()}
-        keyworded_attributes = ["field_name", "x", "y", "width", "height"]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["add_initials_field"]:
             if attribute in kwargs:
                 if attribute in ["x", "y", "width", "height"]:
                     data["dimensions"][attribute] = kwargs[attribute]
@@ -1982,27 +1783,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"field_name": field_name, "font": dict(), "dimensions": dict()}
-        keyworded_attributes = [
-            "renamed_as",
-            "page_number",
-            "page_number",
-            "type",
-            "format",
-            "placeholder",
-            "value",
-            "max_length",
-            "multiline",
-            "field_type",
-            "validation_rule",
-            "font_name",
-            "font_size",
-            "font_embedded_size",
-            "x",
-            "y",
-            "width",
-            "height",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["update_textbox_field"]:
             if attribute in kwargs:
                 if "font" in attribute:
                     data["font"][attribute[5:]] = kwargs[attribute]
@@ -2181,19 +1962,9 @@ class Connection:
             "signing_server": signing_server,
             "signing_capacity": signing_capacity,
         }
-
-        keyworded_attributes = [
-            "signing_reason",
-            "signing_location",
-            "contact_information",
-            "user_name",
-            "user_password",
-            "appearance_design",
-            "skip_verification",
-        ]
         if "x_otp" in kwargs:
             headers["x-otp"] = kwargs["x_otp"]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["sign_document_v4"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.post(url=url, headers=headers, data=json.dumps(data))
@@ -2230,20 +2001,9 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"field_name": field_name, "hand_signature_image": hand_signature_image}
-        keyworded_attributes = [
-            "signing_reason",
-            "signing_location",
-            "contact_information",
-            "user_name",
-            "user_password",
-            "appearance_design",
-            "signing_capacity",
-            "witness_signing_capacity",
-            "skip_verification",
-        ]
         if "x_otp" in kwargs:
             headers["x-otp"] = kwargs["x_otp"]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["sign_document_v3"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.post(url=url, headers=headers, data=json.dumps(data))
@@ -2328,17 +2088,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"user_email": user_email, "user_name": user_name, "invitation": dict()}
-        keyworded_attributes = [
-            "job_title",
-            "company_name",
-            "mobile_number",
-            "country",
-            "time_zone",
-            "language",
-            "service_agreements",
-            "marketing_emails",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["register_user_free_trial"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         if "invitation_to_enterprise_name" in kwargs:
@@ -2500,17 +2250,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_attributes = [
-            "user_name",
-            "job_title",
-            "company_name",
-            "mobile_number",
-            "country",
-            "time_zone",
-            "language",
-            "user_national_id",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["update_general_profile_information"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -2712,8 +2452,7 @@ class Connection:
         data = {"delegate": dict()}
         if "enabled" in kwargs:
             data["enabled"] = kwargs["enabled"]
-        keyworded_attributes = ["user_name", "user_email", "from", "to"]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["update_signature_delegation_settings"]:
             if attribute in kwargs:
                 data["delegate"][attribute] = kwargs[attribute]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -2734,10 +2473,10 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/settings/contacts/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
-        keyworded_attributes = ["x-search-text", "x-enterprise"]
-        for attribute in keyworded_attributes:
-            if attribute in kwargs:
-                headers[attribute] = kwargs[attribute]
+        if "x_search_text" in kwargs:
+            headers["x-search-text"] = kwargs["x_search_text"]
+        if "x_enterprise" in kwargs:
+            headers["x-enterprise"] = kwargs["x_enterprise"]
         return requests.get(url=url, headers=headers)
 
     def get_groups(
@@ -2746,10 +2485,10 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/settings/groups/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
-        keyworded_attributes = ["x-search-text", "x-enterprise"]
-        for attribute in keyworded_attributes:
-            if attribute in kwargs:
-                headers[attribute] = kwargs[attribute]
+        if "x_search_text" in kwargs:
+            headers["x-search-text"] = kwargs["x_search_text"]
+        if "x_enterprise" in kwargs:
+            headers["x-enterprise"] = kwargs["x_enterprise"]
         return requests.get(url=url, headers=headers)
 
     def get_library_documents(
@@ -2758,10 +2497,10 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/settings/library/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
-        keyworded_attributes = ["x-search-text", "x-enterprise"]
-        for attribute in keyworded_attributes:
-            if attribute in kwargs:
-                headers[attribute] = kwargs[attribute]
+        if "x_search_text" in kwargs:
+            headers["x-search-text"] = kwargs["x_search_text"]
+        if "x_enterprise" in kwargs:
+            headers["x-enterprise"] = kwargs["x_enterprise"]
         return requests.get(url=url, headers=headers)
 
     def get_templates(
@@ -2770,10 +2509,10 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/settings/templates/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
-        keyworded_attributes = ["x-search-text", "x-enterprise"]
-        for attribute in keyworded_attributes:
-            if attribute in kwargs:
-                headers[attribute] = kwargs[attribute]
+        if "x_search_text" in kwargs:
+            headers["x-search-text"] = kwargs["x_search_text"]
+        if "x_enterprise" in kwargs:
+            headers["x-enterprise"] = kwargs["x_enterprise"]
         return requests.get(url=url, headers=headers)
 
     def reset_email_notifications(self) -> requests.models.Response:
@@ -2806,8 +2545,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_attributes = ["name", "description", "members"]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["update_personal_group"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -2821,9 +2559,3 @@ class Connection:
     def add_bearer(self, headers: dict) -> dict:
         headers["Authorization"] = f"Bearer {self.access_token}"
         return headers
-
-
-def raise_valueerror(keyword: str, received_type: type, expected_type: type):
-    return ValueError(
-        f"Keyword '{keyword}' should be {expected_type} but instead type {received_type} was received"
-    )
