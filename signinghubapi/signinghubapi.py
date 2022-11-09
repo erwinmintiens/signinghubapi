@@ -3,7 +3,7 @@ from typing import Union
 
 import requests
 
-from .utils import GET_HEADERS, POST_HEADERS
+from .utils import GET_HEADERS, KEYWORDED_ARGUMENTS, POST_HEADERS
 
 
 class Connection:
@@ -359,24 +359,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"user_email": user_email, "user_name": user_name}
-        keyworded_attributes = [
-            "job_title",
-            "company_name",
-            "mobile_number",
-            "user_password",
-            "security_question",
-            "security_answer",
-            "enterprise_role",
-            "email_notification",
-            "country",
-            "time_zone",
-            "language",
-            "user_ra_id",
-            "user_csp_id",
-            "certificate_alias",
-            "common_name",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["register_enterprise_user"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.post(url=url, data=json.dumps(data), headers=headers)
@@ -396,27 +379,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"user_email": user_email}
-        keyworded_attributes = [
-            "user_name",
-            "job_title",
-            "company_name",
-            "mobile_number",
-            "user_old_password",
-            "user_new_password",
-            "security_question",
-            "security_answer",
-            "enterprise_role",
-            "email_notification",
-            "enabled",
-            "country",
-            "time_zone",
-            "language",
-            "user_ra_id",
-            "user_csp_id",
-            "certificate_alias",
-            "common_name",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["update_enterprise_user"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -950,13 +913,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_arguments = [
-            "workflow_mode",
-            "workflow_type",
-            "continue_on_decline",
-            "message",
-        ]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["update_workflow_details"]:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -1069,14 +1026,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_arguments = [
-            "user_email",
-            "user_name",
-            "role",
-            "email_notification",
-            "signing_order",
-        ]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["update_workflow_user"]:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -1111,8 +1061,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"group_name": group_name}
-        keyworded_arguments = ["role", "email_notification", "signing_order"]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["add_groups_to_workflow"]:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
         payload = list()
@@ -1126,13 +1075,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_arguments = [
-            "group_name",
-            "role",
-            "email_notification",
-            "signing_order",
-        ]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["update_workflow_group"]:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -1144,8 +1087,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = [{"placeholder": placeholder_name}]
-        keyworded_arguments = ["role", "email_notification", "signing_order"]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["add_placeholder_to_workflow"]:
             if argument in kwargs:
                 data[0][argument] = kwargs[argument]
         return requests.post(url=url, headers=headers, data=json.dumps(data))
@@ -1179,13 +1121,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_arguments = [
-            "placeholder",
-            "role",
-            "email_notification",
-            "signing_order",
-        ]
-        for argument in keyworded_arguments:
+        for argument in KEYWORDED_ARGUMENTS["update_placeholder"]:
             if argument in kwargs:
                 data[argument] = kwargs[argument]
         return requests.put(url=url, data=json.dumps(data), headers=headers)
@@ -1586,16 +1522,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_no, "dimensions": dict()}
-        keyworded_attributes = [
-            "field_name",
-            "display",
-            "x",
-            "y",
-            "width",
-            "height",
-            "level_of_assurance",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["add_signature_field"]:
             if attribute in kwargs:
                 if attribute in ["x", "y", "width", "height"]:
                     data["dimensions"][attribute] = kwargs[attribute]
@@ -1610,16 +1537,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_number, "dimensions": dict()}
-        keyworded_attributes = [
-            "field_name",
-            "placeholder",
-            "display",
-            "x",
-            "y",
-            "width",
-            "height",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["add_in_person_field"]:
             if attribute in kwargs:
                 if attribute in ["x", "y", "width", "height"]:
                     data["dimensions"][attribute] = kwargs[attribute]
@@ -1634,8 +1552,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"order": order, "page_no": page_number, "dimensions": dict()}
-        keyworded_attributes = ["field_name", "x", "y", "width", "height"]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["add_initials_field"]:
             if attribute in kwargs:
                 if attribute in ["x", "y", "width", "height"]:
                     data["dimensions"][attribute] = kwargs[attribute]
@@ -1982,27 +1899,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"field_name": field_name, "font": dict(), "dimensions": dict()}
-        keyworded_attributes = [
-            "renamed_as",
-            "page_number",
-            "page_number",
-            "type",
-            "format",
-            "placeholder",
-            "value",
-            "max_length",
-            "multiline",
-            "field_type",
-            "validation_rule",
-            "font_name",
-            "font_size",
-            "font_embedded_size",
-            "x",
-            "y",
-            "width",
-            "height",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["update_textbox_field"]:
             if attribute in kwargs:
                 if "font" in attribute:
                     data["font"][attribute[5:]] = kwargs[attribute]
@@ -2181,19 +2078,9 @@ class Connection:
             "signing_server": signing_server,
             "signing_capacity": signing_capacity,
         }
-
-        keyworded_attributes = [
-            "signing_reason",
-            "signing_location",
-            "contact_information",
-            "user_name",
-            "user_password",
-            "appearance_design",
-            "skip_verification",
-        ]
         if "x_otp" in kwargs:
             headers["x-otp"] = kwargs["x_otp"]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["sign_document_v4"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.post(url=url, headers=headers, data=json.dumps(data))
@@ -2230,20 +2117,9 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"field_name": field_name, "hand_signature_image": hand_signature_image}
-        keyworded_attributes = [
-            "signing_reason",
-            "signing_location",
-            "contact_information",
-            "user_name",
-            "user_password",
-            "appearance_design",
-            "signing_capacity",
-            "witness_signing_capacity",
-            "skip_verification",
-        ]
         if "x_otp" in kwargs:
             headers["x-otp"] = kwargs["x_otp"]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["sign_document_v3"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.post(url=url, headers=headers, data=json.dumps(data))
@@ -2328,17 +2204,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"user_email": user_email, "user_name": user_name, "invitation": dict()}
-        keyworded_attributes = [
-            "job_title",
-            "company_name",
-            "mobile_number",
-            "country",
-            "time_zone",
-            "language",
-            "service_agreements",
-            "marketing_emails",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["register_user_free_trial"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         if "invitation_to_enterprise_name" in kwargs:
@@ -2500,17 +2366,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_attributes = [
-            "user_name",
-            "job_title",
-            "company_name",
-            "mobile_number",
-            "country",
-            "time_zone",
-            "language",
-            "user_national_id",
-        ]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["update_general_profile_information"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -2712,8 +2568,7 @@ class Connection:
         data = {"delegate": dict()}
         if "enabled" in kwargs:
             data["enabled"] = kwargs["enabled"]
-        keyworded_attributes = ["user_name", "user_email", "from", "to"]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["update_signature_delegation_settings"]:
             if attribute in kwargs:
                 data["delegate"][attribute] = kwargs[attribute]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
@@ -2806,8 +2661,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_attributes = ["Name", "Description", "Members"]
-        for attribute in keyworded_attributes:
+        for attribute in KEYWORDED_ARGUMENTS["update_personal_group"]:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
