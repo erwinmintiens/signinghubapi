@@ -1160,50 +1160,22 @@ class Connection:
         headers = self.add_bearer(headers)
         data = {"permissions": {"legal_notice": dict()}}
         if "apply_to_all" in kwargs:
-            if type(kwargs["apply_to_all"]) is not bool:
-                raise raise_valueerror(
-                    "apply_to_all", type(kwargs["apply_to_all"]), type(bool)
-                )
             data["apply_to_all"] = kwargs["apply_to_all"]
         if "print" in kwargs:
-            if type(kwargs["print"]) is not bool:
-                raise raise_valueerror("print", type(kwargs["print"]), type(bool))
             data["permissions"]["print"] = kwargs["print"]
         if "download" in kwargs:
-            if type(kwargs["download"]) is not bool:
-                raise raise_valueerror("download", type(kwargs["download"]), type(bool))
             data["permissions"]["download"] = kwargs["download"]
         if "add_text" in kwargs:
-            if type(kwargs["add_text"]) is not bool:
-                raise raise_valueerror("add_text", type(kwargs["add_text"]), type(bool))
             data["permissions"]["add_text"] = kwargs["add_text"]
         if "add_attachment" in kwargs:
-            if type(kwargs["add_attachment"]) is not bool:
-                raise raise_valueerror(
-                    "add_attachment", type(kwargs["add_attachment"]), type(bool)
-                )
             data["permissions"]["add_attachment"] = kwargs["add_attachment"]
         if "change_recipients" in kwargs:
-            if type(kwargs["change_recipients"]) is not bool:
-                raise raise_valueerror(
-                    "change_recipients", type(kwargs["change_recipients"]), type(bool)
-                )
             data["permissions"]["change_recipients"] = kwargs["change_recipients"]
         if "legal_notice_enabled" in kwargs:
-            if type(kwargs["legal_notice_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "legal_notice_enabled",
-                    type(kwargs["legal_notice_enabled"]),
-                    type(bool),
-                )
             data["permissions"]["legal_notice"]["enabled"] = kwargs[
                 "legal_notice_enabled"
             ]
         if "legal_notice_name" in kwargs:
-            if type(kwargs["legal_notice_name"]) is not str:
-                raise raise_valueerror(
-                    "legal_notice_name", type(kwargs["legal_notice_name"]), type(str)
-                )
             data["permissions"]["legal_notice"]["legal_notice_name"] = kwargs[
                 "legal_notice_name"
             ]
@@ -1232,106 +1204,42 @@ class Connection:
             },
         }
         if "apply_to_all" in kwargs:
-            if type(kwargs["apply_to_all"]) is not bool:
-                raise raise_valueerror(
-                    "apply_to_all", type(kwargs["apply_to_all"]), type(bool)
-                )
             data["apply_to_all"] = kwargs["apply_to_all"]
         if "authentication_enabled" in kwargs:
-            if type(kwargs["authentication_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "authentication_enabled",
-                    type(kwargs["authentication_enabled"]),
-                    type(bool),
-                )
             data["authentication"]["enabled"] = kwargs["authentication_enabled"]
         if "authentication_password_enabled" in kwargs:
-            if type(kwargs["authentication_password_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "authentication_password_enabled",
-                    type(kwargs["authentication_password_enabled"]),
-                    type(bool),
-                )
             data["authentication"]["password"]["enabled"] = kwargs[
                 "authentication_password_enabled"
             ]
         if "user_password" in kwargs:
-            if type(kwargs["user_password"]) is not str:
-                raise raise_valueerror(
-                    "user_password", type(kwargs["user_password"]), type(str)
-                )
             data["authentication"]["password"]["user_password"] = kwargs[
                 "user_password"
             ]
         if "sms_otp_enabled" in kwargs:
-            if type(kwargs["sms_otp_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "sms_otp_enabled", type(kwargs["sms_otp_enabled"]), type(bool)
-                )
             data["authentication"]["sms_otp"]["enabled"] = kwargs["sms_otp_enabled"]
         if "mobile_number" in kwargs:
-            if type(kwargs["mobile_number"]) is not str:
-                raise raise_valueerror(
-                    "mobile_number", type(kwargs["mobile_number"]), type(str)
-                )
             data["authentication"]["sms_otp"]["mobile_number"] = kwargs["mobile_number"]
         if "access_duration_enabled" in kwargs:
-            if type(kwargs["access_duration_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "access_duration_enabled",
-                    type(kwargs["access_duration_enabled"]),
-                    type(bool),
-                )
             data["access_duration_enabled"]["enabled"] = kwargs[
                 "access_duration_enabled"
             ]
         if "access_duration_duration_by_date" in kwargs:
-            if type(kwargs["access_duration_duration_by_date"]) is not bool:
-                raise raise_valueerror(
-                    "access_duration_duration_by_date",
-                    type(kwargs["access_duration_duration_by_date"]),
-                    type(bool),
-                )
             data["access_duration_enabled"]["duration_by_date"]["enabled"] = kwargs[
                 "access_duration_duration_by_date"
             ]
         if "access_duration_by_date_start_date_time" in kwargs:
-            if type(kwargs["access_duration_by_date_start_date_time"]) is not str:
-                raise raise_valueerror(
-                    "access_duration_by_date_start_date_time",
-                    type(kwargs["access_duration_by_date_start_date_time"]),
-                    type(str),
-                )
             data["access_duration_enabled"]["duration_by_date"]["duration"][
                 "start_date_time"
             ] = kwargs["access_duration_by_date_start_date_time"]
         if "access_duration_by_date_end_date_time" in kwargs:
-            if type(kwargs["access_duration_by_date_end_date_time"]) is not str:
-                raise raise_valueerror(
-                    "access_duration_by_date_end_date_time",
-                    type(kwargs["access_duration_by_date_end_date_time"]),
-                    type(str),
-                )
             data["access_duration_enabled"]["duration_by_date"]["duration"][
                 "end_date_time"
             ] = kwargs["access_duration_by_date_end_date_time"]
         if "access_duration_duration_by_days_enabled" in kwargs:
-            if type(kwargs["access_duration_duration_by_days_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "access_duration_duration_by_days_enabled",
-                    type(kwargs["access_duration_duration_by_days_enabled"]),
-                    type(bool),
-                )
             data["access_duration_enabled"]["duration_by_days"]["enabled"] = kwargs[
                 "access_duration_duration_by_days_enabled"
             ]
         if "access_duration_duration_by_days_total_days" in kwargs:
-            if type(kwargs["access_duration_duration_by_days_total_days"]) is not str:
-                raise raise_valueerror(
-                    "access_duration_duration_by_days_total_days",
-                    type(kwargs["access_duration_duration_by_days_total_days"]),
-                    type(str),
-                )
             data["access_duration_enabled"]["duration_by_days"]["duration"][
                 "total_days"
             ] = kwargs["access_duration_duration_by_days_total_days"]
@@ -1379,40 +1287,16 @@ class Connection:
         headers = self.add_bearer(headers)
         data = {"repeat": dict()}
         if "apply_to_all" in kwargs:
-            if type(kwargs["apply_to_all"]) is not bool:
-                raise raise_valueerror(
-                    "apply_to_all", type(kwargs["apply_to_all"]), type(bool)
-                )
             data["apply_to_all"] = kwargs["apply_to_all"]
         if "enabled" in kwargs:
-            if type(kwargs["enabled"]) is not bool:
-                raise raise_valueerror("enabled", type(kwargs["enabled"]), type(bool))
             data["enabled"] = kwargs["enabled"]
         if "remind_after" in kwargs:
-            if type(kwargs["remind_after"]) is not int:
-                raise raise_valueerror(
-                    "remind_after", type(kwargs["remind_after"]), type(int)
-                )
             data["remind_after"] = kwargs["remind_after"]
         if "repeat_enabled" in kwargs:
-            if type(kwargs["repeat_enabled"]) is not bool:
-                raise raise_valueerror(
-                    "repeat_enabled", type(kwargs["repeat_enabled"]), type(bool)
-                )
             data["repeat"]["enabled"] = kwargs["repeat_enabled"]
         if "keep_reminding_after" in kwargs:
-            if type(kwargs["keep_reminding_after"]) is not int:
-                raise raise_valueerror(
-                    "keep_reminding_after",
-                    type(kwargs["keep_reminding_after"]),
-                    type(int),
-                )
             data["repeat"]["keep_reminding_after"] = kwargs["keep_reminding_after"]
         if "total_reminders" in kwargs:
-            if type(kwargs["total_reminders"]) is not int:
-                raise raise_valueerror(
-                    "total_reminders", type(kwargs["total_reminders"]), type(int)
-                )
             data["repeat"]["total_reminders"] = kwargs["total_reminders"]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
 
