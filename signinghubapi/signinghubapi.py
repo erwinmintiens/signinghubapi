@@ -355,6 +355,28 @@ class Connection:
     def register_enterprise_user(
         self, user_email: str, user_name: str, **kwargs
     ) -> requests.models.Response:
+        """Register a SigningHub user to your enterprise
+
+        :param user_email: email address of the new account
+        :type user_email: str
+        :param user_name: username of the new account
+        :type user_name: str
+        :key job_title: str; job title of the new account
+        :key company_name: str; company name of the new account
+        :key mobile_number: str; mobile number of the new account
+        :key user_password: str; password to be set for the new account
+        :key security_question: str; security question of the new account
+        :key security_answer: str; security answer of the new account
+        :key enterprise_role: str; role of the new account
+        :key email_notification: bool; whether or not the account should receive an email about the account creation
+        :key country: str; country of the new account
+        :key time_zone: str; timezone of the new account
+        :key language: str; language of the new account
+        :key user_ra_id: str; user ID of the user registered in SAM service inside SigningHub Engine (ADSS Server)
+        :key user_csp_id: str; user ID of the user registered in CSP service inside SigningHub Engine (ADSS Server)
+        :key certificate_alias: str; signing certificate identification for user signing certificate registered under certification service inside SigningHub Engine (ADSS Server)
+        :key common_name: str; an identifiable name for the user that added as Common Name (CN) in identity certificate
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
         headers = self.post_headers
         headers = self.add_bearer(headers)
