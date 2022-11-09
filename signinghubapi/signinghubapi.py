@@ -385,8 +385,8 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
         headers = self.get_headers
         headers = self.add_bearer(headers)
-        if "x-search-text" in kwargs:
-            headers["x-search-text"] = kwargs["x-search-text"]
+        if "x_search_text" in kwargs:
+            headers["x-search-text"] = kwargs["x_search_text"]
         return requests.get(url=url, headers=headers)
 
     def update_enterprise_user(
@@ -603,10 +603,10 @@ class Connection:
     ) -> requests.models.Response:
         """Rename a specific package.
 
-        :param package_id: int
-            ID of the package to be renamed.
+        :param package_id: ID of the package to be renamed
+        :type package_id: int
+        :param new_name: New name of the package
         :param new_name: str
-            New name of the package.
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}"
@@ -643,8 +643,8 @@ class Connection:
         headers = self.add_bearer(headers)
         headers["x-file-name"] = file_name
         headers["x-source"] = x_source
-        if "x-convert-document" in kwargs:
-            headers["x-convert-document"] = kwargs["x-convert-document"]
+        if "x_convert_document" in kwargs:
+            headers["x-convert-document"] = kwargs["x_convert_document"]
         return requests.post(
             url=url,
             headers=headers,
@@ -739,10 +739,10 @@ class Connection:
             "Accept": "image/png",
             "Authorization": "Bearer " + self.access_token,
         }
-        if "x-password" in kwargs:
-            headers["x-password"] = kwargs["x-password"]
-        if "x-otp" in kwargs:
-            headers["x-otp"] = kwargs["x-otp"]
+        if "x_password" in kwargs:
+            headers["x-password"] = kwargs["x_password"]
+        if "x_otp" in kwargs:
+            headers["x-otp"] = kwargs["x_otp"]
         return requests.get(url=url, headers=headers)
 
     def download_document(
@@ -905,10 +905,10 @@ class Connection:
             "Accept": "application/octet-stream",
             "Authorization": "Bearer " + self.access_token,
         }
-        if "x-password" in kwargs:
-            headers["x-password"] = kwargs["x-password"]
-        if "x-otp" in kwargs:
-            headers["x-otp"] = kwargs["x-otp"]
+        if "x_password" in kwargs:
+            headers["x-password"] = kwargs["x_password"]
+        if "x_otp" in kwargs:
+            headers["x-otp"] = kwargs["x_otp"]
         return requests.get(url=url, headers=headers)
 
     def open_document_package(
@@ -917,10 +917,10 @@ class Connection:
         url = f"{self.full_url}/v{self.full_url}/packages/{package_id}/open"
         headers = self.post_headers
         headers = self.add_bearer(headers)
-        if "x-password" in kwargs:
-            headers["x-password"] = kwargs["x-password"]
-        if "x-otp" in kwargs:
-            headers["x-otp"] = kwargs["x-otp"]
+        if "x_password" in kwargs:
+            headers["x-password"] = kwargs["x_password"]
+        if "x_otp" in kwargs:
+            headers["x-otp"] = kwargs["x_otp"]
         return requests.get(url=url, headers=headers)
 
     def close_document_package(self, package_id: int) -> requests.models.Response:
@@ -2734,10 +2734,10 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/settings/contacts/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
-        keyworded_attributes = ["x-search-text", "x-enterprise"]
-        for attribute in keyworded_attributes:
-            if attribute in kwargs:
-                headers[attribute] = kwargs[attribute]
+        if "x_search_text" in kwargs:
+            headers["x-search-text"] = kwargs["x_search_text"]
+        if "x_enterprise" in kwargs:
+            headers["x-enterprise"] = kwargs["x_enterprise"]
         return requests.get(url=url, headers=headers)
 
     def get_groups(
@@ -2746,10 +2746,10 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/settings/groups/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
-        keyworded_attributes = ["x-search-text", "x-enterprise"]
-        for attribute in keyworded_attributes:
-            if attribute in kwargs:
-                headers[attribute] = kwargs[attribute]
+        if "x_search_text" in kwargs:
+            headers["x-search-text"] = kwargs["x_search_text"]
+        if "x_enterprise" in kwargs:
+            headers["x-enterprise"] = kwargs["x_enterprise"]
         return requests.get(url=url, headers=headers)
 
     def get_library_documents(
@@ -2758,10 +2758,10 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/settings/library/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
-        keyworded_attributes = ["x-search-text", "x-enterprise"]
-        for attribute in keyworded_attributes:
-            if attribute in kwargs:
-                headers[attribute] = kwargs[attribute]
+        if "x_search_text" in kwargs:
+            headers["x-search-text"] = kwargs["x_search_text"]
+        if "x_enterprise" in kwargs:
+            headers["x-enterprise"] = kwargs["x_enterprise"]
         return requests.get(url=url, headers=headers)
 
     def get_templates(
@@ -2770,10 +2770,10 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/settings/templates/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
-        keyworded_attributes = ["x-search-text", "x-enterprise"]
-        for attribute in keyworded_attributes:
-            if attribute in kwargs:
-                headers[attribute] = kwargs[attribute]
+        if "x_search_text" in kwargs:
+            headers["x-search-text"] = kwargs["x_search_text"]
+        if "x_enterprise" in kwargs:
+            headers["x-enterprise"] = kwargs["x_enterprise"]
         return requests.get(url=url, headers=headers)
 
     def reset_email_notifications(self) -> requests.models.Response:
@@ -2806,7 +2806,7 @@ class Connection:
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        keyworded_attributes = ["name", "description", "members"]
+        keyworded_attributes = ["Name", "Description", "Members"]
         for attribute in keyworded_attributes:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
