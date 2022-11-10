@@ -389,7 +389,7 @@ class Connection:
     def get_enterprise_users(self, **kwargs) -> requests.models.Response:
         """Get users within your enterprise
 
-        :key x_search_text: str; this method will return all users who's email address matches the search string"""
+        :key x_search_text: str; this method will return all users who's email address contains the search string"""
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
         headers = self.get_headers
         headers = self.add_bearer(headers)
@@ -421,6 +421,9 @@ class Connection:
         :key user_csp_id: str; new user ID of the user registered in CSP service inside SigningHub Engine (ADSS Server)
         :key certificate_alias: str; new signing certificate identification for user signing certificate registered under certification service inside SigningHub Engine (ADSS Server)
         :key common_name: str; new identifiable name for the user that added as Common Name (CN) in identity certificate
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
         headers = self.post_headers
@@ -432,6 +435,14 @@ class Connection:
         return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def delete_enterprise_user(self, user_email: str) -> requests.models.Response:
+        """Delete a user within which exists in your enterprise
+
+        :param user_email: email address of the user that needs to be deleted
+        :type user_email: str
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
         headers = self.post_headers
         headers = self.add_bearer(headers)
