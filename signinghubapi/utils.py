@@ -147,4 +147,5 @@ KEYWORDED_ARGUMENTS = {
         "email_notification",
         "signing_order",
     ],
+    "update_enterprise_group": ["name", "description", "members"],
 }
