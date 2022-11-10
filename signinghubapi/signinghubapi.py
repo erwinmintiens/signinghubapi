@@ -453,6 +453,15 @@ class Connection:
     def invite_enterprise_user(
         self, user_email: str, user_name: str, **kwargs
     ) -> requests.models.Response:
+        """Invite an existing user to your enterprise
+
+        :param user_email: email address of the user that needs to be invited
+        :type user_email: str
+        :key enterprise_role: role that needs to be given to the invited user. Defaults to the default role in your enterprise
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/invitations"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -464,6 +473,16 @@ class Connection:
     def get_enterprise_invitations(
         self, page_number: int, records_per_page: int
     ) -> requests.models.Response:
+        """Get all pending enterprise invitations
+
+        :param page_number: which page needs to be given in the response body
+        :type page_number: int
+        :param records_per_page: how many records each page should contain in the response body
+        :type records_per_page: int
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/invitations/{page_number}/{records_per_page}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
