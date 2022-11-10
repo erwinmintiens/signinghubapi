@@ -475,9 +475,9 @@ class Connection:
     ) -> requests.models.Response:
         """Get all pending enterprise invitations
 
-        :param page_number: which page needs to be given in the response body
+        :param page_number: which page needs to be given in the response body. Default = 1
         :type page_number: int
-        :param records_per_page: how many records each page should contain in the response body
+        :param records_per_page: how many records each page should contain in the response body. Default = 10
         :type records_per_page: int
 
         :returns: HTTP response
@@ -491,6 +491,14 @@ class Connection:
     def delete_enterprise_user_invitation(
         self, user_email: str
     ) -> requests.models.Response:
+        """Delete an invitation to your enterprise
+
+        :param user_email: email address to whom an invitation to your enterprise was sent and that needs te be deleted
+        :type user_email: str
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/invitations"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -499,6 +507,13 @@ class Connection:
         )
 
     def get_enterprise_branding(self) -> requests.models.Response:
+        """Get the branding of your enterprise.
+        This included the logo in base64, the API URL to access this logo, the favicon in base64, the API URL to access this favicon,
+        and the different color codes set in your enterprise
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/branding"
         headers = self.get_headers
         headers = self.add_bearer(headers)
@@ -506,10 +521,12 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def get_package(self, package_id: int) -> requests.models.Response:
-        """Returns the info of a specific package.
+        """Returns the info of a specific package
 
         :param package_id: ID of the package
         :type package_id: int
+
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/enterprise/packages/{package_id}"
@@ -526,6 +543,24 @@ class Connection:
         key_protection_option: str,
         is_default: bool,
     ) -> requests.models.Response:
+        """Add a certificate for a user within your enterprise
+
+        :param user_email: email address of the user for whom the certificate needs to be added
+        :type user_email: str
+        :param capacity_name: friendly name for the certificate that has to be added for enterprise user.
+        :type capacity_name: str
+        :param certificate_alias: signing certificate identification for user signing certificate registered under certification service inside SigningHub Engine (ADSS Server)
+        :type certificate_alias: str
+        :param level_of_assurance: provide the level of assurance for a signing certificate, that you want to be used for this particular signing certificate. Possible values are ADVANCED_ELECTRONIC_SIGNATURE, HIGH_TRUST_ADVANCED and QUALIFIED_ELECTRONIC_SIGNATURE
+        :type level_of_assurance: str
+        :param key_protection_option: provide value if your signing certificate generated with a user password or the intended certificate generated for remote authorisation signing. Possible values are USER_PASSWORD and REMOTE_AUTHORISATION. Key protection option cannot be updated once it is set
+        :type key_protection_option: str
+        :param is_default: if true, the signing capacity set as default and show as selected on signing dialog
+        :type is_default: bool
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/signingcertificates"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -550,6 +585,24 @@ class Connection:
         level_of_assurance: str,
         is_default: bool,
     ) -> requests.models.Response:
+        """Update a certificate for a user within your enterprise
+
+        :param certificate_id: certificate ID that needs to be removed for the user
+        :type certificate_id: int
+        :param user_email: email address of the user for whom the certificate needs to be updated
+        :type user_email: str
+        :param capacity_name: friendly name for the certificate that has to be updated for enterprise user.
+        :type capacity_name: str
+        :param certificate_alias: signing certificate identification for user signing certificate registered under certification service inside SigningHub Engine (ADSS Server)
+        :type certificate_alias: str
+        :param level_of_assurance: provide the level of assurance for a signing certificate, that you want to be used for this particular signing certificate. Possible values are ADVANCED_ELECTRONIC_SIGNATURE, HIGH_TRUST_ADVANCED and QUALIFIED_ELECTRONIC_SIGNATURE
+        :type level_of_assurance: str
+        :param is_default: if true, the signing capacity set as default and show as selected on signing dialog
+        :type is_default: bool
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/signingcertificates/{certificate_id}"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -567,6 +620,16 @@ class Connection:
     def delete_certificate(
         self, certificate_id: int, user_email: str
     ) -> requests.models.Response:
+        """Removes a custom certificate for signing
+
+        :param certificate_id: certificate ID that needs to be removed for the user
+        :type certificate_id: int
+        :param user_email: email address of the user for whom the certificate needs to be removed
+        :type user_email: str
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/signingcertificates/{certificate_id}"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -575,6 +638,14 @@ class Connection:
         )
 
     def get_enterprise_group(self, group_id: int) -> requests.models.Response:
+        """Get a specific enterprise group's details
+
+        :param group_id: ID of the group
+        :type group_id: int
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups/{group_id}"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -583,35 +654,59 @@ class Connection:
     def add_enterprise_group(
         self, group_name: str, members: list, **kwargs
     ) -> requests.models.Response:
+        """Add a new enterprise group
+
+        :param group_name: name of the new group
+        :type group_name: str
+        :param members: users who should be added to this group. This list contains one or more dictionaries with 2 keys: "user_email" (the email address of the user to be added) and "user_name" (the username of the user to be added)
+        :type members: list
+        :key description: str; description of the enterprise group
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups"
         headers = self.post_headers
         headers = self.add_bearer(headers)
-        data = {"Name": group_name, "Members": list()}
-        for member in members:
-            data["Members"].append(member)
+        data = {"name": group_name}
+        data["members"] = members
         if "description" in kwargs:
-            data["Description"] = kwargs["description"]
+            data["description"] = kwargs["description"]
         return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def update_enterprise_group(
         self, group_id: int, **kwargs
     ) -> requests.models.Response:
+        """Update an enterprise group
+
+        :param group_id: ID of the group
+        :type group_id: int
+        :key name: str; new group name
+        :key description: str; new group description
+        :key members: list; new members of the group. The previous members will be replaced by this list which contains one or more dictionaries with 2 keys: "user_email" (the email address of the user to be added) and "user_name" (the username of the user to be added)
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups/{group_id}"
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = dict()
-        if "name" in kwargs:
-            data["Name"] = kwargs["name"]
-        if "description" in kwargs:
-            data["Description"] = kwargs["description"]
-        if "members" in kwargs:
-            if type(kwargs["members"]) is list:
-                data["Members"] = list()
-                for member in kwargs["members"]:
-                    data["Members"].append(member)
+
+        for keyworded_argument in KEYWORDED_ARGUMENTS["update_enterprise_group"]:
+            if keyworded_argument in kwargs:
+                data[keyworded_argument] = kwargs[keyworded_argument]
         return requests.put(url=url, headers=headers, data=json.dumps(data))
 
     def delete_enterprise_group(self, group_id: int) -> requests.models.Response:
+        """Delete an enterprise group
+
+        :param group_id: ID of the group
+        :type group_id: int
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups/{group_id}"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -624,10 +719,9 @@ class Connection:
 
         :param package_name: Name of the package
         :type package_name: str
-        :param kwargs:
-            workflow_mode: str
-                The workflow mode of the package, possible values are "ONLY_ME", "ME_AND_OTHERS" and "ONLY_OTHERS".
-                If no workflow_mode is given, the default is used as per the settings in your SigningHub enterprise.
+        :key workflow_mode: str; the workflow mode of the package, possible values are "ONLY_ME", "ME_AND_OTHERS" and "ONLY_OTHERS". If no workflow_mode is given, the default is used as per the settings in your SigningHub enterprise
+
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages"
@@ -641,12 +735,14 @@ class Connection:
     def rename_package(
         self, package_id: int, new_name: str
     ) -> requests.models.Response:
-        """Rename a specific package.
+        """Rename a specific package
 
         :param package_id: ID of the package to be renamed
         :type package_id: int
         :param new_name: New name of the package
         :param new_name: str
+
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}"
@@ -659,27 +755,31 @@ class Connection:
     def upload_document(
         self,
         package_id: int,
-        path_to_files_folder: str,
+        path_to_file: str,
         file_name: str,
         x_source: str = "API",
         **kwargs,
     ) -> requests.models.Response:
-        """Uploading a document to a specific package.
+        """Upload a document to a specific package
 
-        :param package_id: ID of the package to which the document needs to be added.
+        :param package_id: ID of the package to which the document needs to be added
         :type package_id: int
-        :param path_to_files_folder: Absolute path of the file that needs to be uploaded.
+        :param path_to_files_folder: Absolute path of the file that needs to be uploaded
         :type path_to_files_folder: str
-        :param file_name: Name of the file.
+        :param file_name: Name which will be given to this file in SigningHub (make sure to add the extension as well). This file name can be different from the actual file name
         :type file_name: str
-        :param x_source:
-            This is the identification of the source of the document from where the document is uploaded, e.g. "My App".
+        :param x_source: this is the identification of the source of the document from where the document is uploaded, e.g. "My App". Default = "API"
         :type x_source: str
+        :key x_convert_document: bool; this identifies whether to convert the document to a PDF or if it should be retained in its original format.  Note the only original format supported is currently Word & XML. All other document types will result in an error if this header value is set to "false".  If uploading a PDF document this Header can be omitted
 
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents"
-        headers = self.post_headers
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/octet-stream",
+        }
         headers = self.add_bearer(headers)
         headers["x-file-name"] = file_name
         headers["x-source"] = x_source
@@ -688,7 +788,7 @@ class Connection:
         return requests.post(
             url=url,
             headers=headers,
-            data=open(path_to_files_folder + file_name, "rb").read(),
+            data=open(path_to_file, "rb").read(),
         )
 
     def apply_workflow_template(
@@ -2642,3 +2742,10 @@ class Connection:
     def add_bearer(self, headers: dict) -> dict:
         headers["Authorization"] = f"Bearer {self.access_token}"
         return headers
+
+
+def validate_dict(dictionary: dict):
+    for key, value in dictionary.items():
+        if not value:
+            dictionary.pop(key)
+    return dictionary

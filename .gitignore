@@ -282,3 +282,6 @@ fabric.properties
 
 # VS CODE
 .vscode/
+
+# Test package files
+playground.py
