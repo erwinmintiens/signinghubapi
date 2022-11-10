@@ -387,6 +387,9 @@ class Connection:
         return requests.post(url=url, data=json.dumps(data), headers=headers)
 
     def get_enterprise_users(self, **kwargs) -> requests.models.Response:
+        """Get users within your enterprise
+
+        :key x_search_text: str; this method will return all users who's email address matches the search string"""
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
         headers = self.get_headers
         headers = self.add_bearer(headers)
@@ -397,6 +400,28 @@ class Connection:
     def update_enterprise_user(
         self, user_email: str, **kwargs
     ) -> requests.models.Response:
+        """Update the properties of a user within your enterprise
+
+        :param user_email: email address of the user
+        :type user_email: str
+        :key user_name: str; new the new username of the enterprise user
+        :key job_title: str; new job title of the enterprise user
+        :key company_name: str; new company name of the enterprise user
+        :key mobile_number: str; new mobile number of the enterprise user
+        :key user_old_password: str; the old password of the enterprise user in case of password change
+        :key user_new_password: str; the new password of the enterprise user in case of password change
+        :key security_question: str; new security question of the enterprise user
+        :key security_answer: str; new security answer of the enterprise user
+        :key enterprise_role: str; new role for the enterprise user
+        :key email_notification: bool; whether or not the account should receive an email about the account update
+        :key country: str; new country of the enterprise user
+        :key time_zone: str; new timezone of the enterprise user
+        :key language: str; new language of the enterprise user
+        :key user_ra_id: str; new user ID of the user registered in SAM service inside SigningHub Engine (ADSS Server)
+        :key user_csp_id: str; new user ID of the user registered in CSP service inside SigningHub Engine (ADSS Server)
+        :key certificate_alias: str; new signing certificate identification for user signing certificate registered under certification service inside SigningHub Engine (ADSS Server)
+        :key common_name: str; new identifiable name for the user that added as Common Name (CN) in identity certificate
+        """
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
         headers = self.post_headers
         headers = self.add_bearer(headers)
