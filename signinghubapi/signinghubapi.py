@@ -794,18 +794,17 @@ class Connection:
     def apply_workflow_template(
         self, package_id: int, document_id: int, template_name: str, **kwargs
     ) -> requests.models.Response:
-        """Applying a template on a document within a package.
+        """Applying a template on a document within a package
 
-        :param package_id: ID of the package the template should be applied to.
+        :param package_id: ID of the package in which the document exist to which the template should be applied to
         :type package_id: int
-        :param document_id: ID of the document within the package the template should be applied to.
+        :param document_id: ID of the document within the package the template should be applied to
         :type document_id: int
-        :param template_name: Name of the template to be applied.
+        :param template_name: name of the template to be applied
         :type template_name: str
-        :param kwargs:
-            apply_to_all: bool
-                True if the template is to be applied on all documents within the package.
-                False if not.
+        :key apply_to_all: bool; whether or not the template should be applied to all documents in the package. Default = False
+
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/template"
@@ -817,10 +816,12 @@ class Connection:
         return requests.post(url=url, data=json.dumps(data), headers=headers)
 
     def share_document_package(self, package_id: int) -> requests.models.Response:
-        """Share a specific package.
+        """Share a package
 
-        :param package_id: ID of the package to be shared.
+        :param package_id: ID of the package to be shared
         :type package_id: int
+
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow"
@@ -831,12 +832,16 @@ class Connection:
     def change_document_package_owner(
         self, package_id: int, new_owner: str
     ) -> requests.models.Response:
-        """Change the owner of a specific package.
+        """Change the owner of a package
 
         :param package_id: ID of the package
         :type package_id: int
         :param new_owner: email address of the account which should become the new owner
-        :type new_owner: str"""
+        :type new_owner: str
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/owner"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -847,12 +852,14 @@ class Connection:
     def get_document_details(
         self, package_id: int, document_id: int
     ) -> requests.models.Response:
-        """Get the details of a specific document.
+        """Get the details of a specific document
 
         :param package_id: ID of the package
         :type package_id: int
         :param document_id: ID of the document
         :type document_id: int
+
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/details"
@@ -865,10 +872,28 @@ class Connection:
         package_id: int,
         document_id: int,
         resolution: str,
-        page_number: int = 1,
+        page_number: int,
         base_64=False,
         **kwargs,
     ) -> requests.models.Response:
+        """Get the image of a specified page of a document
+
+        :param package_id: ID of the package where the document is located
+        :type package_id: int
+        :param document_id: ID of the document from which you want the image of a page
+        :type document_id: int
+        :param resolution: resulution of the received image. Example: "800x600"
+        :type resolution: str
+        :param page_number: page number of which page you want the image of
+        :type page_number: int
+        :param base_64: whether or not you want the image in base64. The default other option is binary. Default = False
+        :type base_64: bool
+        :key x_password: str; password of the document, if a document opening password was set by the document owner for the recipient
+        :key x_otp: str; OTP value for opening the document, if a document opening OTP permission was set by the document owner
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = (
             f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
             f"/images/{page_number}/{resolution}"
@@ -877,8 +902,8 @@ class Connection:
             url += "/base64"
         headers = {
             "Accept": "image/png",
-            "Authorization": "Bearer " + self.access_token,
         }
+        headers = self.add_bearer(headers)
         if "x_password" in kwargs:
             headers["x-password"] = kwargs["x_password"]
         if "x_otp" in kwargs:
@@ -888,21 +913,27 @@ class Connection:
     def download_document(
         self, package_id: int, document_id: str, base_64=False, **kwargs
     ) -> requests.models.Response:
-        """Download a document.
+        """Download a document
 
         :param package_id: ID of the package where the document is located
         :type package_id: int
         :param document_id: ID of the document to be downloaded
         :type document_id: int
-        :param base_64: whether or not the document should be downloaded in base64 format
-        :type base_64: bool"""
+        :param base_64: whether or not the document should be downloaded in base64 format. The default other option is binary. Default = False
+        :type base_64: bool
+        :key x_password: str; password of the document, if a document opening password was set by the document owner for the recipient
+        :key x_otp: str; OTP value for opening the document, if a document opening OTP permission was set by the document owner
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
         if base_64:
             url += "/base64"
         headers = {
             "Accept": "application/octet-stream",
-            "Authorization": "Bearer " + self.access_token,
         }
+        headers = self.add_bearer(headers)
         if "x_password" in kwargs:
             headers["x-password"] = kwargs["x_password"]
         if "x_otp" in kwargs:
@@ -912,15 +943,16 @@ class Connection:
     def rename_document(
         self, package_id: int, document_id: int, new_document_name: str
     ) -> requests.models.Response:
-        """Rename a specific document within a package.
+        """Rename a specific document within a package
 
-        :param package_id: ID of the package in which the document is located.
+        :param package_id: ID of the package in which the document is located
         :type package_id: int
-        :param document_id: ID of the document to be renamed.
+        :param document_id: ID of the document to be renamed
         :type document_id: int
-        :param new_document_name: New name for the document.
+        :param new_document_name: New name for the document
         :type new_document_name: str
 
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
@@ -935,13 +967,14 @@ class Connection:
     def delete_document(
         self, package_id: int, document_id: int
     ) -> requests.models.Response:
-        """Delete a specific document within a package.
+        """Delete a specific document from within a package
 
-        :param package_id: ID of the package where the document is in
+        :param package_id: ID of the package where the document is located in
         :type package_id: int
-        :param document_id: ID of the document to be deleted
+        :param document_id: ID of the document that needs to be deleted
         :type document_id: int
 
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}"
@@ -952,22 +985,43 @@ class Connection:
     def get_certify_policy_for_document(
         self, package_id: int, document_id: int
     ) -> requests.models.Response:
+        """Get certify signature settings of a document in a package
+
+        :param package_id: ID of the package the document is located in
+        :type package_id: int
+        :param document_id: ID of the document
+        :type document_id: int
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/certify"
         headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
     def update_certify_policy_for_document(
-        self, package_id: int, document_id: int, enabled: bool, **kwargs
+        self, package_id: int, document_id: int, **kwargs
     ) -> requests.models.Response:
+        """Update certify signature settings for a document in a package
+
+        :param package_id: ID of the package the document is located in
+        :type package_id: int
+        :param document_id: ID of the document which certify signature settings should be updated
+        :type document_id: int
+        :key enabled: bool; whether or not the certify settings should be enabled
+        :key permission: str; certify permission level that is to be set for the document. Possible values are "NO_CHANGES_ALLOWED", "FORM_FILLING_ALLOWED" and "FORM_FILLING_WITH_ANNOTATIONS_ALLOWED"
+        :key lock_form_fields: bool; True if form fields are to be locked after the last signature on the current document
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/certify"
         headers = self.post_headers
         headers = self.add_bearer(headers)
-        data = {
-            "certify": {
-                "enabled": enabled,
-            }
-        }
+        data = {"certify": dict()}
+        if "enabled" in kwargs:
+            data["certify"]["enabled"] = kwargs["enabled"]
         if "permission" in kwargs:
             data["certify"]["permission"] = kwargs["permission"]
         if "lock_form_fields" in kwargs:
@@ -977,6 +1031,16 @@ class Connection:
     def get_package_verification(
         self, package_id: int, base_64=True
     ) -> requests.models.Response:
+        """Get verification results for all the digital signature fields of all documents in a single package
+
+        :param package_id: ID of the package
+        :type package_id: int
+        :param base_64: True if response should have images in base64 format. False will only return the resource URLs in response. Default = True
+        :type base_64: bool
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/verification"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -986,6 +1050,18 @@ class Connection:
     def get_document_verification(
         self, package_id: int, document_id: int, base_64=True
     ) -> requests.models.Response:
+        """Get verification results for all the digital signature fields of a document in a package
+
+        :param package_id: ID of the package
+        :type package_id: int
+        :param document_id: ID of the document
+        :type document_id: int
+        :param base_64: True if response should have images in base64 format. False will only return the resource URLs in response. Default = True
+        :type base_64: bool
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/verification"
         headers = self.post_headers
         headers = self.add_bearer(headers)
