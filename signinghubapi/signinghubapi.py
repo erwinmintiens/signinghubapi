@@ -719,10 +719,9 @@ class Connection:
 
         :param package_name: Name of the package
         :type package_name: str
-        :param kwargs:
-            workflow_mode: str
-                The workflow mode of the package, possible values are "ONLY_ME", "ME_AND_OTHERS" and "ONLY_OTHERS".
-                If no workflow_mode is given, the default is used as per the settings in your SigningHub enterprise.
+        :key workflow_mode: str; the workflow mode of the package, possible values are "ONLY_ME", "ME_AND_OTHERS" and "ONLY_OTHERS". If no workflow_mode is given, the default is used as per the settings in your SigningHub enterprise
+
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages"
@@ -736,12 +735,14 @@ class Connection:
     def rename_package(
         self, package_id: int, new_name: str
     ) -> requests.models.Response:
-        """Rename a specific package.
+        """Rename a specific package
 
         :param package_id: ID of the package to be renamed
         :type package_id: int
         :param new_name: New name of the package
         :param new_name: str
+
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}"
@@ -754,27 +755,31 @@ class Connection:
     def upload_document(
         self,
         package_id: int,
-        path_to_files_folder: str,
+        path_to_file: str,
         file_name: str,
         x_source: str = "API",
         **kwargs,
     ) -> requests.models.Response:
-        """Uploading a document to a specific package.
+        """Upload a document to a specific package
 
-        :param package_id: ID of the package to which the document needs to be added.
+        :param package_id: ID of the package to which the document needs to be added
         :type package_id: int
-        :param path_to_files_folder: Absolute path of the file that needs to be uploaded.
+        :param path_to_files_folder: Absolute path of the file that needs to be uploaded
         :type path_to_files_folder: str
-        :param file_name: Name of the file.
+        :param file_name: Name which will be given to this file in SigningHub (make sure to add the extension as well). This file name can be different from the actual file name
         :type file_name: str
-        :param x_source:
-            This is the identification of the source of the document from where the document is uploaded, e.g. "My App".
+        :param x_source: this is the identification of the source of the document from where the document is uploaded, e.g. "My App". Default = "API"
         :type x_source: str
+        :key x_convert_document: bool; this identifies whether to convert the document to a PDF or if it should be retained in its original format.  Note the only original format supported is currently Word & XML. All other document types will result in an error if this header value is set to "false".  If uploading a PDF document this Header can be omitted
 
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents"
-        headers = self.post_headers
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/octet-stream",
+        }
         headers = self.add_bearer(headers)
         headers["x-file-name"] = file_name
         headers["x-source"] = x_source
@@ -783,7 +788,7 @@ class Connection:
         return requests.post(
             url=url,
             headers=headers,
-            data=open(path_to_files_folder + file_name, "rb").read(),
+            data=open(path_to_file, "rb").read(),
         )
 
     def apply_workflow_template(
