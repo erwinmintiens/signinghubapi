@@ -471,7 +471,7 @@ class Connection:
         return requests.post(url=url, headers=headers, data=json.dumps(data))
 
     def get_enterprise_invitations(
-        self, page_number: int, records_per_page: int
+        self, page_number: int = 1, records_per_page: int = 10
     ) -> requests.models.Response:
         """Get all pending enterprise invitations
 
@@ -764,8 +764,8 @@ class Connection:
         self,
         package_id: int,
         document_id: int,
-        page_number: int,
         resolution: str,
+        page_number: int = 1,
         base_64=False,
         **kwargs,
     ) -> requests.models.Response:
@@ -903,7 +903,11 @@ class Connection:
         )
 
     def get_packages(
-        self, document_status: str, page_number: int, records_per_page: int, **kwargs
+        self,
+        document_status: str,
+        page_number: int = 1,
+        records_per_page: int = 10,
+        **kwargs,
     ) -> requests.models.Response:
         """Get all packages of a specific user with a document status filter.
 
@@ -1394,9 +1398,11 @@ class Connection:
     # Document Preparation
 
     def get_document_fields(
-        self, package_id: int, document_id: int, page_number: int
+        self, package_id: int, document_id: int, page_number: Union[None, int] = None
     ) -> requests.models.Response:
-        url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/{page_number}"
+        url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
+        if page_number:
+            url += f"/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
@@ -2261,7 +2267,7 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def get_notifications(
-        self, records_per_page: int, page_number: int
+        self, records_per_page: int = 10, page_number: int = 1
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/notifications/{records_per_page}/{page_number}"
         headers = self.get_headers
@@ -2281,7 +2287,7 @@ class Connection:
         )
 
     def get_user_activity_logs(
-        self, records_per_page: int, page_number: int
+        self, records_per_page: int = 10, page_number: int = 1
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/account/log/{page_number}/{records_per_page}"
         headers = self.get_headers
@@ -2545,7 +2551,7 @@ class Connection:
         )
 
     def get_contacts(
-        self, records_per_page: int, page_number: int, **kwargs
+        self, records_per_page: int = 10, page_number: int = 1, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/contacts/{records_per_page}/{page_number}"
         headers = self.get_headers
@@ -2557,7 +2563,7 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def get_groups(
-        self, records_per_page: int, page_number: int, **kwargs
+        self, records_per_page: int = 10, page_number: int = 1, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/groups/{records_per_page}/{page_number}"
         headers = self.get_headers
@@ -2569,7 +2575,7 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def get_library_documents(
-        self, records_per_page: int, page_number: int, **kwargs
+        self, records_per_page: int = 10, page_number: int = 1, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/library/{records_per_page}/{page_number}"
         headers = self.get_headers
@@ -2581,7 +2587,7 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def get_templates(
-        self, records_per_page: int, page_number: int, **kwargs
+        self, records_per_page: int = 10, page_number: int = 1, **kwargs
     ) -> requests.models.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/templates/{records_per_page}/{page_number}"
         headers = self.get_headers
