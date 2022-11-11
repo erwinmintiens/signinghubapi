@@ -35,7 +35,7 @@ Optional parameters are:
 - A scope to authenticate with (Default value = None);
 - An access token (Default value = None);
 - A refresh token (Default value = None);
-- An API version (3 or 4, depending on your SigningHub version. Default value = 3);
+- An API version (3 or 4, depending on your SigningHub version. Default value = 4);
 - An API port (if the API URL is not defined as a URL. Default value = None).
 
 This object can execute the calls which are found in the API guide. These calls are translated to Python and the ```requests.models.Response``` object will be returned each time.
