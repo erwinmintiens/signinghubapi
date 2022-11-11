@@ -475,7 +475,7 @@ class Connection:
     ) -> requests.models.Response:
         """Get all pending enterprise invitations
 
-        :param page_number: which page needs to be given in the response body. Default = 1
+        :param page_number: which page of results needs to be given in the response body. Default = 1
         :type page_number: int
         :param records_per_page: how many records each page should contain in the response body. Default = 10
         :type records_per_page: int
@@ -1071,6 +1071,18 @@ class Connection:
     def change_document_order(
         self, package_id: int, document_id: int, new_document_order: int
     ) -> requests.models.Response:
+        """Change the order of documents within the package
+        
+        :param package_id: ID of the package
+        :type package_id: int
+        :param document_id: ID of the document on which the action needs to be performed
+        :type document_id: int
+        :param new_document_order: new order of the document
+        :type new_document_order: int
+
+        :returns: HTTP response
+        :rtype: requests.models.Response
+        """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/reorder"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -1080,20 +1092,22 @@ class Connection:
 
     def get_packages(
         self,
-        document_status: str,
+        document_status: str = "ALL",
         page_number: int = 1,
         records_per_page: int = 10,
         **kwargs,
     ) -> requests.models.Response:
         """Get all packages of a specific user with a document status filter.
 
-        :param document_status: str
-            The status of the packages. Possible values include "ALL", "DRAFT", "PENDING", "SIGNED", "DECLINED",
-            "INPROGRESS", "EDITED", "REVIEWED", "COMPLETED".
-        :param page_number: int
-            Page number of the returned info.
-        :param records_per_page: int
-            Number of records per page.
+        :param document_status: The status of the packages. Possible values include "ALL", "DRAFT", "PENDING", "SIGNED", "DECLINED", "INPROGRESS", "EDITED", "REVIEWED", "COMPLETED".  Default = "ALL"
+        :type document_status: str
+        :param page_number: which page of results needs to be given in the response body. Default = 1
+        :type page_number: int
+        :param records_per_page: how many records each page should contain in the response body. Default = 10
+        :type records_per_page: int
+        :rtype: requests.models.Response
+
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{document_status}/{page_number}/{records_per_page}"
@@ -1106,8 +1120,10 @@ class Connection:
     def delete_package(self, package_id: int) -> requests.models.Response:
         """Delete a specific package.
 
-        :param package_id: int
-            ID of the package to be deleted.
+        :param package_id: ID of the package that needs to be deleted
+        :type package_id: int
+        
+        :returns: HTTP response
         :rtype: requests.models.Response
         """
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}"
