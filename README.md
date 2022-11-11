@@ -18,10 +18,6 @@ This Python package depends on 1 external module:
 
 [Requests on GitHub](https://github.com/psf/requests)
 
-## Default Modules
-Default Python modules this package depends on:
-```json```
-
 # Usage
 Install this package with the command ```pip install signinghubapi```.
 
