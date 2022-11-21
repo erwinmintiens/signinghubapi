@@ -5,7 +5,7 @@ This package focusses on the usage of said API through Python.
 
 Signinghubapi package is the python integration of the SigningHub API. Most of the SigningHub API calls have been translated to python.
 
-SigningHub API guide can be found [here](https://manuals.keysign.eu).
+SigningHub API guide can be found [here, old version](https://manuals.keysign.eu) or [here, new version](https://sh-acc-api.keysign.eu/docs/index.html?url=/Scripts/app/document.json).
 
 Both API v3 (SigningHub 7.7.9 and earlier) and API v4 (SigningHub 7.7.9 and above) have been integrated.
 
