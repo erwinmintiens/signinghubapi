@@ -10,17 +10,17 @@ class Connection:
     def __init__(
         self,
         url: str,
-        client_id: str | None = None,
-        client_secret: str | None = None,
-        username: str | None = None,
-        password: str | None = None,
-        api_port: int | None = None,
-        scope: str | None = None,
+        client_id: Union[str, None] = None,
+        client_secret: Union[str, None] = None,
+        username: Union[str, None] = None,
+        password: Union[str, None] = None,
+        api_port: Union[int, None] = None,
+        scope: Union[str, None] = None,
         api_version: int = 4,
-        access_token: str | None = None,
-        refresh_token: str | None = None,
-        admin_url: str | None = None,
-        admin_port: int | None = None,
+        access_token: Union[str, None] = None,
+        refresh_token: Union[str, None] = None,
+        admin_url: Union[str, None] = None,
+        admin_port: Union[int, None] = None,
     ):
         """Initialize a connection between Python and a SigningHub REST API endpoint.
 
@@ -89,55 +89,55 @@ class Connection:
         return self._api_version
 
     @property
-    def url(self) -> str | None:
+    def url(self) -> Union[str, None]:
         return self._url
 
     @property
-    def client_id(self) -> str | None:
+    def client_id(self) -> Union[str, None]:
         return self._client_id
 
     @property
-    def client_secret(self) -> str | None:
+    def client_secret(self) -> Union[str, None]:
         return self._client_secret
 
     @property
-    def username(self) -> str | None:
+    def username(self) -> Union[str, None]:
         return self._username
 
     @property
-    def password(self) -> str | None:
+    def password(self) -> Union[str, None]:
         return self._password
 
     @property
-    def api_port(self) -> int | None:
+    def api_port(self) -> Union[int, None]:
         return self._api_port
 
     @property
-    def scope(self) -> str | None:
+    def scope(self) -> Union[str, None]:
         return self._scope
 
     @property
-    def access_token(self) -> str | None:
+    def access_token(self) -> Union[str, None]:
         return self._access_token
 
     @property
-    def refresh_token(self) -> str | None:
+    def refresh_token(self) -> Union[str, None]:
         return self._refresh_token
 
     @property
-    def x_change_password_token(self) -> str | None:
+    def x_change_password_token(self) -> Union[str, None]:
         return self._x_change_password_token
 
     @property
-    def admin_url(self) -> str | None:
+    def admin_url(self) -> Union[str, None]:
         return self._admin_url
 
     @property
-    def admin_port(self) -> int | None:
+    def admin_port(self) -> Union[int, None]:
         return self._admin_port
 
     @property
-    def full_url(self) -> str | None:
+    def full_url(self) -> Union[str, None]:
         return self._full_url
 
     @api_version.setter
@@ -197,7 +197,9 @@ class Connection:
             raise ValueError("URL property cannot be empty")
         if self.url.endswith("/"):
             self.url = self.url[:-1]
-        self._full_url = self.url if not self.api_port else f"{self.url}:{self.api_port}"
+        self._full_url = (
+            self.url if not self.api_port else f"{self.url}:{self.api_port}"
+        )
 
     # Documented SigningHub API Calls
     def authenticate(self) -> requests.models.Response:
@@ -301,7 +303,7 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def otp_login_authentication(
-        self, mobile_number: str | None = None
+        self, mobile_number: Union[str, None] = None
     ) -> requests.models.Response:
         """SigningHub supports second factor authentication using OTP via SMS at login time via the web site GUI.
         Note this is different to OTP via SMS used in electronic signatures at the point of signing.
