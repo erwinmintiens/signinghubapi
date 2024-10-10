@@ -10,17 +10,17 @@ class Connection:
     def __init__(
         self,
         url: str,
-        client_id: str = None,
-        client_secret: str = None,
-        username: str = None,
-        password: str = None,
-        api_port: int = None,
-        scope: str = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        api_port: int | None = None,
+        scope: str | None = None,
         api_version: int = 4,
-        access_token: str = None,
-        refresh_token: str = None,
-        admin_url: str = None,
-        admin_port: int = None,
+        access_token: str | None = None,
+        refresh_token: str | None = None,
+        admin_url: str | None = None,
+        admin_port: int | None = None,
     ):
         """Initialize a connection between Python and a SigningHub REST API endpoint.
 
@@ -81,123 +81,123 @@ class Connection:
         self._x_change_password_token = None
         self._admin_url = admin_url
         self._admin_port = admin_port
-        self._full_url = self.set_full_url()
+        self.set_full_url()
 
     # Getters and setters
     @property
-    def api_version(self):
+    def api_version(self) -> int:
         return self._api_version
 
     @property
-    def url(self):
+    def url(self) -> str | None:
         return self._url
 
     @property
-    def client_id(self):
+    def client_id(self) -> str | None:
         return self._client_id
 
     @property
-    def client_secret(self):
+    def client_secret(self) -> str | None:
         return self._client_secret
 
     @property
-    def username(self):
+    def username(self) -> str | None:
         return self._username
 
     @property
-    def password(self):
+    def password(self) -> str | None:
         return self._password
 
     @property
-    def api_port(self):
+    def api_port(self) -> int | None:
         return self._api_port
 
     @property
-    def scope(self):
+    def scope(self) -> str | None:
         return self._scope
 
     @property
-    def access_token(self):
+    def access_token(self) -> str | None:
         return self._access_token
 
     @property
-    def refresh_token(self):
+    def refresh_token(self) -> str | None:
         return self._refresh_token
 
     @property
-    def x_change_password_token(self):
+    def x_change_password_token(self) -> str | None:
         return self._x_change_password_token
 
     @property
-    def admin_url(self):
+    def admin_url(self) -> str | None:
         return self._admin_url
 
     @property
-    def admin_port(self):
+    def admin_port(self) -> int | None:
         return self._admin_port
 
     @property
-    def full_url(self):
+    def full_url(self) -> str | None:
         return self._full_url
 
     @api_version.setter
-    def api_version(self, new_api_version: int):
+    def api_version(self, new_api_version: int) -> None:
         if new_api_version not in (3, 4):
             raise ValueError("API version should be either 3 or 4")
         self._api_version = new_api_version
 
     @url.setter
-    def url(self, new_url: str):
+    def url(self, new_url: str) -> None:
         self._url = new_url
-        self._full_url = self.set_full_url()
+        self.set_full_url()
 
     @client_id.setter
-    def client_id(self, new_client_id: str):
+    def client_id(self, new_client_id: str) -> None:
         self._client_id = new_client_id
 
     @client_secret.setter
-    def client_secret(self, new_client_secret: str):
+    def client_secret(self, new_client_secret: str) -> None:
         self._client_secret = new_client_secret
 
     @username.setter
-    def username(self, new_username: str):
+    def username(self, new_username: str) -> None:
         self._username = new_username
 
     @password.setter
-    def password(self, new_password: str):
+    def password(self, new_password: str) -> None:
         self._password = new_password
 
     @api_port.setter
-    def api_port(self, new_api_port: int):
+    def api_port(self, new_api_port: int) -> None:
         self._api_port = new_api_port
-        self._full_url = self.set_full_url()
+        self.set_full_url()
 
     @scope.setter
-    def scope(self, new_scope: str):
+    def scope(self, new_scope: str) -> None:
         self._scope = new_scope
 
     @access_token.setter
-    def access_token(self, new_token: str):
+    def access_token(self, new_token: str) -> None:
         self._access_token = new_token
 
     @refresh_token.setter
-    def refresh_token(self, new_refresh_token: str):
+    def refresh_token(self, new_refresh_token: str) -> None:
         self._refresh_token = new_refresh_token
 
     @admin_url.setter
-    def admin_url(self, new_admin_url: str):
+    def admin_url(self, new_admin_url: str) -> None:
         self._admin_url = new_admin_url
 
     @admin_port.setter
-    def admin_port(self, new_admin_port: int):
+    def admin_port(self, new_admin_port: int) -> None:
         self._admin_port = new_admin_port
 
-    def set_full_url(self):
+    def set_full_url(self) -> None:
+        if not self.url:
+            raise ValueError("URL property cannot be empty")
         if self.url.endswith("/"):
             self.url = self.url[:-1]
-        if self.api_port:
-            return f"{self.url}:{self.api_port}"
-        return self.url
+        self._full_url = self.url if not self.api_port else f"{self.url}:{self.api_port}"
 
     # Documented SigningHub API Calls
     def authenticate(self) -> requests.models.Response:
@@ -301,7 +301,7 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def otp_login_authentication(
-        self, mobile_number: str = None
+        self, mobile_number: str | None = None
     ) -> requests.models.Response:
         """SigningHub supports second factor authentication using OTP via SMS at login time via the web site GUI.
         Note this is different to OTP via SMS used in electronic signatures at the point of signing.
