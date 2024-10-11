@@ -282,3 +282,5 @@ fabric.properties
 
 # VS CODE
 .vscode/
+
+pyrightconfig.json
