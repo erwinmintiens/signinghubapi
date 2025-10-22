@@ -5,22 +5,24 @@ import requests
 
 from .utils import GET_HEADERS, KEYWORDED_ARGUMENTS, POST_HEADERS
 
+ALLOWED_API_VERSIONS = [3, 4]
+
 
 class Connection:
     def __init__(
         self,
         url: str,
-        client_id: Union[str, None] = None,
-        client_secret: Union[str, None] = None,
-        username: Union[str, None] = None,
-        password: Union[str, None] = None,
-        api_port: Union[int, None] = None,
-        scope: Union[str, None] = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        api_port: int | None = None,
+        scope: str | None = None,
         api_version: int = 4,
-        access_token: Union[str, None] = None,
-        refresh_token: Union[str, None] = None,
-        admin_url: Union[str, None] = None,
-        admin_port: Union[int, None] = None,
+        access_token: str | None = None,
+        refresh_token: str | None = None,
+        admin_url: str | None = None,
+        admin_port: int | None = None,
     ):
         """Initialize a connection between Python and a SigningHub REST API endpoint.
 
@@ -89,61 +91,61 @@ class Connection:
         return self._api_version
 
     @property
-    def url(self) -> Union[str, None]:
+    def url(self) -> str | None:
         return self._url
 
     @property
-    def client_id(self) -> Union[str, None]:
+    def client_id(self) -> str | None:
         return self._client_id
 
     @property
-    def client_secret(self) -> Union[str, None]:
+    def client_secret(self) -> str | None:
         return self._client_secret
 
     @property
-    def username(self) -> Union[str, None]:
+    def username(self) -> str | None:
         return self._username
 
     @property
-    def password(self) -> Union[str, None]:
+    def password(self) -> str | None:
         return self._password
 
     @property
-    def api_port(self) -> Union[int, None]:
+    def api_port(self) -> int | None:
         return self._api_port
 
     @property
-    def scope(self) -> Union[str, None]:
+    def scope(self) -> str | None:
         return self._scope
 
     @property
-    def access_token(self) -> Union[str, None]:
+    def access_token(self) -> str | None:
         return self._access_token
 
     @property
-    def refresh_token(self) -> Union[str, None]:
+    def refresh_token(self) -> str | None:
         return self._refresh_token
 
     @property
-    def x_change_password_token(self) -> Union[str, None]:
+    def x_change_password_token(self) -> str | None:
         return self._x_change_password_token
 
     @property
-    def admin_url(self) -> Union[str, None]:
+    def admin_url(self) -> str | None:
         return self._admin_url
 
     @property
-    def admin_port(self) -> Union[int, None]:
+    def admin_port(self) -> int | None:
         return self._admin_port
 
     @property
-    def full_url(self) -> Union[str, None]:
+    def full_url(self) -> str | None:
         return self._full_url
 
     @api_version.setter
     def api_version(self, new_api_version: int) -> None:
-        if new_api_version not in (3, 4):
-            raise ValueError("API version should be either 3 or 4")
+        if new_api_version not in ALLOWED_API_VERSIONS:
+            raise ValueError(f"API version should be in {ALLOWED_API_VERSIONS}")
         self._api_version = new_api_version
 
     @url.setter
@@ -220,8 +222,7 @@ class Connection:
             or not self.password
         ):
             raise ValueError(
-                "URL, client ID, client secret, username and password cannot be None for default "
-                "authentication"
+                "URL, client ID, client secret, username and password cannot be empty for default authentication"
             )
         url = f"{self.full_url}/authenticate"
         headers = {
@@ -239,16 +240,16 @@ class Connection:
         response = requests.post(url, data, headers)
         try:
             if response.status_code == 200:
-                self.access_token = json.loads(response.text).get("access_token", None)
-                self.refresh_token = json.loads(response.text).get(
+                self._access_token = json.loads(response.text).get("access_token", None)
+                self._refresh_token = json.loads(response.text).get(
                     "refresh_token", None
                 )
                 self._x_change_password_token = response.headers.get(
                     "x-change-password", None
                 )
         except:
-            self.access_token = None
-            self.refresh_token = None
+            self._access_token = None
+            self._refresh_token = None
             self._x_change_password_token = None
         finally:
             return response
@@ -284,10 +285,10 @@ class Connection:
         }
         response = requests.post(url, data, headers)
         try:
-            self.access_token = json.loads(response.text).get("access_token")
-            self.refresh_token = json.loads(response.text).get("refresh_token")
+            self._access_token = json.loads(response.text).get("access_token")
+            self._refresh_token = json.loads(response.text).get("refresh_token")
         except:
-            self.access_token = None
+            self._access_token = None
         finally:
             return response
 
@@ -303,7 +304,7 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def otp_login_authentication(
-        self, mobile_number: Union[str, None] = None
+        self, mobile_number: str | None = None
     ) -> requests.models.Response:
         """SigningHub supports second factor authentication using OTP via SMS at login time via the web site GUI.
         Note this is different to OTP via SMS used in electronic signatures at the point of signing.
