@@ -5,7 +5,7 @@ This package focusses on the usage of said API through Python.
 
 Signinghubapi package is the python integration of the SigningHub API. Most of the SigningHub API calls have been translated to python.
 
-SigningHub API guide can be found [here](https://manuals.keysign.eu).
+SigningHub API guide can be found [here](https://manuals.ascertia.com/SigningHub/8.6/Api/).
 
 Both API v3 (SigningHub 7.7.9 and earlier) and API v4 (SigningHub 7.7.9 and above) have been integrated.
 
@@ -17,10 +17,6 @@ This Python package depends on 1 external module:
 [Requests on PyPI](https://pypi.org/project/requests/)
 
 [Requests on GitHub](https://github.com/psf/requests)
-
-## Default Modules
-Default Python modules this package depends on:
-```json```
 
 # Usage
 Install this package with the command ```pip install signinghubapi```.
@@ -42,7 +38,7 @@ Optional parameters are:
 - An API version (3 or 4, depending on your SigningHub version. Default value = 3);
 - An API port (if the API URL is not defined as a URL. Default value = None).
 
-This object can execute the calls which are found in the API guide. These calls are translated to Python and the ```requests.models.Response``` object will be returned each time.
+This object can execute the calls which are found in the API guide. These calls are translated to Python and the ```requests.Response``` object will be returned each time.
 
 The validity of the provided URL can be tested with an ```about_signinghub()``` call. This call only requires the provided URL to work.
 
@@ -60,7 +56,7 @@ A bearer token will be received upon authentication, which will be automatically
 
 #### Example
 ```python
->>> from signinghubapi.signinghubapi import Connection
+>>> from signinghubapi import Connection
 >>> conn = Connection(url='https://api.signinghub.com/', client_id='testclientid', client_secret='testclientsecret', username='test@email.com', password='1234')
 >>> authentication = conn.authenticate()
 >>> authentication.status_code
@@ -74,7 +70,7 @@ This refresh token can be used to authenticate with in future calls.
 
 #### Example
 ```python
->>> from signinghubapi.signinghubapi import Connection
+>>> from signinghubapi import Connection
 >>> conn = Connection(url='https://api.signinghub.com/', client_id='testclientid', client_secret='testclientsecret', refresh_token='"QUVTMjU2LUdDTWLsQS+ByQscK...')
 >>> authentication_with_refresh = conn.authenticate_with_refresh_token()
 >>> authentication_with_refresh.status_code
@@ -85,7 +81,7 @@ This refresh token can be used to authenticate with in future calls.
 
 ## URL check example
 ```python
->>> from signinghubapi.signinghubapi import Connection
+>>> from signinghubapi import Connection
 >>> conn = Connection(url='https://api.signinghub.com/')
 >>> about = conn.about_signinghub()
 >>> about.status_code
