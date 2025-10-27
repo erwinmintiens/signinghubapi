@@ -43,7 +43,7 @@ def test_authentication_json_error():
     with patch("signinghubapi.signinghubapi.requests.post") as mock_post:
         mock_post.return_value = MockResponse(
             status_code=200,
-            text="This is not a valid json format",
+            json_dict="This is not a valid json format",
         )
 
         response = conn.authenticate()
