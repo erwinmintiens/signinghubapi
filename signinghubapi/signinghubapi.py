@@ -167,7 +167,7 @@ class Connection:
         self._password = new_password
 
     @api_port.setter
-    def api_port(self, new_api_port: int) -> None:
+    def api_port(self, new_api_port: int | None) -> None:
         self._api_port = new_api_port
         self.set_full_url()
 
@@ -243,7 +243,7 @@ class Connection:
                 self._x_change_password_token = response.headers.get(
                     "x-change-password", None
                 )
-        except:
+        except Exception:
             self._access_token = None
             self._refresh_token = None
             self._x_change_password_token = None
@@ -283,7 +283,7 @@ class Connection:
         try:
             self._access_token = response.json().get("access_token")
             self._refresh_token = response.json().get("refresh_token")
-        except:
+        except Exception:
             self._access_token = None
             self._refresh_token = None
         return response
@@ -692,7 +692,7 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def download_document(
-        self, package_id: int, document_id: str, base_64=False, **kwargs
+        self, package_id: int, document_id: str, base_64: bool = False, **kwargs
     ) -> requests.Response:
         """Download a document.
 
@@ -1549,7 +1549,7 @@ class Connection:
                 )
             if self.api_version < 4:
                 raise ValueError(
-                    f"Level of assurance is not supported on API version < 4"
+                    "Level of assurance is not supported on API version < 4"
                 )
             data["level_of_assurance"] = kwargs["level_of_assurance"]
         if "multiline" in kwargs:
@@ -1873,8 +1873,7 @@ class Connection:
             if field_type == "radio":
                 if not radio_group_name:
                     raise ValueError(
-                        f"Parameter 'radio_group_name' cannot be None when field type is set to "
-                        f"'{field_type}'"
+                        f"Parameter 'radio_group_name' cannot be None when field type is set to '{field_type}'"
                     )
                 field_data["radio_group_name"] = radio_group_name
             data[field_type].append(field_data)
@@ -1913,8 +1912,7 @@ class Connection:
         """
         if self.api_version < 4:
             raise ValueError(
-                f"API version is set to {self.api_version}."
-                f" This call can only be used for API version >= 4."
+                f"API version is set to {self.api_version}. This call can only be used for API version >= 4."
             )
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/sign"
         headers = self.post_headers
