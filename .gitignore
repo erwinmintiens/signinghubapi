@@ -284,3 +284,4 @@ fabric.properties
 .vscode/
 
 pyrightconfig.json
+.ruff_cache/
