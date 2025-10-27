@@ -167,7 +167,7 @@ class Connection:
         self._password = new_password
 
     @api_port.setter
-    def api_port(self, new_api_port: int) -> None:
+    def api_port(self, new_api_port: int | None) -> None:
         self._api_port = new_api_port
         self.set_full_url()
 
@@ -196,9 +196,7 @@ class Connection:
             raise ValueError("URL property cannot be empty")
         if self.url.endswith("/"):
             self.url = self.url[:-1]
-        self._full_url = (
-            self.url if not self.api_port else f"{self.url}:{self.api_port}"
-        )
+        self._full_url = self.url if not self.api_port else f"{self.url}:{self.api_port}"
 
     # Documented SigningHub API Calls
     def authenticate(self) -> requests.Response:
@@ -211,13 +209,7 @@ class Connection:
 
         :rtype: requests.Response
         """
-        if (
-            not self.full_url
-            or not self.client_id
-            or not self.client_secret
-            or not self.username
-            or not self.password
-        ):
+        if not self.full_url or not self.client_id or not self.client_secret or not self.username or not self.password:
             raise ValueError(
                 "URL, client ID, client secret, username and password cannot be empty for default authentication"
             )
@@ -240,9 +232,7 @@ class Connection:
             if response.status_code == 200:
                 self._access_token = response.json().get("access_token", None)
                 self._refresh_token = response.json().get("refresh_token", None)
-                self._x_change_password_token = response.headers.get(
-                    "x-change-password", None
-                )
+                self._x_change_password_token = response.headers.get("x-change-password", None)
         except Exception:
             self._access_token = None
             self._refresh_token = None
@@ -257,15 +247,8 @@ class Connection:
 
         :rtype: requests.Response
         """
-        if (
-            not self.full_url
-            or not self.client_id
-            or not self.client_secret
-            or not self.refresh_token
-        ):
-            raise ValueError(
-                "URL, client ID, client secret and refresh token cannot be None"
-            )
+        if not self.full_url or not self.client_id or not self.client_secret or not self.refresh_token:
+            raise ValueError("URL, client ID, client secret and refresh token cannot be None")
         url = f"{self.full_url}/authenticate"
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -299,9 +282,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def otp_login_authentication(
-        self, mobile_number: str | None = None
-    ) -> requests.Response:
+    def otp_login_authentication(self, mobile_number: str | None = None) -> requests.Response:
         """SigningHub supports second factor authentication using OTP via SMS at login time via the web site GUI.
         Note this is different to OTP via SMS used in electronic signatures at the point of signing.
         This specifically refers to using the second factor authentication for SigningHub system access.
@@ -329,9 +310,7 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/authentication/otp"
         headers = self.post_headers
         headers = self.add_bearer(headers)
-        return requests.post(
-            url=url, headers=headers, json={"mobile_number": mobile_number}
-        )
+        return requests.post(url=url, headers=headers, json={"mobile_number": mobile_number})
 
     # Enterprise Management
 
@@ -351,9 +330,7 @@ class Connection:
         response = requests.get(url=url, headers=headers)
         return response
 
-    def register_enterprise_user(
-        self, user_email: str, user_name: str, **kwargs
-    ) -> requests.Response:
+    def register_enterprise_user(self, user_email: str, user_name: str, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -385,13 +362,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/enterprise/users"
         headers = self.post_headers
         headers = self.add_bearer(headers)
-        return requests.delete(
-            url=url, headers=headers, json={"user_email": user_email}
-        )
+        return requests.delete(url=url, headers=headers, json={"user_email": user_email})
 
-    def invite_enterprise_user(
-        self, user_email: str, user_name: str, **kwargs
-    ) -> requests.Response:
+    def invite_enterprise_user(self, user_email: str, user_name: str, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/invitations"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -400,9 +373,7 @@ class Connection:
             data["enterprise_role"] = kwargs["enterprise_role"]
         return requests.post(url=url, headers=headers, json=data)
 
-    def get_enterprise_invitations(
-        self, page_number: int, records_per_page: int
-    ) -> requests.Response:
+    def get_enterprise_invitations(self, page_number: int, records_per_page: int) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/invitations/{page_number}/{records_per_page}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
@@ -412,9 +383,7 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/enterprise/invitations"
         headers = self.post_headers
         headers = self.add_bearer(headers)
-        return requests.delete(
-            url=url, headers=headers, json={"user_email": user_email}
-        )
+        return requests.delete(url=url, headers=headers, json={"user_email": user_email})
 
     def get_enterprise_branding(self) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/branding"
@@ -478,15 +447,11 @@ class Connection:
         }
         return requests.put(url=url, headers=headers, json=data)
 
-    def delete_certificate(
-        self, certificate_id: int, user_email: str
-    ) -> requests.Response:
+    def delete_certificate(self, certificate_id: int, user_email: str) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/signingcertificates/{certificate_id}"
         headers = self.post_headers
         headers = self.add_bearer(headers)
-        return requests.delete(
-            url=url, headers=headers, json={"user_email": user_email}
-        )
+        return requests.delete(url=url, headers=headers, json={"user_email": user_email})
 
     def get_enterprise_group(self, group_id: int) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups/{group_id}"
@@ -494,9 +459,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def add_enterprise_group(
-        self, group_name: str, members: list, **kwargs
-    ) -> requests.Response:
+    def add_enterprise_group(self, group_name: str, members: list, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/groups"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -636,9 +599,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
-    def change_document_package_owner(
-        self, package_id: int, new_owner: str
-    ) -> requests.Response:
+    def change_document_package_owner(self, package_id: int, new_owner: str) -> requests.Response:
         """Change the owner of a specific package.
 
         :param package_id: ID of the package
@@ -650,9 +611,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.put(url=url, headers=headers, json={"owner": new_owner})
 
-    def get_document_details(
-        self, package_id: int, document_id: int
-    ) -> requests.Response:
+    def get_document_details(self, package_id: int, document_id: int) -> requests.Response:
         """Get the details of a specific document.
 
         :param package_id: ID of the package
@@ -715,9 +674,7 @@ class Connection:
             headers["x-otp"] = kwargs["x_otp"]
         return requests.get(url=url, headers=headers)
 
-    def rename_document(
-        self, package_id: int, document_id: int, new_document_name: str
-    ) -> requests.Response:
+    def rename_document(self, package_id: int, document_id: int, new_document_name: str) -> requests.Response:
         """Rename a specific document within a package.
 
         :param package_id: ID of the package in which the document is located.
@@ -753,9 +710,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
-    def get_certify_policy_for_document(
-        self, package_id: int, document_id: int
-    ) -> requests.Response:
+    def get_certify_policy_for_document(self, package_id: int, document_id: int) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/certify"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -778,33 +733,25 @@ class Connection:
             data["lock_form_fields"] = kwargs["lock_form_fields"]
         return requests.put(url=url, headers=headers, json=data)
 
-    def get_package_verification(
-        self, package_id: int, base_64=True
-    ) -> requests.Response:
+    def get_package_verification(self, package_id: int, base_64=True) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/verification"
         headers = self.post_headers
         headers = self.add_bearer(headers)
         headers["x-base64"] = base_64
         return requests.get(url=url, headers=headers)
 
-    def get_document_verification(
-        self, package_id: int, document_id: int, base_64=True
-    ) -> requests.Response:
+    def get_document_verification(self, package_id: int, document_id: int, base_64=True) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/verification"
         headers = self.post_headers
         headers = self.add_bearer(headers)
         headers["x-base64"] = base_64
         return requests.get(url=url, headers=headers)
 
-    def change_document_order(
-        self, package_id: int, document_id: int, new_document_order: int
-    ) -> requests.Response:
+    def change_document_order(self, package_id: int, document_id: int, new_document_order: int) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/reorder"
         headers = self.post_headers
         headers = self.add_bearer(headers)
-        return requests.put(
-            url=url, headers=headers, json={"order": new_document_order}
-        )
+        return requests.put(url=url, headers=headers, json={"order": new_document_order})
 
     def get_packages(
         self, document_status: str, page_number: int, records_per_page: int, **kwargs
@@ -839,9 +786,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.delete(url=url, headers=headers)
 
-    def download_package(
-        self, package_id: int, base_64=False, **kwargs
-    ) -> requests.Response:
+    def download_package(self, package_id: int, base_64=False, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}"
         if base_64:
             url += "/base64"
@@ -901,9 +846,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def get_workflow_history_details(
-        self, package_id: int, log_id: int, base_64=True
-    ) -> requests.Response:
+    def get_workflow_history_details(self, package_id: int, log_id: int, base_64=True) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/log/{log_id}/details"
         headers = self.get_headers
         headers = self.add_bearer(headers)
@@ -953,9 +896,7 @@ class Connection:
                 This signing order is mandatory when workflow type is "CUSTOM".
         :rtype: requests.Response
         """
-        url = (
-            f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/users"
-        )
+        url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/users"
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = [
@@ -971,9 +912,7 @@ class Connection:
             data[0]["signing_order"] = kwargs["signing_order"]
         return requests.post(url=url, json=data, headers=headers)
 
-    def update_workflow_user(
-        self, package_id: int, order: int, **kwargs
-    ) -> requests.Response:
+    def update_workflow_user(self, package_id: int, order: int, **kwargs) -> requests.Response:
         """Updating a workflow user.
 
         :param package_id: ID of the package in which the user should be updated.
@@ -1008,9 +947,7 @@ class Connection:
                 data[argument] = kwargs[argument]
         return requests.put(url=url, headers=headers, json=data)
 
-    def add_groups_to_workflow(
-        self, package_id: int, group_name: str, **kwargs
-    ) -> requests.Response:
+    def add_groups_to_workflow(self, package_id: int, group_name: str, **kwargs) -> requests.Response:
         """Adding pre-defined groups to a package workflow.
 
         :param package_id: ID of the package the group should be added to.
@@ -1032,9 +969,7 @@ class Connection:
                 This signing order is only important when workflow type is set to "CUSTOM".
         :rtype: requests.Response
         """
-        url = (
-            f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/groups"
-        )
+        url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/groups"
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {"group_name": group_name}
@@ -1045,9 +980,7 @@ class Connection:
         payload.append(data)
         return requests.post(url=url, headers=headers, json=payload)
 
-    def update_workflow_group(
-        self, package_id: int, order: int, **kwargs
-    ) -> requests.Response:
+    def update_workflow_group(self, package_id: int, order: int, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/enterprise/packages/{package_id}/workflow/{order}/group"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -1057,9 +990,7 @@ class Connection:
                 data[argument] = kwargs[argument]
         return requests.put(url=url, headers=headers, json=data)
 
-    def add_placeholder_to_workflow(
-        self, package_id: int, placeholder_name: str, **kwargs
-    ) -> requests.Response:
+    def add_placeholder_to_workflow(self, package_id: int, placeholder_name: str, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/placeholder"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -1069,9 +1000,7 @@ class Connection:
                 data[0][argument] = kwargs[argument]
         return requests.post(url=url, headers=headers, json=data)
 
-    def update_placeholder(
-        self, package_id: int, order: int, **kwargs
-    ) -> requests.Response:
+    def update_placeholder(self, package_id: int, order: int, **kwargs) -> requests.Response:
         """Updating a placeholder on a workflow.
         Changeable properties include: placeholder name, role, email notifications, signing order.
 
@@ -1104,32 +1033,24 @@ class Connection:
         return requests.put(url=url, json=data, headers=headers)
 
     def get_workflow_users(self, package_id: int) -> requests.Response:
-        url = (
-            f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/users"
-        )
+        url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/users"
         headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def update_workflow_users_order(
-        self, package_id: int, old_order: int, new_order: int
-    ) -> requests.Response:
+    def update_workflow_users_order(self, package_id: int, old_order: int, new_order: int) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{old_order}/reorder"
         headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(url=url, headers=headers, json={"order": new_order})
 
-    def get_workflow_user_permissions(
-        self, package_id: int, order: int
-    ) -> requests.Response:
+    def get_workflow_user_permissions(self, package_id: int, order: int) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/permissions"
         headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def update_workflow_user_permissions(
-        self, package_id: int, order: int, **kwargs
-    ) -> requests.Response:
+    def update_workflow_user_permissions(self, package_id: int, order: int, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/permissions"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -1147,19 +1068,13 @@ class Connection:
         if "change_recipients" in kwargs:
             data["permissions"]["change_recipients"] = kwargs["change_recipients"]
         if "legal_notice_enabled" in kwargs:
-            data["permissions"]["legal_notice"]["enabled"] = kwargs[
-                "legal_notice_enabled"
-            ]
+            data["permissions"]["legal_notice"]["enabled"] = kwargs["legal_notice_enabled"]
         if "legal_notice_name" in kwargs:
-            data["permissions"]["legal_notice"]["legal_notice_name"] = kwargs[
-                "legal_notice_name"
-            ]
+            data["permissions"]["legal_notice"]["legal_notice_name"] = kwargs["legal_notice_name"]
 
         return requests.put(url=url, headers=headers, json=data)
 
-    def get_workflow_user_authentication_document_opening(
-        self, package_id: int, order: int
-    ) -> requests.Response:
+    def get_workflow_user_authentication_document_opening(self, package_id: int, order: int) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication"
         headers = self.get_headers
         headers = self.add_bearer(headers)
@@ -1183,41 +1098,33 @@ class Connection:
         if "authentication_enabled" in kwargs:
             data["authentication"]["enabled"] = kwargs["authentication_enabled"]
         if "authentication_password_enabled" in kwargs:
-            data["authentication"]["password"]["enabled"] = kwargs[
-                "authentication_password_enabled"
-            ]
+            data["authentication"]["password"]["enabled"] = kwargs["authentication_password_enabled"]
         if "user_password" in kwargs:
-            data["authentication"]["password"]["user_password"] = kwargs[
-                "user_password"
-            ]
+            data["authentication"]["password"]["user_password"] = kwargs["user_password"]
         if "sms_otp_enabled" in kwargs:
             data["authentication"]["sms_otp"]["enabled"] = kwargs["sms_otp_enabled"]
         if "mobile_number" in kwargs:
             data["authentication"]["sms_otp"]["mobile_number"] = kwargs["mobile_number"]
         if "access_duration_enabled" in kwargs:
-            data["access_duration_enabled"]["enabled"] = kwargs[
-                "access_duration_enabled"
-            ]
+            data["access_duration_enabled"]["enabled"] = kwargs["access_duration_enabled"]
         if "access_duration_duration_by_date" in kwargs:
-            data["access_duration_enabled"]["duration_by_date"]["enabled"] = kwargs[
-                "access_duration_duration_by_date"
-            ]
+            data["access_duration_enabled"]["duration_by_date"]["enabled"] = kwargs["access_duration_duration_by_date"]
         if "access_duration_by_date_start_date_time" in kwargs:
-            data["access_duration_enabled"]["duration_by_date"]["duration"][
-                "start_date_time"
-            ] = kwargs["access_duration_by_date_start_date_time"]
+            data["access_duration_enabled"]["duration_by_date"]["duration"]["start_date_time"] = kwargs[
+                "access_duration_by_date_start_date_time"
+            ]
         if "access_duration_by_date_end_date_time" in kwargs:
-            data["access_duration_enabled"]["duration_by_date"]["duration"][
-                "end_date_time"
-            ] = kwargs["access_duration_by_date_end_date_time"]
+            data["access_duration_enabled"]["duration_by_date"]["duration"]["end_date_time"] = kwargs[
+                "access_duration_by_date_end_date_time"
+            ]
         if "access_duration_duration_by_days_enabled" in kwargs:
             data["access_duration_enabled"]["duration_by_days"]["enabled"] = kwargs[
                 "access_duration_duration_by_days_enabled"
             ]
         if "access_duration_duration_by_days_total_days" in kwargs:
-            data["access_duration_enabled"]["duration_by_days"]["duration"][
-                "total_days"
-            ] = kwargs["access_duration_duration_by_days_total_days"]
+            data["access_duration_enabled"]["duration_by_days"]["duration"]["total_days"] = kwargs[
+                "access_duration_duration_by_days_total_days"
+            ]
         return requests.put(url=url, headers=headers, json=data)
 
     def delete_workflow_user(self, package_id: int, order: int) -> requests.Response:
@@ -1232,9 +1139,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers)
 
-    def open_document_via_password(
-        self, package_id: int, order: int, password: str
-    ) -> requests.Response:
+    def open_document_via_password(self, package_id: int, order: int, password: str) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/authentication/password"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -1246,9 +1151,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def update_workflow_reminders(
-        self, package_id: int, order: int, **kwargs
-    ) -> requests.Response:
+    def update_workflow_reminders(self, package_id: int, order: int, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/workflow/{order}/reminders"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -1281,9 +1184,7 @@ class Connection:
 
     # Document Preparation
 
-    def get_document_fields(
-        self, package_id: int, document_id: int, page_number: int
-    ) -> requests.Response:
+    def get_document_fields(self, package_id: int, document_id: int, page_number: int) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
@@ -1354,9 +1255,7 @@ class Connection:
         if "authentication_enabled" in kwargs:
             data["authentication"]["enabled"] = kwargs["authentication_enabled"]
         if "authentication_sms_otp_enabled" in kwargs:
-            data["authentication"]["sms_opt"]["enabled"] = kwargs[
-                "authentication_sms_otp_enabled"
-            ]
+            data["authentication"]["sms_opt"]["enabled"] = kwargs["authentication_sms_otp_enabled"]
         if "mobile_number" in kwargs:
             data["authentication"]["sms_opt"]["mobile_number"] = kwargs["mobile_number"]
         return requests.post(url=url, headers=headers, json=data)
@@ -1544,19 +1443,13 @@ class Connection:
             data["placement"] = kwargs["placement"]
         if "level_of_assurance" in kwargs:
             if field_type != "SIGNATURE":
-                raise ValueError(
-                    f"Level of assurance cannot be given to field type {field_type}"
-                )
+                raise ValueError(f"Level of assurance cannot be given to field type {field_type}")
             if self.api_version < 4:
-                raise ValueError(
-                    "Level of assurance is not supported on API version < 4"
-                )
+                raise ValueError("Level of assurance is not supported on API version < 4")
             data["level_of_assurance"] = kwargs["level_of_assurance"]
         if "multiline" in kwargs:
             if field_type != "TEXT":
-                raise ValueError(
-                    f"Multiline option cannot be given for field type {field_type}"
-                )
+                raise ValueError(f"Multiline option cannot be given for field type {field_type}")
             data["multiline"] = kwargs["multiline"]
         if "value" in kwargs:
             if field_type not in ["TEXT", "RadioBox", "CheckBox"]:
@@ -1570,51 +1463,35 @@ class Connection:
                 "RadioBox",
                 "CheckBox",
             ]:
-                raise ValueError(
-                    f"max_length cannot be set for field type {field_type}"
-                )
+                raise ValueError(f"max_length cannot be set for field type {field_type}")
             data["field_type"] = kwargs["field_type"]
         if "validation_rule" in kwargs:
             if field_type not in ["CheckBox", "RadioBox"]:
-                raise ValueError(
-                    f"validation_rule cannot be set for field type {field_type}"
-                )
+                raise ValueError(f"validation_rule cannot be set for field type {field_type}")
             data["validation_rule"] = kwargs["validation_rule"]
         if "radio_group_name" in kwargs:
             if field_type != "RadioBox":
-                raise ValueError(
-                    f"radio_group_name cannot be set for field type {field_type}"
-                )
+                raise ValueError(f"radio_group_name cannot be set for field type {field_type}")
             data["radio_group_name"] = kwargs["radio_group_name"]
         if "placeholder" in kwargs:
             if field_type != "IN_PERSON_SIGNATURE":
-                raise ValueError(
-                    f"Parameter placeholder cannot be set for field type {field_type}"
-                )
+                raise ValueError(f"Parameter placeholder cannot be set for field type {field_type}")
             data["field_type"] = kwargs["field_type"]
         if "format" in kwargs:
             if field_type != "DATE":
-                raise ValueError(
-                    f"Parameter format cannot be set for field type {field_type}"
-                )
+                raise ValueError(f"Parameter format cannot be set for field type {field_type}")
             data["placeholder"] = kwargs["placeholder"]
         if "font_name" in kwargs:
             if field_type != "TEXT":
-                raise ValueError(
-                    f"Parameter font_name cannot be set for field type {field_type}"
-                )
+                raise ValueError(f"Parameter font_name cannot be set for field type {field_type}")
             data["font"]["name"] = kwargs["font_name"]
         if "font_size" in kwargs:
             if field_type != "TEXT":
-                raise ValueError(
-                    f"Parameter font_size cannot be set for field type {field_type}"
-                )
+                raise ValueError(f"Parameter font_size cannot be set for field type {field_type}")
             data["font"]["size"] = kwargs["font_size"]
         if "font_embedded_size" in kwargs:
             if field_type != "TEXT":
-                raise ValueError(
-                    f"Parameter font_embedded_size cannot be set for field type {field_type}"
-                )
+                raise ValueError(f"Parameter font_embedded_size cannot be set for field type {field_type}")
             data["font"]["embedded_size"] = kwargs["font_embedded_size"]
         if "width" in kwargs:
             data["dimensions"]["width"] = kwargs["width"]
@@ -1676,16 +1553,12 @@ class Connection:
         if "authentication_enabled" in kwargs:
             data["authentication"]["enabled"] = kwargs["authentication_enabled"]
         if "authentication_sms_otp_enabled" in kwargs:
-            data["authentication"]["sms_opt"]["enabled"] = kwargs[
-                "authentication_sms_otp_enabled"
-            ]
+            data["authentication"]["sms_opt"]["enabled"] = kwargs["authentication_sms_otp_enabled"]
         if "mobile_number" in kwargs:
             data["authentication"]["sms_opt"]["mobile_number"] = kwargs["mobile_number"]
         return requests.put(url=url, headers=headers, json=data)
 
-    def update_in_person_field(
-        self, package_id: int, document_id: int, field_name: str, **kwargs
-    ) -> requests.Response:
+    def update_in_person_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/in_person_signature"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -1713,16 +1586,12 @@ class Connection:
         if "authentication_enabled" in kwargs:
             data["authentication"]["enabled"] = kwargs["authentication_enabled"]
         if "authentication_sms_otp_enabled" in kwargs:
-            data["authentication"]["sms_opt"]["enabled"] = kwargs[
-                "authentication_sms_otp_enabled"
-            ]
+            data["authentication"]["sms_opt"]["enabled"] = kwargs["authentication_sms_otp_enabled"]
         if "mobile_number" in kwargs:
             data["authentication"]["sms_opt"]["mobile_number"] = kwargs["mobile_number"]
         return requests.put(url=url, headers=headers, json=data)
 
-    def update_initials_field(
-        self, package_id: int, document_id: int, field_name: str, **kwargs
-    ) -> requests.Response:
+    def update_initials_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/initials"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -1741,9 +1610,7 @@ class Connection:
             data["dimensions"]["height"] = kwargs["height"]
         return requests.put(url=url, headers=headers, json=data)
 
-    def update_textbox_field(
-        self, package_id: int, document_id: int, field_name: str, **kwargs
-    ) -> requests.Response:
+    def update_textbox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/text"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -1758,9 +1625,7 @@ class Connection:
                     data[attribute] = kwargs[attribute]
         return requests.put(url=url, headers=headers, json=data)
 
-    def update_radiobox_field(
-        self, package_id: int, document_id: int, field_name: str, **kwargs
-    ) -> requests.Response:
+    def update_radiobox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/radio"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -1781,9 +1646,7 @@ class Connection:
             data["dimensions"]["y"] = kwargs["y"]
         return requests.put(url=url, headers=headers, json=data)
 
-    def update_checkbox_field(
-        self, package_id: int, document_id: int, field_name: str, **kwargs
-    ) -> requests.Response:
+    def update_checkbox_field(self, package_id: int, document_id: int, field_name: str, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields/checkbox"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -1802,9 +1665,7 @@ class Connection:
             data["dimensions"]["y"] = kwargs["y"]
         return requests.put(url=url, headers=headers, json=data)
 
-    def delete_document_field(
-        self, package_id: int, document_id: int, field_name: str
-    ) -> requests.Response:
+    def delete_document_field(self, package_id: int, document_id: int, field_name: str) -> requests.Response:
         """Deleting a field from a document.
 
         :param package_id: ID of the package
@@ -1818,13 +1679,9 @@ class Connection:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/fields"
         headers = self.post_headers
         headers = self.add_bearer(headers)
-        return requests.delete(
-            url=url, json={"field_name": field_name}, headers=headers
-        )
+        return requests.delete(url=url, json={"field_name": field_name}, headers=headers)
 
-    def signer_authentication_via_otp(
-        self, package_id: int, document_id: int, field_name: str
-    ) -> requests.Response:
+    def signer_authentication_via_otp(self, package_id: int, document_id: int, field_name: str) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/packages/{package_id}/documents/{document_id}/otp"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -2040,9 +1897,7 @@ class Connection:
 
     # Account Management
 
-    def register_user_free_trial(
-        self, user_email: str, user_name: str, **kwargs
-    ) -> requests.Response:
+    def register_user_free_trial(self, user_email: str, user_name: str, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/account"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -2051,9 +1906,7 @@ class Connection:
             if attribute in kwargs:
                 data[attribute] = kwargs[attribute]
         if "invitation_to_enterprise_name" in kwargs:
-            data["invitation"]["enterprise_name"] = data[
-                "invitation_to_enterprise_name"
-            ]
+            data["invitation"]["enterprise_name"] = data["invitation_to_enterprise_name"]
         return requests.post(url=url, headers=headers, json=data)
 
     def get_account(self) -> requests.Response:
@@ -2087,9 +1940,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.post(url=url, headers=headers, json={"user_email": user_email})
 
-    def set_new_password(
-        self, new_password: str, security_question: str, security_answer: str
-    ) -> requests.Response:
+    def set_new_password(self, new_password: str, security_question: str, security_answer: str) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/account/password/new"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -2134,17 +1985,13 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def get_notifications(
-        self, records_per_page: int, page_number: int
-    ) -> requests.Response:
+    def get_notifications(self, records_per_page: int, page_number: int) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/account/notifications/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def device_registration_for_push_notification(
-        self, device_token: str, os_type: str
-    ) -> requests.Response:
+    def device_registration_for_push_notification(self, device_token: str, os_type: str) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/users/notifications/devices"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -2154,17 +2001,13 @@ class Connection:
             json={"device_token": device_token, "os_type": os_type},
         )
 
-    def get_user_activity_logs(
-        self, records_per_page: int, page_number: int
-    ) -> requests.Response:
+    def get_user_activity_logs(self, records_per_page: int, page_number: int) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/account/log/{page_number}/{records_per_page}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def get_user_activity_logs_details(
-        self, log_id: int, base_64=True
-    ) -> requests.Response:
+    def get_user_activity_logs_details(self, log_id: int, base_64=True) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/account/log/{log_id}/details"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -2204,9 +2047,7 @@ class Connection:
                 data[attribute] = kwargs[attribute]
         return requests.put(url=url, headers=headers, json=data)
 
-    def change_password(
-        self, old_password: str, new_password: str
-    ) -> requests.Response:
+    def change_password(self, old_password: str, new_password: str) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/profile/password"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -2222,9 +2063,7 @@ class Connection:
         return requests.get(url=url, headers=headers)
 
     def update_profile_picture(self, profile_picture: bytes) -> requests.Response:
-        url = (
-            f"{self.full_url}/v{self.api_version}/settings/profile/general/photo/base64"
-        )
+        url = f"{self.full_url}/v{self.api_version}/settings/profile/general/photo/base64"
         headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(url=url, headers=headers, json={"photo": profile_picture})
@@ -2242,9 +2081,7 @@ class Connection:
         }
         return requests.put(url=url, headers=headers, json=data)
 
-    def update_locale_settings(
-        self, country: str, timezone: str, language: str
-    ) -> requests.Response:
+    def update_locale_settings(self, country: str, timezone: str, language: str) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/profile/locale"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -2288,12 +2125,8 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def update_signature_appearance_design(
-        self, default_design: str
-    ) -> requests.Response:
-        url = (
-            f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/design"
-        )
+    def update_signature_appearance_design(self, default_design: str) -> requests.Response:
+        url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/design"
         headers = self.post_headers
         headers = self.add_bearer(headers)
         return requests.put(
@@ -2331,9 +2164,7 @@ class Connection:
     def update_hand_signature_mobile(
         self, default_method: str, upload_image: bytes, text_value: str
     ) -> requests.Response:
-        url = (
-            f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/mobile"
-        )
+        url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/mobile"
         headers = self.post_headers
         headers = self.add_bearer(headers)
         data = {
@@ -2355,9 +2186,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def update_initial_appearance(
-        self, default_method: str, upload_image: bytes, text_value: str
-    ) -> requests.Response:
+    def update_initial_appearance(self, default_method: str, upload_image: bytes, text_value: str) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/signatures/appearance/initials"
         headers = self.post_headers
         headers = self.add_bearer(headers)
@@ -2396,9 +2225,7 @@ class Connection:
             json={"user_email": user_email, "user_name": user_name},
         )
 
-    def get_contacts(
-        self, records_per_page: int, page_number: int, **kwargs
-    ) -> requests.Response:
+    def get_contacts(self, records_per_page: int, page_number: int, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/contacts/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
@@ -2408,9 +2235,7 @@ class Connection:
             headers["x-enterprise"] = kwargs["x_enterprise"]
         return requests.get(url=url, headers=headers)
 
-    def get_groups(
-        self, records_per_page: int, page_number: int, **kwargs
-    ) -> requests.Response:
+    def get_groups(self, records_per_page: int, page_number: int, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/groups/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
@@ -2420,9 +2245,7 @@ class Connection:
             headers["x-enterprise"] = kwargs["x_enterprise"]
         return requests.get(url=url, headers=headers)
 
-    def get_library_documents(
-        self, records_per_page: int, page_number: int, **kwargs
-    ) -> requests.Response:
+    def get_library_documents(self, records_per_page: int, page_number: int, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/library/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
@@ -2432,9 +2255,7 @@ class Connection:
             headers["x-enterprise"] = kwargs["x_enterprise"]
         return requests.get(url=url, headers=headers)
 
-    def get_templates(
-        self, records_per_page: int, page_number: int, **kwargs
-    ) -> requests.Response:
+    def get_templates(self, records_per_page: int, page_number: int, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/templates/{records_per_page}/{page_number}"
         headers = self.get_headers
         headers = self.add_bearer(headers)
@@ -2456,9 +2277,7 @@ class Connection:
         headers = self.add_bearer(headers)
         return requests.get(url=url, headers=headers)
 
-    def add_personal_group(
-        self, group_name: str, members: list, **kwargs
-    ) -> requests.Response:
+    def add_personal_group(self, group_name: str, members: list, **kwargs) -> requests.Response:
         url = f"{self.full_url}/v{self.api_version}/settings/groups"
         headers = self.post_headers
         headers = self.add_bearer(headers)

@@ -1,6 +1,6 @@
 import unittest
 
-from signinghubapi.signinghubapi import Connection
+from signinghubapi import Connection
 
 
 class TestRaiseIfWrongValue(unittest.TestCase):

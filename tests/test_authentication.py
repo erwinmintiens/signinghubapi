@@ -1,9 +1,7 @@
-import json
 from unittest.mock import patch
 
-from signinghubapi.signinghubapi import Connection
-
-from .utils import MockResponse
+from signinghubapi import Connection
+from tests.utils import MockResponse
 
 
 def test_authentication_200():
@@ -17,14 +15,12 @@ def test_authentication_200():
     with patch("signinghubapi.signinghubapi.requests.post") as mock_post:
         mock_post.return_value = MockResponse(
             status_code=200,
-            text=json.dumps(
-                {
-                    "access_token": "mock_access_token",
-                    "token_type": "bearer",
-                    "expires_in": 86399,
-                    "refresh_token": "mock_refresh_token",
-                }
-            ),
+            json_dict={
+                "access_token": "mock_access_token",
+                "token_type": "bearer",
+                "expires_in": 86399,
+                "refresh_token": "mock_refresh_token",
+            },
         )
 
         response = conn.authenticate()
