@@ -1,7 +1,6 @@
 import json
 from unittest.mock import patch
 
-import requests
 from signinghubapi.signinghubapi import Connection
 
 from .utils import MockResponse
@@ -53,7 +52,7 @@ def test_authentication_json_error():
 
         response = conn.authenticate()
 
-    assert conn.access_token == None
-    assert conn.refresh_token == None
-    assert conn._x_change_password_token == None
+    assert conn.access_token is None
+    assert conn.refresh_token is None
+    assert conn._x_change_password_token is None
     assert response == mock_post.return_value

@@ -1,5 +1,1 @@
-import json
-
-import requests
-
-from .signinghubapi import Connection
+from .signinghubapi import Connection  # noqa

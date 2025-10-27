@@ -196,7 +196,7 @@ class Package:
     def share(self, connection: Connection) -> requests.models.Response:
         if self.status != "DRAFT":
             raise ValueError(
-                f"Package status is not set to DRAFT. Package cannot be shared."
+                "Package status is not set to DRAFT. Package cannot be shared."
             )
         return connection.share_document_package(self.id)
 
