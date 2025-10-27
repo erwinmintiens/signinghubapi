@@ -36,4 +36,4 @@ jobs:
           ruff format --check .
       - name: Test with pytest
         run: |
-          pytest signinghubpapi/tests
+          pytest tests
